@@ -1904,3 +1904,4 @@ loginForm.addEventListener('submit', async function(e) {
 		
 		// --- END Service Worker and Periodic Sync Logic ---        
 
+
