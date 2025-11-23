@@ -1871,8 +1871,8 @@ loginForm.addEventListener('submit', async function(e) {
 							});
 					}).catch(function(error) {
 		                // This log will fire if the path is wrong (404) or there's a security error
-		                console.error('[App] Service Worker registration FAILED:', error);;
-				
+		                console.error('[App] Service Worker registration FAILED:', error);
+					 });
 				}
 			else {
 				console.warn('Periodic Background Sync is not supported on this browser/OS.');
@@ -1933,6 +1933,7 @@ loginForm.addEventListener('submit', async function(e) {
 		}
 		
 		// --- END Service Worker and Periodic Sync Logic ---        
+
 
 
 
