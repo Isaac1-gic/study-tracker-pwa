@@ -1857,7 +1857,7 @@ loginForm.addEventListener('submit', async function(e) {
             const min_Interval = 24*60*60*1000;
             
             if ('serviceWorker' in navigator && 'periodicSync' in navigator.serviceWorker){
-				navigator.serviceWorker.register('serviceworker.js').then(function(swReg){
+				navigator.serviceWorker.register('../serviceworker.js').then(function(swReg){
 					console.log('Registered for sync');
 					navigator.permissions.query({name: 'periodic-background-sync', public: true})
 						.then(function(permissionStatus){
@@ -1890,3 +1890,4 @@ loginForm.addEventListener('submit', async function(e) {
 						console.error('Periodic Sync registration failed:', error);
 					});
 				}
+
