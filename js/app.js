@@ -1849,7 +1849,34 @@ loginForm.addEventListener('submit', async function(e) {
             
             
             
+         const study_Tag = 'Dairy-Study-Remainder';
+            const min_Interval = 24*60*60*1000;
             
+            if ('serviceWorker' in navigator && 'periodicSync' in navigator.serviceWorker){
+				navigator.serviceWorker.register('../serviceworker.js').then(function(swReg){
+					console.log('Registered for sync');
+					console.log('[App] Service Worker Registered successfully.'); // Log on success
+					navigator.permissions.query({name: 'periodic-background-sync', public: true})
+						.then(function(permissionStatus){
+							if(permissionStatus.state === 'granted'){
+								registerPeriodicSync(swReg);
+								}
+							else if(permissionStatus.state === 'prompt'){
+								registerPeriodicSync(swReg)
+								}
+							else {
+								console.warn('[App] Periodic Sync permission denied.');
+								console.warn('Periodic Sync permission denied.');
+							}
+							});
+					}).catch(function(error) {
+		                // This log will fire if the path is wrong (404) or there's a security error
+		                console.error('[App] Service Worker registration FAILED:', error);;
+				
+				}
+			else {
+				console.warn('Periodic Background Sync is not supported on this browser/OS.');
+				}   
             
             
             
@@ -1906,6 +1933,7 @@ loginForm.addEventListener('submit', async function(e) {
 		}
 		
 		// --- END Service Worker and Periodic Sync Logic ---        
+
 
 
 
