@@ -7,9 +7,6 @@ const study_Tag = 'Dairy-Study-Remainder';
 // Add any other CSS/JS files or font files you use here.
 // serviceworker.js
 
-const CACHE_NAME = 'study-tracker-v1';
-// ... (rest of code)
-
 // Update these paths to include the repository name
 const OFFLINE_URLS = [
     '/study-tracker-pwa/', // Base path entry for the start URL
@@ -190,5 +187,6 @@ self.addEventListener('notificationclick', function(event) {
         })
     );
 });
+
 
 
