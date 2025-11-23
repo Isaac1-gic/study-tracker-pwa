@@ -2,7 +2,7 @@
     "name": "Study Tracker",
     "short_name": "StudyTrack",
     "description": "Keep all study sessions data and track your progress.",
-    "start_url": "/study-tracker-pwa/Home.html", // CRITICAL: Update start_url
+    "start_url": "/study-tracker-pwa/index.html", // CRITICAL: Update start_url
     "display": "standalone",
     "background_color": "#f1f1f1",
     "theme_color": "#2c3e50",
@@ -25,3 +25,4 @@
         }
     ]
 }
+
