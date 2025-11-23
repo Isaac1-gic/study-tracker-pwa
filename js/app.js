@@ -1854,40 +1854,45 @@ loginForm.addEventListener('submit', async function(e) {
             
             
             const study_Tag = 'Dairy-Study-Remainder';
-            const min_Interval = 24*60*60*1000;
-            
-            if ('serviceWorker' in navigator && 'periodicSync' in navigator.serviceWorker){
-				navigator.serviceWorker.register('...\serviceworker.js').then(function(swReg){
-					console.log('Registered for sync');
-					navigator.permissions.query({name: 'periodic-background-sync', public: true})
-						.then(function(permissionStatus){
-							if(permissionStatus.state === 'granted'){
-								registerPeriodicSync(swReg);
-								}
-							else if(permissionStatus.state === 'prompt'){
-								registerPeriodicSync(swReg)
-								}
-							else {
-								console.warn('Periodic Sync permission denied.');
-							}
-							});
-					});
-				
-				}
-			else {
-				console.warn('Periodic Background Sync is not supported on this browser/OS.');
-				}
+			const min_Interval = 24 * 60 * 60 * 1000;
+			const SW_SCOPE = '/study-tracker-pwa/'; // CRITICAL: Explicit scope for GitHub Pages
+			
+			if ('serviceWorker' in navigator && 'periodicSync' in navigator.serviceWorker) {
+			    // FIX 1: Use the relative path (../) to correctly find the file one level up from /js/
+			    // FIX 2: Add the explicit scope to tell the browser what part of the site the SW controls
+			    navigator.serviceWorker.register('../serviceworker.js', { scope: SW_SCOPE }).then(function(swReg) {
+			        console.log('Registered for sync');
+			        navigator.permissions.query({ name: 'periodic-background-sync', public: true })
+			            .then(function(permissionStatus) {
+			                // FIX 3: Ensure registerPeriodicSync is called correctly
+			                if (permissionStatus.state === 'granted' || permissionStatus.state === 'prompt') {
+			                    registerPeriodicSync(swReg);
+			                } else {
+			                    console.warn('Periodic Sync permission denied.');
+			                }
+			            });
+			    })
+			    .catch(error => {
+			        // This will log the 404 error if the path is still wrong
+			        console.error('Service Worker registration failed:', error);
+			    });
+			
+			} else {
+			    console.warn('Periodic Background Sync is not supported on this browser/OS.');
+			}
 			
 			
-			function registerPeriodicSync(swReg){
-				swReg.periodicSync.register(study_Tag, {
-					minInterval: min_Interval
-					})
-					.then(() => {
-						console.log(`Periodic sync registered for tag: ${STUDY_TAG}`);
-					})
-					.catch(error => {
-						console.error('Periodic Sync registration failed:', error);
-					});
-				}
+			function registerPeriodicSync(swReg) {
+			    swReg.periodicSync.register(study_Tag, {
+			            minInterval: min_Interval
+			        })
+			        .then(() => {
+			            // FIX 4: Use the correct variable name (study_Tag)
+			            console.log(`Periodic sync registered for tag: ${study_Tag}`);
+			        })
+			        .catch(error => {
+			            console.error('Periodic Sync registration failed:', error);
+			        });
+			}
+
 
