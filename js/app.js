@@ -1853,47 +1853,53 @@ loginForm.addEventListener('submit', async function(e) {
             
             
             
-            const study_Tag = 'Dairy-Study-Remainder';
-			const min_Interval = 24 * 60 * 60 * 1000;
-			const SW_SCOPE = '/study-tracker-pwa/'; // CRITICAL: Explicit scope for GitHub Pages
-			
-			if ('serviceWorker' in navigator && 'periodicSync' in navigator.serviceWorker) {
-			    // FIX 1: Use the relative path (../) to correctly find the file one level up from /js/
-			    // FIX 2: Add the explicit scope to tell the browser what part of the site the SW controls
-			    navigator.serviceWorker.register('../serviceworker.js', { scope: SW_SCOPE }).then(function(swReg) {
-			        console.log('Registered for sync');
-			        navigator.permissions.query({ name: 'periodic-background-sync', public: true })
-			            .then(function(permissionStatus) {
-			                // FIX 3: Ensure registerPeriodicSync is called correctly
-			                if (permissionStatus.state === 'granted' || permissionStatus.state === 'prompt') {
-			                    registerPeriodicSync(swReg);
-			                } else {
-			                    console.warn('Periodic Sync permission denied.');
-			                }
-			            });
-			    })
-			    .catch(error => {
-			        // This will log the 404 error if the path is still wrong
-			        console.error('Service Worker registration failed:', error);
-			    });
-			
-			} else {
-			    console.warn('Sync is not supported on this browser/OS.');
-			}
-			
-			
-			function registerPeriodicSync(swReg) {
-			    swReg.periodicSync.register(study_Tag, {
-			            minInterval: min_Interval
-			        })
-			        .then(() => {
-			            // FIX 4: Use the correct variable name (study_Tag)
-			            console.log(`Periodic sync registered for tag: ${study_Tag}`);
-			        })
-			        .catch(error => {
-			            console.error('Periodic Sync registration failed:', error);
-			        });
-			}
+  		// --- Service Worker and Periodic Sync Logic ---
 
-
-
+		const study_Tag = 'Dairy-Study-Remainder';
+		const min_Interval = 24 * 60 * 60 * 1000;
+		// CRITICAL FIX: Explicit scope for GitHub Pages project directory
+		const SW_SCOPE = '/study-tracker-pwa/'; 
+		
+		if ('serviceWorker' in navigator) {
+		    if ('periodicSync' in navigator.serviceWorker) {
+		        
+		        // FIX: Using the relative path (../) and explicit scope to ensure registration
+		        navigator.serviceWorker.register('../serviceworker.js', { scope: SW_SCOPE })
+		            .then(function(swReg) {
+		                console.log('[App] Service Worker Registered successfully.'); // Log on success
+		                
+		                // Check for Periodic Sync permission
+		                navigator.permissions.query({ name: 'periodic-background-sync', public: true })
+		                    .then(function(permissionStatus) {
+		                        if (permissionStatus.state === 'granted' || permissionStatus.state === 'prompt') {
+		                            registerPeriodicSync(swReg);
+		                        } else {
+		                            console.warn('[App] Periodic Sync permission denied.');
+		                        }
+		                    });
+		            })
+		            .catch(function(error) {
+		                // This log will fire if the path is wrong (404) or there's a security error
+		                console.error('[App] Service Worker registration FAILED:', error);
+		            });
+		    } else {
+		        // Fallback: Still register for basic offline caching
+		        navigator.serviceWorker.register('../serviceworker.js', { scope: SW_SCOPE });
+		        console.warn('[App] Periodic Background Sync is not supported on this browser/OS.');
+		    }
+		}
+		
+		
+		function registerPeriodicSync(swReg) {
+		    swReg.periodicSync.register(study_Tag, {
+		            minInterval: min_Interval
+		        })
+		        .then(() => {
+		            console.log(`[App] Periodic sync registered for tag: ${study_Tag}`);
+		        })
+		        .catch(error => {
+		            console.error('[App] Periodic Sync registration failed:', error);
+		        });
+		}
+		
+		// --- END Service Worker and Periodic Sync Logic ---        
