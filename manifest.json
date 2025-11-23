@@ -1,0 +1,27 @@
+{
+    "name": "Study Tracker",
+    "short_name": "StudyTrack",
+    "description": "Keep all study sessions data and track your progress.",
+    "start_url": "/Home.html",
+    "display": "standalone",
+    "background_color": "#f1f1f1",
+    "theme_color": "#2c3e50",
+    "icons": [
+        {
+            "src": "/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

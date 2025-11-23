@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PYIG CODER Online Class Login - No Scroll</title>
+    <link rel="manifest" href="/manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="js/app.js"></script>
+    <style>
+        /* Base styles for scroll-free, full-viewport fit */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            height: 100%; /* Important: sets the height to the viewport height */
+            overflow: hidden; /* Prevents scrolling */
+            font-family: 'Roboto', sans-serif;
+            background-color: #f1f1f1; /* Main light gray background */
+        }
+
+        /* The main container now behaves as the full screen */
+        .login-container {
+            width: 100%;
+            height: 100%;
+            max-width: 450px; /* Optional: Keep content centered on very large screens */
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column; /* Stacks the header and form sections vertically */
+            background-color: #f1f1f1;
+        }
+        
+        /* The thin red bar at the very top */
+        .top-status-bar {
+            height: 5px; /* Very thin bar */
+            background-color: #f30c04;
+            width: 100%;
+            flex-shrink: 0; /* Ensures it doesn't shrink */
+        }
+
+        /* Top section (Logo and text) */
+        .header-section {
+            padding: 10% 20% 5% 20%; /* Use percentages for vertical spacing to adapt better */
+            text-align: center;
+            flex-shrink: 0; /* Ensures it doesn't shrink */
+        }
+
+        .logo-circle {
+            
+				   
+                position: relative;
+				margin: 10px;
+				left: 8%;
+				height: 80%;
+				border-radius: 50%;
+				overflow: hidden;
+				border: 2px solid #fff;
+				box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+				transition: transform 5s;
+				width: 80%;
+				flex-shrink: 0;
+				background-color: #007bff; /* Use a background color for the text container */
+				display: flex; /* Enables Flexbox */
+				justify-content: center; /* Center content horizontally */
+				align-items: center; /* Center content vertically */
+        }
+
+        /* NEW: Styles for the text "MGY" */
+			.profile-text {
+				color: #fff; /* White text color */
+				font-size: 30px; /* Adjust text size to fit the 100px circle */
+				font-weight: bold;
+				line-height: 1; /* Ensures text height doesn't interfere with centering */
+				font-family: Arial, sans-serif;
+				text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); /* Optional: Adds depth to the text */
+			}
+
+			.rotate {
+				animation: rotate 5s cubic-bezier(0.1,5,0.1,5);
+			}
+
+			@keyframes rotate {
+				0% {
+					transform: rotate(360deg);
+				}
+				50% {
+					transform: rotate(0deg) scale(1.2);
+				}
+				100% {
+					transform: rotate(360deg) scale(1);
+				}
+			}
+        .logo-circle img {
+            
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .main-title {
+            color: whitesmoke;
+            font-size: 2.2em;
+            font-weight: 400; 
+            
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: #555;
+            font-size: 1.1em;
+            font-weight: 300;
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+
+        /* Bottom section (Form) */
+        .form-section {
+            background-color: #f30c04;
+            /* FLEX-GROW: 1 is the KEY: it makes this section expand to fill all remaining height */
+            flex-grow: 1; 
+            padding: 50px 25px 0 25px; 
+            text-align: center;
+            border-radius: 5%;
+            display: flex; /* Use flex to align content within the form section */
+            flex-direction: column;
+            justify-content: flex-start; /* Start content from the top of this red section */
+            min-height: 0; /* Prevent flex-item overflow */
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 14px 14px 14px 45px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            color: #333;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .input-icon {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 1.1em;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 15px;
+            background-color: #f7f7f7;
+            color: #d9534f;
+            font-size: 1.1em;
+            font-weight: 700;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.2s;
+            letter-spacing: 1px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .login-button:hover {
+            background-color: #fff;
+        }
+        
+        /* The bottom white/light gray space visible in the original image */
+        /* Since form-section now fills the space, we add a footer to push it up and reveal the background */
+        .footer-space {
+            height: 100px; /* Height of the empty space at the bottom of the screenshot */
+            background-color: #f1f1f1; /* Matches the body background */
+            flex-shrink: 0; /* Ensures it doesn't shrink */
+        }
+        
+        /* A fix for the white strip at the very bottom */
+        .login-container::after {
+            content: "";
+            background-color: white; /* Simulates the white strip below the red section */
+            height: 100px; /* Should be enough to cover the bottom area */
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+            z-index: -1; /* Puts it behind the main container */
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    
+    <div class="top-status-bar"></div>
+
+    <div class="header-section">
+        <div class="logo-circle rotate">
+            <img src="assets/icon-192.png" class="profile-text" alt="STUDY TRACKER">
+        </div>
+        
+    </div>
+    
+    <div class="form-section">
+        <h1 class="main-title">Study Tracker</h1>
+        <p class="subtitle">Keep all sessions data</p>
+        <div class="instruction" id="countdownMessage">
+        Initializing app... <span id="countdown">5</span>
+    </div>
+    </div>
+    
+</div>
+<script>
+    const DELAY_SECONDS = 5;
+    const REDIRECT_URL = "index.html"
+    function startRedirectTimer() {
+            let count = DELAY_SECONDS;
+            let deferredPrompt;
+        let redirectTimer;
+        
+        const countdownElement = document.getElementById('countdown');
+            // Clear any previous timer to ensure we only have one running
+            if (redirectTimer) clearInterval(redirectTimer);
+            
+            // --- CRITICAL REDIRECT: Start the 5-second countdown to redirect ---
+            redirectTimer = setInterval(() => {
+                count--;
+                countdownElement.textContent = count;
+                
+                if (count <= 0) {
+                    clearInterval(redirectTimer);
+                    // Perform the final redirect
+                    src="js/app.js"
+                    window.location.replace(REDIRECT_URL); 
+                    
+                }
+            }, 1000);
+        }
+        startRedirectTimer()
+</script>
+</body>
+</html>
