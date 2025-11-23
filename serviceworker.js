@@ -5,16 +5,22 @@ const study_Tag = 'Dairy-Study-Remainder';
 
 // List of files to cache for offline access.
 // Add any other CSS/JS files or font files you use here.
+// serviceworker.js
+
+const CACHE_NAME = 'study-tracker-v1';
+// ... (rest of code)
+
+// Update these paths to include the repository name
 const OFFLINE_URLS = [
-    '/',
-    '/Home.html',
-    '/index.html',
-    '/js/app.js',
-    '/manifest.json',
-    '/icon-192.png',
-    '/icon-512.png',
-    // Add any necessary CSS links here (e.g., from Home.html and index.html)
+    '/study-tracker-pwa/', // Base path entry for the start URL
+    '/study-tracker-pwa/Home.html',
+    '/study-tracker-pwa/index.html',
+    '/study-tracker-pwa/js/app.js',
+    '/study-tracker-pwa/manifest.json',
+    '/study-tracker-pwa/icon-192.png',
+    '/study-tracker-pwa/icon-512.png',
 ];
+
 
 // --- 1. INSTALLATION: Cache the necessary files ---
 self.addEventListener('install', function(event) {
@@ -94,8 +100,8 @@ function checkAndDisplayReminder() {
     
     const options = {
         body: studyPlanBody,
-        icon: '/icon-192.png', // Use your existing icon
-        badge: '/icon-192.png',
+        icon: '/study-tracker-pwa/icon-192.png', // CRITICAL: Update this
+        badge: '/study-tracker-pwa/icon-192.png', // CRITICAL: Update this
         data: {
             url: '/index.html#timetable', // Go directly to the timetable tab
             date: today
@@ -184,4 +190,5 @@ self.addEventListener('notificationclick', function(event) {
         })
     );
 });
+
 
