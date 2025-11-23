@@ -1890,7 +1890,7 @@ loginForm.addEventListener('submit', async function(e) {
 		    if ('periodicSync' in navigator.serviceWorker) {
 		        
 		        // FIX: Using the relative path (../) and explicit scope to ensure registration
-		        navigator.serviceWorker.register(SW_SCRIPT_PATH, { scope: SW_SCOPE })
+		        navigator.serviceWorker.register('../serviceworker.js')
 		            .then(function(swReg) {
 		                console.log('[App] Service Worker Registered successfully.'); // Log on success
 		                
@@ -1910,7 +1910,7 @@ loginForm.addEventListener('submit', async function(e) {
 		            });
 		    } else {
 		        // Fallback: Still register for basic offline caching
-		        navigator.serviceWorker.register('../serviceworker.js', { scope: SW_SCOPE });
+		        navigator.serviceWorker.register('../serviceworker.js');
 		        console.warn('[App] Periodic Background Sync is not supported on this browser/OS.');
 		    }
 		}
@@ -1929,6 +1929,7 @@ loginForm.addEventListener('submit', async function(e) {
 		}
 		
 		// --- END Service Worker and Periodic Sync Logic ---        
+
 
 
 
