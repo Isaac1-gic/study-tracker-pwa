@@ -1879,11 +1879,7 @@ loginForm.addEventListener('submit', async function(e) {
 				}   
             
             
-            
-  		// --- Service Worker and Periodic Sync Logic ---
-
-		const study_Tag = 'Dairy-Study-Remainder';
-		const min_Interval = 24 * 60 * 60 * 1000;
+         
 		const SW_SCOPE = window.BASE_URL; // Use the reliable variable
 
 		// CRITICAL FIX: Use the global variable for the path.
@@ -1933,6 +1929,7 @@ loginForm.addEventListener('submit', async function(e) {
 		}
 		
 		// --- END Service Worker and Periodic Sync Logic ---        
+
 
 
 
