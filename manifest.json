@@ -2,23 +2,23 @@
     "name": "Study Tracker",
     "short_name": "StudyTrack",
     "description": "Keep all study sessions data and track your progress.",
-    "start_url": "/Home.html",
+    "start_url": "/study-tracker-pwa/Home.html", // CRITICAL: Update start_url
     "display": "standalone",
     "background_color": "#f1f1f1",
     "theme_color": "#2c3e50",
     "icons": [
         {
-            "src": "/icon-192.png",
+            "src": "/study-tracker-pwa/icon-192.png", // CRITICAL: Update icon src
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "/icon-512.png",
+            "src": "/study-tracker-pwa/icon-512.png", // CRITICAL: Update icon src
             "sizes": "512x512",
             "type": "image/png"
         },
         {
-            "src": "/icon-512.png",
+            "src": "/study-tracker-pwa/icon-512.png", // CRITICAL: Update icon src
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
