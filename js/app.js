@@ -1878,7 +1878,7 @@ loginForm.addEventListener('submit', async function(e) {
 			    });
 			
 			} else {
-			    console.warn('Periodic Background Sync is not supported on this browser/OS.');
+			    console.warn('Sync is not supported on this browser/OS.');
 			}
 			
 			
@@ -1894,5 +1894,6 @@ loginForm.addEventListener('submit', async function(e) {
 			            console.error('Periodic Sync registration failed:', error);
 			        });
 			}
+
 
 
