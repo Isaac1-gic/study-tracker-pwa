@@ -1857,14 +1857,17 @@ loginForm.addEventListener('submit', async function(e) {
 
 		const study_Tag = 'Dairy-Study-Remainder';
 		const min_Interval = 24 * 60 * 60 * 1000;
-		// CRITICAL FIX: Explicit scope for GitHub Pages project directory
-		const SW_SCOPE = '/study-tracker-pwa/'; 
+		const SW_SCOPE = window.BASE_URL; // Use the reliable variable
+
+		// CRITICAL FIX: Use the global variable for the path.
+		// This resolves to: /study-tracker-pwa/serviceworker.js
+		const SW_SCRIPT_PATH = window.BASE_URL + 'serviceworker.js';
 		
 		if ('serviceWorker' in navigator) {
 		    if ('periodicSync' in navigator.serviceWorker) {
 		        
 		        // FIX: Using the relative path (../) and explicit scope to ensure registration
-		        navigator.serviceWorker.register('https://github.com/Isaac1-gic/study-tracker-pwa/serviceworker.js', { scope: SW_SCOPE })
+		        navigator.serviceWorker.register(SW_SCRIPT_PATH, { scope: SW_SCOPE })
 		            .then(function(swReg) {
 		                console.log('[App] Service Worker Registered successfully.'); // Log on success
 		                
@@ -1903,6 +1906,7 @@ loginForm.addEventListener('submit', async function(e) {
 		}
 		
 		// --- END Service Worker and Periodic Sync Logic ---        
+
 
 
 
