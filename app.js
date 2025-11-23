@@ -1853,41 +1853,38 @@ loginForm.addEventListener('submit', async function(e) {
             
             
             
+          // Define the absolute path based on your GitHub repo name
+            const SW_PATH = '/study-tracker-pwa/serviceworker.js'; 
+            const SW_SCOPE = '/study-tracker-pwa/';
+            
             const study_Tag = 'Dairy-Study-Remainder';
             const min_Interval = 24*60*60*1000;
             
             if ('serviceWorker' in navigator && 'periodicSync' in navigator.serviceWorker){
-				navigator.serviceWorker.register('../serviceworker.js').then(function(swReg){
-					console.log('Registered for sync');
-					navigator.permissions.query({name: 'periodic-background-sync', public: true})
-						.then(function(permissionStatus){
-							if(permissionStatus.state === 'granted'){
-								registerperiodicSync(swReg);
-								}
-							else if(permissionStatus.state === 'prompt'){
-								registerPeriodicSync(swReg)
-								}
-							else {
-								console.warn('Periodic Sync permission denied.');
-							}
-							});
-					});
-				
-				}
-			else {
-				console.warn('Periodic Background Sync is not supported on this browser/OS.');
-				}
-			
-			
-			function registerPeriodicSync(swReg){
-				swReg.periodicSync.register(study_Tag, {
-					minInterval: min_Interval
-					})
-					.then(() => {
-						console.log(`Periodic sync registered for tag: ${STUDY_TAG}`);
-					})
-					.catch(error => {
-						console.error('Periodic Sync registration failed:', error);
-					});
-				}
-
+                
+                // CRITICAL FIX: Use the absolute path and explicit scope
+                navigator.serviceWorker.register(SW_PATH, { scope: SW_SCOPE }).then(function(swReg){
+                    
+                    console.log('Registered for sync');
+                    
+                    // ... your existing permission check logic below ...
+                    navigator.permissions.query({name: 'periodic-background-sync', public: true})
+                        .then(function(permissionStatus){
+                            if(permissionStatus.state === 'granted'){
+                                registerPeriodicSync(swReg);
+                            }
+                            else if(permissionStatus.state === 'prompt'){
+                                registerPeriodicSync(swReg)
+                            }
+                            else {
+                                console.warn('Periodic Sync permission denied.');
+                            }
+                        });
+                    // ... end of existing logic ...
+                })
+                .catch(function(error) {
+                    // This error log will help us if the 404 still occurs
+                    console.error('Service Worker registration failed:', error);
+                });
+            }
+            // ... rest of the app.js file 
