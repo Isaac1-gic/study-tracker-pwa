@@ -1863,7 +1863,7 @@ loginForm.addEventListener('submit', async function(e) {
 		  // Compute script URL for serviceworker.js relative to app.js
 		  const swScriptURL = new URL('../serviceworker.js', baseForSW).href;
 		  // Compute a reasonable scope (directory of the app script)
-		  const scopePath = new URL('.', baseForSW).pathname; // ensures trailing slash
+		  const scopePath = new URL('../', baseForSW).pathname;
 		
 		  try {
 		    const swReg = await navigator.serviceWorker.register(swScriptURL, { scope: scopePath });
@@ -1901,6 +1901,7 @@ loginForm.addEventListener('submit', async function(e) {
 		    }
 		  }
 		})();      
+
 
 
 
