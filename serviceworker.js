@@ -8,7 +8,7 @@ const OFFLINE_URLS = [
     '/study-tracker-pwa/js/app.js',
     '/study-tracker-pwa/manifest.json',
     '/study-tracker-pwa/icon-192.png',
-    '/study-tracker-pwa/icon-512.jpg'
+    '/study-tracker-pwa/icon1-512.jpg'
 ];
 
 
@@ -122,6 +122,7 @@ self.addEventListener('notificationclick', function(event) {
         })
     );
 });
+
 
 
 
