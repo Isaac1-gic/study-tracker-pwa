@@ -1,4 +1,4 @@
-const CACHE_NAME = 'study-tracker-v4';
+const CACHE_NAME = 'study-tracker-v5';
 const study_Tag = 'Dairy-Study-Remainder';
 
 // CRITICAL: All paths must include the repository name for GitHub Pages
@@ -122,6 +122,7 @@ self.addEventListener('notificationclick', function(event) {
         })
     );
 });
+
 
 
 
