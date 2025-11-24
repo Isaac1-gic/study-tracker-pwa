@@ -4,7 +4,6 @@ const study_Tag = 'Dairy-Study-Remainder';
 // CRITICAL: All paths must include the repository name for GitHub Pages
 const OFFLINE_URLS = [
     '/study-tracker-pwa/', // Base path entry for the start URL
-    '/study-tracker-pwa/Home.html',
     '/study-tracker-pwa/index.html',
     '/study-tracker-pwa/js/app.js',
     '/study-tracker-pwa/manifest.json',
@@ -125,5 +124,6 @@ self.addEventListener('notificationclick', function(event) {
         })
     );
 });
+
 
 
