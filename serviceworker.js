@@ -8,7 +8,7 @@ const OFFLINE_URLS = [
     '/study-tracker-pwa/js/app.js',
     '/study-tracker-pwa/manifest.json',
     '/study-tracker-pwa/icon-192.png',
-    '/study-tracker-pwa/icon-512.jpn',
+    '/study-tracker-pwa/icon-512.jpg',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css', // External CSS
     'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap' // External Fonts
 ];
@@ -124,6 +124,7 @@ self.addEventListener('notificationclick', function(event) {
         })
     );
 });
+
 
 
 
