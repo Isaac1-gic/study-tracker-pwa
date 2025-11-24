@@ -23,15 +23,15 @@
       "purpose": "maskable"
     },
     {
-      "src": "icon-512.jpg",
+      "src": "icon1-512.jpg",
       "sizes": "512x512",
-      "type": "image/jpg",
+      "type": "image/jpeg",
       "purpose": "any"
     },
     {
-      "src": "icon-512.jpg",
+      "src": "icon1-512.jpg",
       "sizes": "512x512",
-      "type": "image/jpg",
+      "type": "image/jpeg",
       "purpose": "maskable"
     }
   ],
@@ -39,23 +39,24 @@
     {
       "src": "Screenshot (1).jpg",
       "sizes": "480x960",
-      "type": "image/jpg",
+      "type": "image/jpeg",
       "platform": "wide",
       "label": "Home screen"
     },
     {
       "src": "Screenshot (2).jpg",
       "sizes": "480x960",
-      "type": "image/jpg",
+      "type": "image/jpeg",
       "platform": "wide",
       "label": "Study remainders"
     },
     {
       "src": "Screenshot (5).jpg",
       "sizes": "480x960",
-      "type": "image/jpg",
+      "type": "image/jpeg",
       "platform": "wide",
       "label": "Study history and Review"
     }
   ]
 }
+
