@@ -1849,86 +1849,59 @@ loginForm.addEventListener('submit', async function(e) {
             
             
             
-         const study_Tag = 'Dairy-Study-Remainder';
-            const min_Interval = 24*60*60*1000;
-            
-            if ('serviceWorker' in navigator && 'periodicSync' in navigator.serviceWorker){
-				navigator.serviceWorker.register('../serviceworker.js').then(function(swReg){
-					console.log('Registered for sync');
-					console.log('[App] Service Worker Registered successfully.'); // Log on success
-					navigator.permissions.query({name: 'periodic-background-sync', public: true})
-						.then(function(permissionStatus){
-							if(permissionStatus.state === 'granted'){
-								registerPeriodicSync(swReg);
-								}
-							else if(permissionStatus.state === 'prompt'){
-								registerPeriodicSync(swReg)
-								}
-							else {
-								console.warn('[App] Periodic Sync permission denied.');
-								console.warn('Periodic Sync permission denied.');
-							}
-							});
-					}).catch(function(error) {
-		                // This log will fire if the path is wrong (404) or there's a security error
-		                console.error('[App] Service Worker registration FAILED:', error);
-					 });
-				}
-			else {
-				console.warn('Periodic Background Sync is not supported on this browser/OS.');
-				}   
-            
-            
-         
-		const SW_SCOPE = window.BASE_URL; // Use the reliable variable
-
-		// CRITICAL FIX: Use the global variable for the path.
-		// This resolves to: /study-tracker-pwa/serviceworker.js
-		const SW_SCRIPT_PATH = window.BASE_URL + 'serviceworker.js';
+         // --- Robust Service Worker + Periodic Sync registration (replace duplicated blocks) ---
+		(async function registerSWandPeriodicSync() {
+		  if (!('serviceWorker' in navigator)) {
+		    console.warn('[App] Service Worker is not supported in this browser.');
+		    return;
+		  }
 		
-		if ('serviceWorker' in navigator) {
-		    if ('periodicSync' in navigator.serviceWorker) {
-		        
-		        // FIX: Using the relative path (../) and explicit scope to ensure registration
-		        navigator.serviceWorker.register('../serviceworker.js')
-		            .then(function(swReg) {
-		                console.log('[App] Service Worker Registered successfully.'); // Log on success
-		                
-		                // Check for Periodic Sync permission
-		                navigator.permissions.query({ name: 'periodic-background-sync', public: true })
-		                    .then(function(permissionStatus) {
-		                        if (permissionStatus.state === 'granted' || permissionStatus.state === 'prompt') {
-		                            registerPeriodicSync(swReg);
-		                        } else {
-		                            console.warn('[App] Periodic Sync permission denied.');
-		                        }
-		                    });
-		            })
-		            .catch(function(error) {
-		                // This log will fire if the path is wrong (404) or there's a security error
-		                console.error('[App] Service Worker registration FAILED:', error);
+		  // Find a reliable base URL (derive SW path relative to this script)
+		  const appScript = document.querySelector('script[src*="app.js"]') || document.currentScript;
+		  const baseForSW = appScript && appScript.src ? appScript.src : window.location.href;
+		
+		  // Compute script URL for serviceworker.js relative to app.js
+		  const swScriptURL = new URL('../serviceworker.js', baseForSW).href;
+		  // Compute a reasonable scope (directory of the app script)
+		  const scopePath = new URL('.', baseForSW).pathname; // ensures trailing slash
+		
+		  try {
+		    const swReg = await navigator.serviceWorker.register(swScriptURL, { scope: scopePath });
+		    console.log('[App] Service Worker Registered successfully. scope=', swReg.scope);
+		
+		    // Periodic Background Sync: check on the registration object (not all platforms support it)
+		    if (swReg && 'periodicSync' in swReg) {
+		      try {
+		        // Query permission for periodic background sync (don't pass unsupported options)
+		        const permission = await navigator.permissions.query({ name: 'periodic-background-sync' });
+		        if (permission.state === 'granted' || permission.state === 'prompt') {
+		          try {
+		            await swReg.periodicSync.register('Dairy-Study-Remainder', {
+		              minInterval: 24 * 60 * 60 * 1000 // once per day
 		            });
+		            console.log('[App] Periodic sync registered for tag: Dairy-Study-Remainder');
+		          } catch (err) {
+		            console.warn('[App] periodicSync.register() failed:', err);
+		          }
+		        } else {
+		          console.warn('[App] Periodic Sync permission denied.');
+		        }
+		      } catch (err) {
+		        // navigator.permissions.query may not support this permission in some browsers
+		        console.warn('[App] Permission query for periodic-background-sync failed or not supported:', err);
+		      }
 		    } else {
-		        // Fallback: Still register for basic offline caching
-		        navigator.serviceWorker.register('../serviceworker.js');
-		        console.warn('[App] Periodic Background Sync is not supported on this browser/OS.');
+		      console.warn('[App] Periodic Background Sync is not supported on this browser/OS.');
 		    }
-		}
-		
-		
-		function registerPeriodicSync(swReg) {
-		    swReg.periodicSync.register(study_Tag, {
-		            minInterval: min_Interval
-		        })
-		        .then(() => {
-		            console.log(`[App] Periodic sync registered for tag: ${study_Tag}`);
-		        })
-		        .catch(error => {
-		            console.error('[App] Periodic Sync registration failed:', error);
-		        });
-		}
-		
-		// --- END Service Worker and Periodic Sync Logic ---        
+		  } catch (error) {
+		    console.error('[App] Service Worker registration FAILED:', error);
+		    // Helpful hint for a 404 fetch error
+		    if (error && typeof error.message === 'string' && error.message.includes('404')) {
+		      console.error(`[App] Tried to fetch ${swScriptURL} and received 404. Make sure serviceworker.js exists at that path and is served over HTTPS.`);
+		    }
+		  }
+		})();      
+
 
 
 
