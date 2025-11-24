@@ -1,24 +1,61 @@
 {
   "name": "Study Tracker",
   "short_name": "Tracker",
-  "description": "Keep all your study sessions data with the Study Tracker PWA.",
+  "description": "Keep all your study sessions data with the Study Tracker.",
+  "id": "/",
   "start_url": "index.html",
   "scope": "./",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#2c3e50",
   "theme_color": "#67f00b",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icon-512.jpg",
       "sizes": "512x512",
-      "type": "image/jpeg",
-      "purpose": "any maskable"
+      "type": "image/jpg",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpg",
+      "purpose": "maskable"
     }
   ],
-  "orientation": "portrait-primary"
+  "screenshots": [
+    {
+      "src": "Screenshot (1).jpg",
+      "sizes": "480x960",
+      "type": "image/jpg",
+      "platform": "wide",
+      "label": "Home screen"
+    },
+    {
+      "src": "Screenshot (2).jpg",
+      "sizes": "480x960",
+      "type": "image/jpg",
+      "platform": "wide",
+      "label": "Study remainders"
+    },
+    {
+      "src": "Screenshot (5).jpg",
+      "sizes": "480x960",
+      "type": "image/jpg",
+      "platform": "wide",
+      "label": "Study history and Review"
+    }
+  ]
 }
