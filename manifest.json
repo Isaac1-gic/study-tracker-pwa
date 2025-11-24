@@ -13,18 +13,19 @@
             "type": "image/png"
         },
         {
-            "src": "/study-tracker-pwa/icon-512.jpn", // CRITICAL: Update icon src
+            "src": "/study-tracker-pwa/icon-512.jpg", // CRITICAL: Update icon src
             "sizes": "512x512",
             "type": "image/png"
         },
         {
-            "src": "/study-tracker-pwa/icon-512.jpn", // CRITICAL: Update icon src
+            "src": "/study-tracker-pwa/icon-512.jpg", // CRITICAL: Update icon src
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
         }
     ]
 }
+
 
 
 
