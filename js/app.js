@@ -1695,11 +1695,7 @@
    
         
     
-       const profileContainer = document.getElementById('profile-container');
-       profileContainer.classList.add('rotate');
-       profileContainer.addEventListener('animationend', () => {
-        profileContainer.classList.remove('rotate')
-       })
+    
 
        const trackForm = document.getElementById('form');
        trackForm.addEventListener('submit', function(e) {
@@ -1901,6 +1897,7 @@ loginForm.addEventListener('submit', async function(e) {
 		    }
 		  }
 		})();      
+
 
 
 
