@@ -96,3 +96,33 @@ self.addEventListener('activate', function(event) {
     })
   );
 });
+
+/* * -----------------------------------------------------
+ * 4. PERIODIC SYNC EVENT: The code that runs in the background.
+ * -----------------------------------------------------
+ */
+self.addEventListener('periodicsync', function(event) {
+    // Check the tag to ensure we run the correct task
+    if (event.tag === 'Study-Reminder-Sync') {
+        
+        // event.waitUntil() ensures the Service Worker stays alive until this promise resolves.
+        event.waitUntil(
+            // Replace 'runBackgroundReminderLogic()' with your actual function 
+            // that checks the study data and generates a Notification.
+            runBackgroundReminderLogic() 
+        );
+    }
+});
+
+// A placeholder function for what the Service Worker should actually do
+function runBackgroundReminderLogic() {
+    // 1. Fetch data from IndexedDB or storage
+    // 2. Check if the time/conditions for a study reminder have been met
+    // 3. If so, display a notification:
+    
+    return self.registration.showNotification('Study Reminder', {
+        body: 'It is time for your scheduled study session!',
+        icon: 'icon-192.png',
+        tag: 'study-reminder-alert'
+    });
+}
