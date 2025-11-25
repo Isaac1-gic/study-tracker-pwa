@@ -1,133 +1,98 @@
-const CACHE_NAME = 'study-tracker-v5';
-const study_Tag = 'Dairy-Study-Remainder';
+// A unique name for your cache (update this if you change app shell files)
+const CACHE_NAME = 'study-tracker-cache-v1';
 
-// CRITICAL: All paths must include the repository name for GitHub Pages
-const OFFLINE_URLS = [
-    '/study-tracker-pwa/', // Base path entry for the start URL
-    '/study-tracker-pwa/index.html',
-    '/study-tracker-pwa/js/app.js',
-    '/study-tracker-pwa/manifest.json',
-    '/study-tracker-pwa/icon-192.png',
-    '/study-tracker-pwa/icon1-512.png'
+// List of files required for the app to run offline (the "App Shell")
+const urlsToCache = [
+  './', // Caches the root path (index.html)
+  'index.html',
+  'js/app.js',
+  'manifest.json',
+  'icon-192.png',
+  'icon-512.jpg',
+  
+  // External assets must also be explicitly cached if needed offline:
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
+  'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap'
 ];
 
-
-// --- 1. INSTALLATION: Cache the necessary files ---
+/* * -----------------------------------------------------
+ * 1. INSTALL EVENT: Caches all essential App Shell files.
+ * -----------------------------------------------------
+ */
 self.addEventListener('install', function(event) {
-    console.log('[Service Worker] Install Event: Starting caching process.');
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(function(cache) {
-                console.log('[Service Worker] Attempting to pre-cache all required assets.');
-                return cache.addAll(OFFLINE_URLS)
-                    .then(() => {
-                        console.log('[Service Worker] All assets successfully cached.');
-                    })
-                    .catch(error => {
-                        console.error('[Service Worker] Cache addition failed. Check for 404s in OFFLINE_URLS:', error);
-                        // A single 404 here will cause the installation to fail silently!
-                    });
-            })
-    );
-});
-
-// --- 2. ACTIVATION: Clean up old caches ---
-self.addEventListener('activate', function(event) {
-    console.log('[Service Worker] Activate Event: Cleaning up old caches.');
-    event.waitUntil(
-        caches.keys().then(function(cacheNames) {
-            return Promise.all(
-                cacheNames.map(function(cacheName) {
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('[Service Worker] Deleting old cache:', cacheName);
-                        return caches.delete(cacheName);
-                    }
-                })
-            ).then(() => {
-                console.log('[Service Worker] Activation complete. Ready to handle fetch requests.');
-            });
-        })
-    );
-});
-
-// --- 3. FETCH: Serve files from cache first, then fall back to network ---
-self.addEventListener('fetch', function(event) {
-    // Only intercept HTTP/S requests, ignoring devtools/extensions
-    if (event.request.url.startsWith('http')) {
-        event.respondWith(
-            caches.match(event.request)
-                .then(function(response) {
-                    if (response) {
-                        // console.log('[Service Worker] Serving from cache:', event.request.url);
-                        return response; // Cache hit - return response
-                    }
-                    // console.log('[Service Worker] Fetching from network:', event.request.url);
-                    return fetch(event.request); // No cache match - fetch from network
-                })
-        );
-    }
-});
-
-// --- 4. PERIODIC BACKGROUND SYNC: The Offline/Background Reminder Logic ---
-self.addEventListener('periodicsync', function(event) {
-    if (event.tag === study_Tag) {
-        console.log(`[Service Worker] Periodic Sync Fired for tag: ${study_Tag}`);
-        event.waitUntil(checkAndDisplayReminder());
-    }
-});
-
-function checkAndDisplayReminder() {
-    console.log('[Service Worker] Attempting to show study reminder notification.');
-    const today = new Date().toDateString();
-    
-    const reminderTitle = 'Your Daily Study Plan 📚';
-    const studyPlanBody = 'Review your Calculus notes and work on the English Composition.';
-    
-    const options = {
-        body: studyPlanBody,
-        // CRITICAL: Notification icons MUST use the absolute path
-        icon: '/study-tracker-pwa/icon-192.png', 
-        badge: '/study-tracker-pwa/icon-192.png', 
-        data: {
-            url: '/study-tracker-pwa/index.html#timetable', 
-            date: today
-        },
-        actions: [
-            { action: 'open_plan', title: 'Open Timetable' },
-            { action: 'snooze', title: 'Snooze (1h)' }
-        ]
-    };
-    
-    return self.registration.showNotification(reminderTitle, options)
-        .catch(error => {
-            console.error('[Service Worker] Failed to display notification:', error);
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(function(cache) {
+        console.log('[Service Worker] Opened cache and adding files...');
+        return cache.addAll(urlsToCache).catch(error => {
+            console.error('[Service Worker] Error caching some files:', error);
         });
-}
-
-
-// --- 5. NOTIFICATION CLICK: Handling user interaction with the notification ---
-self.addEventListener('notificationclick', function(event) {
-    console.log('[Service Worker] Notification click received. Action:', event.action);
-    event.notification.close();
-    // Default URL must also be absolute for GitHub Pages
-    const targetURL = event.notification.data.url || '/study-tracker-pwa/index.html';
-
-    event.waitUntil(
-        clients.matchAll({ type: 'window' })
-        .then(function(clientList) {
-            // ... (focus existing window logic) ...
-            if (clients.openWindow) {
-                return clients.openWindow(targetURL);
-            }
-        })
-    );
+      })
+  );
 });
 
+/* * -----------------------------------------------------
+ * 2. FETCH EVENT: Implements the Cache-First strategy.
+ * -----------------------------------------------------
+ */
+self.addEventListener('fetch', function(event) {
+  // Only handle requests for http/https, ignore chrome-extension:// etc.
+  if (event.request.url.startsWith('http')) {
+    event.respondWith(
+      caches.match(event.request).then(function(response) {
+        // 1. CACHE-FIRST: If the asset is found in the cache, return it immediately.
+        if (response) {
+          console.log('[Service Worker] Found in Cache:', event.request.url);
+          return response;
+        }
 
+        // 2. NETWORK-FALLBACK: If not found in cache, fetch from the network.
+        // The fetch request is cloned so the response can be stored in the cache.
+        return fetch(event.request).then(function(response) {
+            // Check if we received a valid response
+            if(!response || response.status !== 200 || response.type !== 'basic') {
+                return response;
+            }
 
+            // Clone the response so we can use one for the cache and one for the browser.
+            const responseToCache = response.clone();
 
+            caches.open(CACHE_NAME)
+              .then(function(cache) {
+                // Cache the newly fetched resource for future use.
+                cache.put(event.request, responseToCache);
+              });
 
+            return response;
+        });
+      }).catch(function() {
+          // If both cache and network fail (which happens when offline),
+          // you could return a custom offline page here.
+          console.log('[Service Worker] Cache and Network failed for:', event.request.url);
+          // return caches.match('offline.html'); // Uncomment if you have an offline page
+      })
+    );
+  }
+});
 
+/* * -----------------------------------------------------
+ * 3. ACTIVATE EVENT: Cleans up old caches.
+ * -----------------------------------------------------
+ */
+self.addEventListener('activate', function(event) {
+  const cacheWhitelist = [CACHE_NAME];
 
-
-
+  event.waitUntil(
+    caches.keys().then(function(cacheNames) {
+      return Promise.all(
+        cacheNames.map(function(cacheName) {
+          // Delete any cache that is not the current version (CACHE_NAME)
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('[Service Worker] Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+});
