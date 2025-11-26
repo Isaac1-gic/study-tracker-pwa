@@ -1,70 +1,36 @@
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Study Tracker</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width initial-scale=1.0">
-        <base href="/study-tracker-pwa/">
+		<base href="/study-tracker-pwa/">
 		<link rel="manifest" href="manifest.json">
 		<script>
    			 window.BASE_URL = '/study-tracker-pwa/';
 		</script>
-		<script>
-			 // --- Robust Service Worker + Periodic Sync registration (replace duplicated blocks) ---
-			(async function registerSWandPeriodicSync() {
-			  if (!('serviceWorker' in navigator)) {
-			    console.warn('[App] Service Worker is not supported in this browser.');
-			    return;
-			  }
-			
-			  // Find a reliable base URL (derive SW path relative to this script)
-			  const appScript = document.querySelector('script[src*="app.js"]') || document.currentScript;
-			  const baseForSW = appScript && appScript.src ? appScript.src : window.location.href;
-			
-			  // Compute script URL for serviceworker.js relative to app.js
-			  const swScriptURL = new URL('../serviceworker.js', baseForSW).href;
-			  // Compute a reasonable scope (directory of the app script)
-			  const scopePath = new URL('../', baseForSW).pathname;
-			
-			  try {
-			    const swReg = await navigator.serviceWorker.register(swScriptURL, { scope: scopePath });
-			    console.log('[App] Service Worker Registered successfully. scope=', swReg.scope);
-			
-			    // Periodic Background Sync: check on the registration object (not all platforms support it)
-			    if (swReg && 'periodicSync' in swReg) {
-			      try {
-			        // Query permission for periodic background sync (don't pass unsupported options)
-			        const permission = await navigator.permissions.query({ name: 'periodic-background-sync' });
-			        if (permission.state === 'granted' || permission.state === 'prompt') {
-			          try {
-			            await swReg.periodicSync.register('Dairy-Study-Remainder', {
-			              minInterval: 24 * 60 * 60 * 1000 // once per day
-			            });
-			            console.log('[App] Periodic sync registered for tag: Dairy-Study-Remainder');
-			          } catch (err) {
-			            console.warn('[App] periodicSync.register() failed:', err);
-			          }
-			        } else {
-			          console.warn('[App] Periodic Sync permission denied.');
-			        }
-			      } catch (err) {
-			        // navigator.permissions.query may not support this permission in some browsers
-			        console.warn('[App] Permission query for periodic-background-sync failed or not supported:', err);
-			      }
-			    } else {
-			      console.warn('[App] Periodic Background Sync is not supported on this browser/OS.');
-			    }
-			  } catch (error) {
-			    console.error('[App] Service Worker registration FAILED:', error);
-			    // Helpful hint for a 404 fetch error
-			    if (error && typeof error.message === 'string' && error.message.includes('404')) {
-			      console.error(`[App] Tried to fetch ${swScriptURL} and received 404. Make sure serviceworker.js exists at that path and is served over HTTPS.`);
-			    }
-			  }
-			})();   
-		</script>
+	
 		<link rel=""icon"" type=""image/png"" href=""icon-192.png"">
-		
+        <title>Study Tracker</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width initial-scale=1.0">
+        <link rel="manifest" href="/manifest.json">
+        <script>
+            // Wait for the window to fully load to ensure all resources are ready
+            window.onload = function() {
+                if ('serviceWorker' in navigator) {
+                    // Register the service worker, setting the scope to the current directory './'
+                    navigator.serviceWorker.register('serviceworker.js', {scope: './'})
+                        .then(function(registration) {
+                            console.log('Service Worker registered successfully with scope:', registration.scope);
+                        })
+                        .catch(function(error) {
+                            console.error('Service Worker registration failed:', error);
+                        });
+                } else {
+                    console.warn('Service Workers are not supported by this browser.');
+                }
+            };
+        </script>
+        
         <style>
             * {
                 margin: 0;
@@ -74,9 +40,10 @@
             }
 
             body {
-                background: linear-gradient(135deg, #67f00b 0%, #3f0df1 100%);
+              
                 min-height: 100vh;
                 padding: 5px;
+                background: white;
             }
 
             .container {
@@ -537,20 +504,16 @@
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
 
-            body {
-                background: linear-gradient(135deg, #67f00b 0%, #3f0df1 100%);
-                min-height: 100vh;
-                padding: 1px;
-            }
-
             .login-container {
                 background: white;
                 border-radius: 20px;
                 box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
                 width: 100%;
                 max-width: auto;
-                display: none;
+                min-height: 100vh;
+                max-height: auto;
                 overflow: hidden;
+                display: none;
             }
 
             .header {
@@ -706,6 +669,14 @@
             }          
             
             .tab-content {
+                background: white;
+                border-radius: 20px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                width: 100%;
+                max-width: auto;
+                min-height: 100vh;
+                max-height: auto;
+                overflow: hidden;
                 display: none;
                 padding: 10px;
             }
@@ -798,7 +769,9 @@
     <body>
         <div>
             
-                
+                <div class="profile-container rotate" id="profile-container">
+				<div class="profile-text">MGY</div>
+				</div>
                 <!-- Menu Container -->
 <div id="menu-container" class="menu-container" style="top: 0; right: 0;">
   <button class="menu-button">Menu</button>
@@ -843,13 +816,18 @@
                             <button type="submit" class="login-btn">Login</button>
                         </form>
                         <div class="divider"><span onclick="document.getElementById('login').classList.remove('active');document.getElementById('reLogin').classList.add('active')">Forgot password</span></div>
-                        <button class="login-btn" onclick="document.getElementById('login').classList.remove('active');document.getElementById('setup').classList.add('active')">Create Account</button>
+                        <button class="login-btn" onclick="document.getElementById('login').classList.remove('active');startRedirect_SignIn()">Create Account</button>
                         
                     </div>
                 </div>
-            
-
                 
+                <!--SignIn-->
+                <div id="signIn" class="login-container">
+                    
+                </div>
+                
+                
+                <!--forgot password-->
                 <div id="reLogin" class="login-container">
                     <div class="header">
                         <h1> Academic Study Tracker</h1>
@@ -881,7 +859,6 @@
      
                     </div>
                 </div>
-            
             
             
          <!-- Track Study Tab -->
@@ -922,7 +899,7 @@
             <button>Save Study Session</button>
             </form>
             <div id="todayReminders" class="reminder">
-                <h3>📢 Today's Reminders</h3>
+                <h3>📢 Today's Remainders</h3>
                 <div id="reminderList"></div>
             </div>
             <div id="missedTopicReminders" class="reminder" style="display: none;background-color: red;">
@@ -1076,10 +1053,12 @@
            
         </div>
     </div>
-				
-		<script src="js/app.js" defer></script>
+
+        <script src="js/app.js">
+    </script>
     </body>
 </html>
+
 
 
 
