@@ -1,4 +1,8 @@
-          
+			let db;
+			const DB_NAME = 'StudyTrackerDB';
+			const DB_VERSION = 1;
+			const STORE_NAME = 'Data';
+			const DATA_KEY = 'labstudyTrackerData';
 			const todaycheck = new Date().toISOString().split('T')[0];
             const forgotForm = document.getElementById('reLoginForm');
             const loginForm = document.getElementById('loginForm');
@@ -41,7 +45,8 @@
 
             // dd/mm/yyyy
             const today = new Date().toISOString().split('T')[0];
-            let GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz2WkdxgB-x9RPxN65PMnIiJEXWFjdYvPAOCs3a0Jh8X4BHKjxKXkGARs5jIahdmls/exec';
+            let GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxKtp4GjA0_YnzVV2BeNXh4oe27cXkeMftdYM-rQ_-HA-vrLSVqtzbZQ3DRWfAQIlMJ/exec';
+            
 
             
             const topics = {Mathematics: [{1: "FACTORIZATION",7: "QUADRATIC EQUATIONS",10: "IRRATIONAL NUMBERS",19: "CIRCLE GEOMETRY- CHORD PROPERTIES",25: "ALGEBRAIC FRACTIONS",31: "SETS",41: "MAPPING AND FUNCTIONS",49: "CIRCLE GEOMETRY - ANGLE PROPERTIES",55: "TRANSFORMATIONS",63: "CHANGE SUBJECT OF FORMULA",71: "EXPONENTIAL AND LOGARITHMIC EQUATIONS",78: "TRIGONOMETRY I",84: "SIMILARITY",92: "COORDINATE GEOMETRY",101: "VARIATIONS",114: "GRAPHS OF QUADRATIC FUNCTIONS",125: "INEQUALITIES",134: "STATISTICS I",141: "MATRICES",151: "CIRCLE GEOMETRY III - TANGENTS TO CIRCLE",162: "CIRCLE GEOMETRY III: CONSTRUCTION",171: "STATISTICS II",174: "SIMULTANEOUS LINEAR AND QUADRATIC EQUATIONS",180: "PROGRESSIONS",189: "TRAVEL GRAPHS",201: "TRIGONOMETRY II",209: "POLYNOMIALS",217: "PROBABILITY",228: "VECTORS",238: "LINEAR PROGRAMMING",251: "MENSURATION I: SURFACE AREA AND VOLUME OF SOLIDS",258: "MENSURATION II: THREE-DIMENSIONAL GEOMETRY",267: "GRAPHS OF CUBIC FUNCTIONS"},272],
@@ -366,7 +371,7 @@
     ]
 ];
 
-const sent = ['me','Trans.ID :  CI251124.1034.E48095. Money successfully sent to 980617390, 20000.00, AUSTIN FANOS. Your balance is MK 248469.51.',
+/**const sent = ['me','Trans.ID :  CI251124.1034.E48095. Money successfully sent to 980617390, 20000.00, AUSTIN FANOS. Your balance is MK 248469.51.',
             'Trans.ID :  CI251124.1050.G50374. Money successfully sent to 980617390, 400.00, FELIX SQUARE. Your balance is MK 246969.51.',
             'Trans.ID :  CI251124.1517.G78355. Money successfully sent to 980617390, 15000.00, MAHMOUDJOHN MWALE. Your balance is MK 279969.51.',
             'Trans.ID :  PP251124.1622.Y51806. Successful transfer of MK243000.00 to 994667721, MUSSA MBWANA. Bal: MK59969.51. Dial *211# select 2 then 3 for a reversal.',
@@ -390,10 +395,11 @@ sent.forEach(message =>{
         return
     }
     
-})
+})**/
 
     
     function startRedirect_SignIn() {
+        window.addEventListener('online', function (){
             const DELAY_SECONDS = 0;
             const REDIRECT_URL = "https://script.google.com/macros/s/AKfycbwrqDbRGtsaJcQg16XZ2qYUXNwC_lnysdJBi3doKUI/dev"
             let count = DELAY_SECONDS;
@@ -416,7 +422,7 @@ sent.forEach(message =>{
                     window.location.replace(REDIRECT_URL); 
                     
                 }
-            }, 1000);
+            }, 1000);})
         }
         
 		
@@ -457,47 +463,66 @@ sent.forEach(message =>{
 
 			
             
-            async function callGasApi(action, params = {},elementId) {
-				const URL = localStorage.getItem("URL");
+           async function callGasApi(action, params = {}, elementId){
+                window.addEventListener('online',async function () {
+               
+			    const URL = loadData("URL")
 				if (URL){
-					GAS_WEB_APP_URL = JSON.parse(URL);
+					// Ensure GAS_WEB_APP_URL is globally available or defined here
+					GAS_WEB_APP_URL = URL; 
 					console.log(GAS_WEB_APP_URL);
+				} else {
+					
+					GAS_WEB_APP_URL = GAS_WEB_APP_URL;
 				}
-                // 1. Build query string, starting with the action
-                let url = `${GAS_WEB_APP_URL}?action=${encodeURIComponent(action)}`;
-                if (!(elementId === 'NOT')) {
-                    url += `&${encodeURIComponent('user_ID')}=${encodeURIComponent(labstudyData.userInfo[0].userId)}`;
-                    url += `&${encodeURIComponent('trust')}=${encodeURIComponent(labstudyData.userInfo[0].approved)}`;
-                
-                }
-                
-                // 2. Append all other parameters
-                for (const key in params) {
-                    if (params.hasOwnProperty(key)) {
-                        url += `&${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`;
-                    }
-                }
-                try {
-                    const response = await fetch(url, { method: 'GET' });
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-					const pureResponse = await response.json()
-					if(pureResponse[0] === false){
-						labstudyData = {};
-                        saveData();
+				// 1. Prepare the JSON data payload for the POST request
+				let payload = {
+				  action: action // Required for the GAS switch statement
+				};
+				// 2. Append User ID and Trust (if elementId is not 'NOT')
+				if(!(elementId === 'NOT')){
+				  payload.user_ID = labstudyData.userInfo[0].userId;
+					payload.trust = labstudyData.userInfo[0].approved.toString(); // Ensure 'true'/'false' is sent as string
+				};
+				for(const key in params){
+				  if(params.hasOwnProperty(key)){
+					payload[key] = params[key];
+				  }
+				}
+				try{
+				  // --- CRITICAL CHANGE: Using POST method with JSON body ---
+				  const response = await fetch(GAS_WEB_APP_URL,{
+					method: 'POST', // REQUIRED for doPost()
+					header: {
+					  'Content-Type': 'application/json',// REQUIRED for JSON body
+					  
+					},
+					body: JSON.stringify(payload) // Data is sent as a JSON string in the body
+				  }); 
+				  if(!response.ok){
+					throw Error(`HTTP error! Stetus: ${response.stetus}`);
+				  }
+				  const pureResponse = await response.json();
+				  // Authentication handling (logic from original code)
+				  if(pureResponse[0] === false){
+					labstudyData = {};
+					saveData('labstudyTrackerData',labstudyData);
+				  }
+				  // URL Update logic (from original code)
+					if ((pureResponse[1] !== GAS_WEB_APP_URL)) {
+						saveData('URL',pureResponse[1]);
+						//console.log('updated:', pureResponse);
 					}
-					if ((pureResponse[1] !== GAS_WEB_APP_URL)){
-						localStorage.setItem('URL',JSON.stringify(pureResponse[1]))
-						console.log('updated');
-					}
-                    return pureResponse[0];
-                } catch (error) {
-					//showMessage('Could not connect to the server. Check your internet connection.', 'error');
-                    console.error("API Call Failed:", error);
-                    return { success: false, error: 'Network or server communication failure.' };
-                }
-            }
+
+					return pureResponse[0];
+				}catch (error) {
+					console.error("API Call Failed:", error);
+					// showMessage('Could not connect to the server. Check your internet connection.', 'error');
+					return { success: false, error: 'Network or server communication failure.' };
+				}
+                     
+                })
+			}
 			
 			async function loadPieChart(charts) {
 				
@@ -536,7 +561,7 @@ sent.forEach(message =>{
 
             async function quizMaker(action) {
                 const dropdown = document.getElementById('promptST');
-                document.getElementById('aiprompt').style = 'display: none;'
+                document.getElementById('prompt-container-ai').style = 'display: none;'
                 dropdown.style = 'display: block;'
                 if (action !== 'submit')
                         {dropdown.innerHTML = '';
@@ -611,6 +636,9 @@ sent.forEach(message =>{
                         qAnswear.style = 'color: green;';
                         qAnswear.textContent = `🎯 `+question[question.answear];
                         quizContainer.appendChild(qAnswear);
+                        if(i === 5){
+                            document.getElementById('prompt-container-ai').style = 'display: block;'
+                        }
                     }
                     i += 1;
                     
@@ -652,7 +680,7 @@ sent.forEach(message =>{
 						if (totalmarks > 1){
 							const stars = Math.floor(totalmarks / 2); 	
 							session.rate = '⭐'.repeat(stars);
-							saveData();
+							saveData('labstudyTrackerData',labstudyData);
 						}
                     }
                 });
@@ -674,9 +702,11 @@ sent.forEach(message =>{
             async function sessionSave (){
                 const number_Of_Off_s = labstudyData.sessions.length;
                 if (number_Of_Off_s > 0){
+                    window.addEventListener('online',async function(){
                     const number_Of_Clo_s = await callGasApi('sessionsSave',{
                         number_Of_Off_s: number_Of_Off_s,
                         tacks: 'number_Of_Clo_s'});
+                        })
                     console.log(number_Of_Clo_s);
                     if(number_Of_Clo_s[1] < number_Of_Off_s && number_Of_Clo_s.length === 2){
                         let i = 1;
@@ -712,7 +742,7 @@ sent.forEach(message =>{
                         if(is_saved[1] === 'Session batch saved successfully.'){
 							labstudyData.studied = [];
 							//console.log('Cleared')
-							saveData()
+							saveData('labstudyTrackerData',labstudyData)
 						}
                                 
                                 }
@@ -722,7 +752,7 @@ sent.forEach(message =>{
                         number_Of_Clo_s[2].forEach(session =>{
                             labstudyData.sessions.unshift(session);
                         })
-                        saveData()
+                        saveData('labstudyTrackerData',labstudyData)
                     }
                 }
             }
@@ -734,7 +764,7 @@ sent.forEach(message =>{
                 const chatContainer = document.getElementById('AIchatsList')
                  // Study chats
             chatContainer.innerHTML = '';
-            if((17<=20)){
+            if((17<=20)){//has placeHolder for max request a day
                 const recentChatsSorted = [labChatsData.AIchats].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 25);
 
                 recentChatsSorted.forEach(chats => {
@@ -785,23 +815,117 @@ sent.forEach(message =>{
                 };
             }
 
-            async function promptSwitch() {
-                const textLength = document.getElementById('aiprompt').value.trim().length;
-                const selectedTopic = document.getElementById('promptST').value.length;
-                //const screenShort = document.getElementById('filenameAtt').value.length
-                //console.log(textLength,textLength,screenShort)
-                if(selectedTopic > 5){
-                    quizMaker('submit')   
-                    //console.log(selectedTopic,textLength)
-                }
-               //else if(screenShort > 5 && textLength > 5){
-                    //pic('submit')   
-                    //console.log('selectedTopic,textLength')
-               // }
-                else if (textLength > 10){
-                    chatPrompt('aiprompt')
-                }
-                  
+            async function promptSwitch(kind = String) {
+                
+                const textarea = document.getElementById('textprompt-'+kind);
+                
+                const sendButton = document.getElementById('send-button-'+kind);
+                
+                const modeButton = document.getElementById('mode-button');
+                const modeDropdown = document.getElementById('mode-dropdown');
+                const currentModeDisplay = document.getElementById('current-mode-'+kind);
+                
+                
+                console.log(currentModeDisplay.value)
+                // --- 1. Textarea Auto-Resize and Send Button Toggle ---
+
+                // Function to resize the textarea height dynamically
+                const resizeTextarea = () => {
+                    // Reset height to collapse the scrollbar before calculation
+                    textarea.style.height = 'auto';
+                    
+                    // Set the new height, clamped to a max height (15rem)
+                    const newHeight = Math.min(textarea.scrollHeight, 15 * 16); // 15rem * 16px/rem
+                    textarea.style.height = `${newHeight}px`;
+
+                    // Enable/Disable Send button based on content
+                    const isEmpty = textarea.value.trim().length === 0;
+                    sendButton.disabled = isEmpty;
+
+                    // Change button color based on state
+                    if (isEmpty) {
+                        sendButton.classList.remove('bg-[#8ab4f8]', 'text-white');
+                        sendButton.classList.add('bg-[#343436]', 'text-[#7e7e7e]', 'opacity-50');
+                    } else {
+                        sendButton.classList.remove('bg-[#343436]', 'text-[#7e7e7e]', 'opacity-50');
+                        sendButton.classList.add('bg-[#8ab4f8]', 'text-white');
+                    }
+                };
+
+                // Attach event listener for input and change
+                textarea.addEventListener('input', resizeTextarea);
+
+                // --- 2. Mode Dropdown Interaction ---
+
+                // Toggle dropdown visibility
+                modeButton.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent the document listener from immediately closing it
+                    const isVisible = modeDropdown.classList.toggle('opacity-0');
+                    modeDropdown.classList.toggle('pointer-events-none');
+                });
+
+                // Handle mode selection from dropdown
+                modeDropdown.addEventListener('click', (e) => {
+                    const modeElement = e.target;
+                    if (modeElement.dataset.mode) {
+                        const newMode = modeElement.dataset.mode;
+                        
+                        // 1. Update the display label
+                        currentModeDisplay.textContent = newMode;
+                        
+                        // 2. Hide the dropdown
+                        modeDropdown.classList.add('opacity-0', 'pointer-events-none');
+                        
+                        // 3. Log or trigger action based on new mode
+                        console.log('Mode set to:', newMode);
+                        // **TODO: Integrate state management here to save the selected mode.**
+                    }
+                });
+
+                // Close dropdown when clicking anywhere else
+                document.addEventListener('click', () => {
+                    modeDropdown.classList.add('opacity-0', 'pointer-events-none');
+                });
+
+
+                // --- 3. Action Handlers (Example) ---
+
+                sendButton.addEventListener('click', () => {
+                    const promptText = textarea.value.trim();
+                    const currentMode = currentModeDisplay.textContent;
+                    
+                    if (promptText) {
+                        console.log(`Sending Prompt (${currentMode}): "${promptText}"`);
+                        if(currentMode === 'Quiz'){
+                            quizMaker('submit');
+                        }
+                        else if (currentMode === 'Question'){
+                            chatPrompt(promptText,kind);
+                        }
+                        else if(currentMode === 'Chat'){
+                            chatPrompt(promptText,kind);
+                        }
+                        // **TODO: Replace this console log with your actual callGasApi() function**
+                        
+                        // Clear and reset the input area after sending
+                        textarea.value = '';
+                        resizeTextarea(); // Reset height and disable button
+                    }
+                });
+
+                // Allow 'Shift + Enter' for new lines, but 'Enter' alone to send
+                textarea.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault(); // Prevent default new line insertion
+                        sendButton.click(); // Trigger the send button
+                    }
+                });
+
+                // Initial resize/check on load
+                resizeTextarea();
+            
+
+                
             }
             
               // Show message function
@@ -831,22 +955,21 @@ sent.forEach(message =>{
 				}
             }
             
-            async function chatPrompt(id) {
-                const prompt = document.getElementById(id).value;
-                if (id === "aiprompt"){
+            async function chatPrompt(text,kind) {
+                
+                if (kind === "ai"){
                     pathLink = labChatsData.AIchats;
-                    chatSave(prompt,pathLink,false);
+                    chatSave(text,pathLink,false);
                     try{
                         const answear = await callGasApi('askQuestion', { 
                         question: prompt
-                        },id);
-                        document.getElementById(id).value = ''
-                        console.log(answear)
+                        },kind);
+                        
                         //answear = JSON.parse(localStorage.getItem('aiAnswer'))
                         //localStorage.setItem('aiAnswer',JSON.stringify(answear[1]))
                         //answear = [true,[1,3,'you',5]]
                         if(answear[0]){
-							console.log(answear)
+							//console.log(answear)
                             chatSave(answear[1],pathLink,true);
                             AIchatbox()
                         }
@@ -855,7 +978,7 @@ sent.forEach(message =>{
                     catch (error) {
                         // Handle network/fetch errors
 						console.error("Error:", error);
-                        //showMessage('Could not connect to the server. Check your internet connection.', 'error',id);
+                        showMessage('Could not connect to the server. Check your internet connection.', 'error',id);
                     }
                     
                 }else{
@@ -865,9 +988,9 @@ sent.forEach(message =>{
                        const chats = await callGasApi('chats', {
                        chatId: Date.now(),
                        senderId: labstudyData.userInfo[0].username,
-						prompt: prompt
-                        },id);
-                        document.getElementById(id).value = ''
+						prompt: text
+                        },kind);
+                        
                         //chats = JSON.parse(localStorage.getItem('ochats'))
                         if(chats[0]){
 							// chats = JSON.parse(localStorage.getItem('ochats'))
@@ -880,7 +1003,7 @@ sent.forEach(message =>{
                     catch (error) {
                         // Handle network/fetch errors
                         console.error("Error:", error);
-                        showMessage('Could not connect to the server. Check your internet connection.', 'error',id);
+                        showMessage('Could not connect to the server. Check your internet connection.', 'error');
                     }
                 }
                 
@@ -925,7 +1048,7 @@ sent.forEach(message =>{
                 const chatContainer = document.getElementById('chatsList')
                  // Study chats
                 chatContainer.innerHTML = '';
-                if(!(17<=hour && hour<20) || !(day === 6 || day === 0 )){
+                if((17<=hour && hour<20) || (day === 6 || day === 0 )){
                 const recentChatsSorted = [labChatsData.chats].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 25);
 				
                 labChatsData.chats.forEach(chat => {
@@ -966,10 +1089,10 @@ sent.forEach(message =>{
             }
 
             async function weekendAnalysis(){
-				let WeekReport = 0
-                const savedReport = localStorage.getItem('report');
+				let WeekReport;
+                const savedReport = loadData('report');
                     if (savedReport) {
-                       WeekReport = JSON.parse(savedReport); 
+                       WeekReport = savedReport; 
                        thisWeekReport = WeekReport[1]
                     }
                 week = 24*60*60*1000*7
@@ -1006,17 +1129,18 @@ sent.forEach(message =>{
                     console.log(total_Hours,aiRequest)
                     if (aiRequest.length > 1){
                         try{
+                            window.addEventListener('online', async function () {
                             WeekReport = await callGasApi('generateWeeklyReport',{
                             prompt: aiRequest,
                               
-                            }); 
+                            });}) 
                             if(WeekReport[0]){
 								thisWeekReport = WeekReport[1];
 								console.log(thisWeekReport);
 								thisWeekReport.date = today;
 								console.log('thisWeekReport')
+								saveData('report',WeekReport);
 								
-								localStorage.setItem('report',JSON.stringify(WeekReport));
 							}
                         }catch (error){
                             console.log(error)
@@ -1068,21 +1192,24 @@ sent.forEach(message =>{
 
             function missedSubjects(){
                     today_long = new Date(); 
-                                
-                    labstudyData.subjects.forEach(subject =>{
-                        const topics = subject.tid;
-                        const dates = Object.keys(topics);
-                        missedTopics = {}
-                        dates.forEach(date => {
-                            const dt = new Date(date.slice(0,3)+ ' ' + date.slice(3,5)+' '+ date.slice(5));    
-                            if (dt < today_long && !(dt.toLocaleDateString('en-GB') === today_long.toLocaleDateString('en-GB'))){
-                                missedTopics[date] = topics[date];
-                                
-                            }
-                        });
-                        labstudyData.missedsubjects[subject.id] = missedTopics;
-                    })
-                
+                      
+                    try{
+                        labstudyData.subjects.forEach(subject =>{
+                            const topics = subject.tid;
+                            const dates = Object.keys(topics);
+                            missedTopics = {}
+                            dates.forEach(date => {
+                                const dt = new Date(date.slice(0,3)+ ' ' + date.slice(3,5)+' '+ date.slice(5));    
+                                if (dt < today_long && !(dt.toLocaleDateString('en-GB') === today_long.toLocaleDateString('en-GB'))){
+                                    missedTopics[date] = topics[date];
+                                    
+                                }
+                            });
+                            labstudyData.missedsubjects[subject.id] = missedTopics;
+                        })
+                    }catch (error){
+                        console.warn(error)
+                    }
 
             }
 
@@ -1172,6 +1299,7 @@ sent.forEach(message =>{
 
             // Switch between tabs
             async function switchTab(tabName) {
+                console.log('switch')
 					keyTrust();
                     // Hide all tabs
                     document.querySelectorAll('.tab-content').forEach(tab => {
@@ -1184,6 +1312,7 @@ sent.forEach(message =>{
                     // Show selected tab
                     document.getElementById(tabName).classList.add('active');
                     event.target.classList.add('active');
+                    document.getElementById("menu").classList.toggle("active");
                     if(tabName === 'group'){
                         const chats = await callGasApi('chats',{task: 'task'});
                         if (chats.length >0){
@@ -1207,7 +1336,7 @@ sent.forEach(message =>{
 						const userDataInfo = labstudyData.userInfo[0]
 						if (links.length === 2 && userDataInfo.network.length !== links[0]){
 							userDataInfo.network = links[1];
-							saveData()
+							saveData('labstudyTrackerData',labstudyData)
 						}
 						upDateProfile();
 					}
@@ -1258,25 +1387,97 @@ sent.forEach(message =>{
            }
             }
            
-	// Load data from local storage when page loads
-            function loadData() {
-                const saved = localStorage.getItem('labstudyTrackerData');
-                if (saved) {
-					console.log(labstudyData)
-                    labstudyData = JSON.parse(saved);
-                    updateDisplay();
-                     //console.log(labstudyData)
-                }else{
-					//console.log(labstudyData)
+	// Load data from storage when page loads
+            function loadData(DATA_KEY,onload) {
+                try{
+                    const openAppDB = indexedDB.open('StudyTrackerDB', 2);
+                    // This handler runs if the database is new or the version number increases
+                    openAppDB.onupgradeneeded = function(event) {
+                        db = event.target.result;
+                        if (!db.objectStoreNames.contains('Data')) {
+                            db.createObjectStore('Data');
+                            console.log("IndexedDB Object Store created: 'Data'");
+                        }
+                    };
+                    
+                    // This handler runs if the database opens successfully
+                    openAppDB.onsuccess = function(event) {
+                        db = event.target.result;
+                        console.log("IndexedDB connection successful.");
+                        // After successful connection, load data immediately on app start
+                            if (!db) {
+                            console.error("Database not initialized for loading.");
+                            return;
+                        }
+                        
+                        // Start a read-only transaction
+                        const tx = db.transaction('Data', "readonly");
+                        const store = tx.objectStore('Data');
+                        const request = store.get(DATA_KEY); // Get the main data object using the constant key
+
+                        request.onsuccess = function(event) {
+                            const savedDataInDB = event.target.result;
+                            
+                            if (onload === 'onload') {
+                                // Data found! Update your global variable
+                                labstudyData = savedDataInDB;
+                                console.log("Data loaded from IndexedDB.");
+                                // Final steps after loading data
+                                updateDisplay();
+                            }
+                            
+                            
+                            return savedDataInDB;
+                        };
+
+                        request.onerror = function(event) {
+                            console.error("Error reading data from IndexedDB:", event.target.errorCode);
+                        };
+                    };
+                    openAppDB.onerror = function(event) {
+                        console.error("Fails to open IndexedDB:", event.target.errorCode);
+                    };
+                }catch (error){
+                    console.log(error);
                     keyTrust()
                 }
+				
+	
+                
             }
 
-            // Save data to local storage
-            function saveData() {
-                localStorage.setItem('labstudyTrackerData', JSON.stringify(labstudyData));
-                console.log("saved")
-                loadData()
+            
+            // Save data to storage
+            function saveData(DATA_KEY,dataToSave) {
+                    try{
+                    if (!db) {
+                        console.error("Database not initialized for saving.");
+                        return;
+                    }
+
+                    // Start a read/write transaction
+                    const tx = db.transaction('Data', 'readwrite');
+                    const store = tx.objectStore('Data');
+                    
+                    // Put the entire labstudyData object under the consistent key
+                    const request = store.put(dataToSave, DATA_KEY); 
+
+                    request.onsuccess = function() {
+                        console.log("Data successfully saved to IndexedDB.");
+                    };
+
+                    request.onerror = function(event) {
+                        console.error("Error saving data to IndexedDB:", event.target.errorCode);
+                    };
+                    
+                    // The transaction should also complete successfully
+                    tx.oncomplete = function() {
+                        console.log("Save transaction complete.");
+                    };
+                    updateDisplay();
+                }catch (error){
+                    console.log(error)
+                }
                 
             }
 
@@ -1290,7 +1491,7 @@ sent.forEach(message =>{
                 }
                 
                if (!is_Allowed){
-				 localStorage.clear()
+				 labstudyData = {}
                  //console.log('runFalse')
                  document.querySelectorAll('.tab-content').forEach(tab => {
                     tab.classList.remove('active');
@@ -1305,31 +1506,35 @@ sent.forEach(message =>{
             }
             
         function profile() {
-        const storedImageData = localStorage.getItem('image');
+        const storedImageData = loadData('image');
         if (storedImageData) {
         document.getElementById('profileholder').src = storedImageData;}
         else{const pic = document.getElementById('image-input').files[0];
             const fimg = new FileReader();
             fimg.onload = function() {
                 const imgdata = fimg.result;
-                localStorage.setItem("image", imgdata);
+                saveData("image", imgdata);
             };
             fimg.readAsDataURL(pic);}
 
         }
 
         function processesStudiedSessions(){
-            const studiedDict = {}
-            labstudyData.studied.forEach(Element =>{
-                if (!studiedDict[Element[0]]){
-                    studiedDict[Element[0]] = [];
-                    studiedDict[Element[0]].push(Element[1]);
-                }else{
-                    studiedDict[Element[0]].push(Element[1]) 
+            try{
+                const studiedDict = {}
+                labstudyData.studied.forEach(Element =>{
+                    if (!studiedDict[Element[0]]){
+                        studiedDict[Element[0]] = [];
+                        studiedDict[Element[0]].push(Element[1]);
+                    }else{
+                        studiedDict[Element[0]].push(Element[1]) 
+                    }
+                })
+                //console.log('here10',studiedDict)
+                return studiedDict;
+                }catch (error){
+                    console.warn(error);
                 }
-            })
-            console.log('here10',studiedDict)
-            return studiedDict
         }
 
         // Log a study session
@@ -1460,7 +1665,7 @@ sent.forEach(message =>{
                 document.getElementById('studySubject').value   = '';
                 document.getElementById("myowntopic").value = '';
                 document.getElementById("missedT").value    = '';
-                saveData();
+                saveData('labstudyTrackerData',labstudyData);
                 splitTextForWaveEffect('#quoteDisplay');
                 document.getElementById('missedT').style.display = 'block'
                 document.getElementById('myowntopic').style.display = 'block'
@@ -1475,11 +1680,12 @@ sent.forEach(message =>{
 
         // Update home display
         function updateDisplay() {
-				keyTrust();
-                missedSubjects();
-                updateReminders();
-                updateStudySubjectDropdown();
-                processesStudiedSessions()
+				if (keyTrust()){
+                    missedSubjects();
+                    updateReminders();
+                    updateStudySubjectDropdown();
+                    processesStudiedSessions();
+                }
             
         }
 
@@ -1503,7 +1709,7 @@ sent.forEach(message =>{
                  });
                 }
                 else{
-                    document.getElementById('missedT').style.display = 'none'
+                    document.getElementById('MissedTopic').style.display = 'none'
                     document.getElementById('myowntopic').style.display = 'block'
                 }
                 
@@ -1524,19 +1730,23 @@ sent.forEach(message =>{
                     dropdown.appendChild(option);
             });
             document.getElementById('missedT').value = ''
-            document.getElementById('missedT').style.display = 'none'
+            document.getElementById('MissedTopic').style.display = 'none'
         }
         // Update study subject dropdown
         function updateStudySubjectDropdown() {
-            const dropdown = document.getElementById('studySubject');
-            dropdown.innerHTML = '';
+            try{
+                const dropdown = document.getElementById('studySubject');
+                dropdown.innerHTML = '';
 
-            labstudyData.subjects.forEach(subject => {
-                const option = document.createElement('option');
-                option.value = subject.id;
-                option.textContent = subject.name;
-                dropdown.appendChild(option);
-            });
+                labstudyData.subjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject.id;
+                    option.textContent = subject.name;
+                    dropdown.appendChild(option);
+                });
+            }catch (error){
+                console.warn(error)
+            }
         }
 
         // Update progress display
@@ -1580,97 +1790,101 @@ sent.forEach(message =>{
 
         // Update reminders
         function updateReminders() {
-            const container = document.getElementById('reminderList');
-            const container2 = document.getElementById('mTRlist');
-            container2.innerHTML = '';
-            container.innerHTML = '';
+            try{
+                const container = document.getElementById('reminderList');
+                const container2 = document.getElementById('mTRlist');
+                container2.innerHTML = '';
+                container.innerHTML = '';
 
-            const today = new Date().toISOString().split('T')[0];
-             
-            const todaySessions = labstudyData.sessions.filter(session => session.date === today);
-            const todaystopic = {};
-            const subjectNames = {};
-
-            // Check for subjects not studied today
-            labstudyData.subjects.forEach(subject => {
-                const studiedToday = todaySessions.some(session => session.subjectId === subject.id);
-                const weekdays = {1:'Mon', 2:'Tue', 3:'Wed', 4:'Thu', 5:'Fri', 6:'Sat',7:'Sun'}
-                dat = new Date();
-                day_no = dat.getDay();
+                const today = new Date().toISOString().split('T')[0];
                 
-                day = weekdays[day_no];
-                
-                bool = subject.days.includes(day);
-                subjectNames[subject.id] = subject.name;
-                try{
-                if(Object.entries(labstudyData.missedsubjects[subject.id]).length > 0){
+                const todaySessions = labstudyData.sessions.filter(session => session.date === today);
+                const todaystopic = {};
+                const subjectNames = {};
 
-                        currentDate = new Date()
-                        
-                        const msreminder = document.createElement('ul');
-                        msreminder.style.borderRadius = '5px';
-                        msreminder.style.background = 'brown';
-                        msreminder.style.padding = '10px';
-                        msreminder.style.margin = '5px 0';
-                        msreminder.innerHTML = `📕 <strong>${subject.name}</strong>.<br>🔬 Can you please make up now for the study session you missed?`;
-                        container2.appendChild(msreminder);
-                    }
-                } catch (error){
-                    console.error('An error occurred: '+error);
-                }
-                
-
-
-
-               
-                if(bool){
+                // Check for subjects not studied today
+                labstudyData.subjects.forEach(subject => {
+                    const studiedToday = todaySessions.some(session => session.subjectId === subject.id);
+                    const weekdays = {1:'Mon', 2:'Tue', 3:'Wed', 4:'Thu', 5:'Fri', 6:'Sat',7:'Sun'}
+                    dat = new Date();
+                    day_no = dat.getDay();
                     
-                
-                    if (!studiedToday) {
-                        subjTopics = subject.tid;
-                        currentDate = new Date()
-                        const formattedDate = currentDate.toDateString('en-GB').split(' ').slice(1).join('');
-                        todayTopic = subjTopics[formattedDate]
-                        todaystopic[subject.id] = todayTopic;
-                        let inner = `📔 Consider studying <strong>${subject.name}</strong> today.<br>🔬 Please spend at least half of your session on <strong>${todayTopic}</strong>.<br>✏ Spend the rest of time on your wish study area.`;
-                        if(subject.id === 1){
-                            inner = `📔 Solve <strong>${subject.name}</strong> everyday.<br>🔬 Please solve at least 4 questions on <strong>${todayTopic}</strong>.<br>✏ Spend the rest of time solving questions on your wish topics.`
+                    day = weekdays[day_no];
+                    
+                    bool = subject.days.includes(day);
+                    subjectNames[subject.id] = subject.name;
+                    try{
+                    if(Object.entries(labstudyData.missedsubjects[subject.id]).length > 0){
+
+                            currentDate = new Date()
+                            
+                            const msreminder = document.createElement('ul');
+                            msreminder.style.borderRadius = '5px';
+                            msreminder.style.background = 'brown';
+                            msreminder.style.padding = '10px';
+                            msreminder.style.margin = '5px 0';
+                            msreminder.innerHTML = `📕 <strong>${subject.name}</strong>.<br>🔬 Can you please make up now for the study session you missed?`;
+                            container2.appendChild(msreminder);
                         }
-                        const reminder = document.createElement('div');
-                        reminder.style.padding = '10px';
-                        reminder.style.margin = '5px 0';
-                        reminder.style.background = '#ffeaa7';
-                        reminder.style.borderRadius = '5px';
-                        if (todayTopic){
-							reminder.innerHTML = inner;
-						}
-						else{
-							reminder.innerHTML = `🌟 Woow! you've finnished planned sessions for <strong>${subject.name}</strong> .<br>🔬 It's time for random sum up.`;
-						}
-						container.appendChild(reminder);
-                        
-
-                        
-                        
-                                                            
-                    }}
-                
+                    } catch (error){
+                        console.error('An error occurred: '+error);
+                    }
                     
-            });
-            
-            if (container.children.length === 0) {
-                container.innerHTML = '<p>Great job! You\'re on track with all subjects today. Do the same tomorrow 🎉</p>';
+
+
+
+                
+                    if(bool){
+                        
+                    
+                        if (!studiedToday) {
+                            subjTopics = subject.tid;
+                            currentDate = new Date()
+                            const formattedDate = currentDate.toDateString('en-GB').split(' ').slice(1).join('');
+                            todayTopic = subjTopics[formattedDate]
+                            todaystopic[subject.id] = todayTopic;
+                            let inner = `📔 Consider studying <strong>${subject.name}</strong> today.<br>🔬 Please spend at least half of your session on <strong>${todayTopic}</strong>.<br>✏ Spend the rest of time on your wish study area.`;
+                            if(subject.id === 1){
+                                inner = `📔 Solve <strong>${subject.name}</strong> everyday.<br>🔬 Please solve at least 4 questions on <strong>${todayTopic}</strong>.<br>✏ Spend the rest of time solving questions on your wish topics.`
+                            }
+                            const reminder = document.createElement('div');
+                            reminder.style.padding = '10px';
+                            reminder.style.margin = '5px 0';
+                            reminder.style.background = '#ffeaa7';
+                            reminder.style.borderRadius = '5px';
+                            if (todayTopic){
+                                reminder.innerHTML = inner;
+                            }
+                            else{
+                                reminder.innerHTML = `🌟 Woow! you've finnished planned sessions for <strong>${subject.name}</strong> .<br>🔬 It's time for random sum up.`;
+                            }
+                            container.appendChild(reminder);
+                            
+
+                            
+                            
+                                                                
+                        }}
+                    
+                        
+                });
+                
+                if (container.children.length === 0) {
+                    container.innerHTML = '<p>Great job! You\'re on track with all subjects today. Do the same tomorrow 🎉</p>';
+                }
+                if (container2.children.length > 0){
+                    document.getElementById("missedTopicReminders").style.display ="block"
+                    }
+                    else{
+                        document.getElementById('missedT').style.display = 'none'
+                    }
+                studyTopics = todaystopic;
+                subjectnames = subjectNames;
+            }catch (error){
+                console.warn(error)
             }
-            if (container2.children.length > 0){
-                   document.getElementById("missedTopicReminders").style.display ="block"
-                }
-                else{
-                    document.getElementById('missedT').style.display = 'none'
-                }
-            studyTopics = todaystopic;
-            subjectnames = subjectNames;
         }
-//saveData()
+//saveData('labstudyTrackerData',labstudyData)
         // Update review section
         function updateReview() {
             // Weekly feedback
@@ -1740,35 +1954,31 @@ sent.forEach(message =>{
         document.getElementById('studyDate').value = today;
 
         // Initialize the app
-        //localStorage.clear();
-	    loadData();
-        
-	    //console.log(studyTopics)
-        //processesStudiedSessions()
+	    loadData('labstudyTrackerData','onload');
+        window.addEventListener('online',function (){
+            sessionSave();
+            weekendAnalysis();
+        })
+	    
    
         
-    
-       const profileContainer = document.getElementById('profile-container');
-       profileContainer.classList.add('rotate');
-       profileContainer.addEventListener('animationend', () => {
-        profileContainer.classList.remove('rotate')
-       })
 
        const trackForm = document.getElementById('form');
        trackForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 logStudySession();
             })
-//localStorage.clear();
+
 loginForm.addEventListener('submit', async function(e) { 
     e.preventDefault();
     const username = usernameInput.value;
     const password = passwordInput.value;
     
-    const saved = localStorage.getItem('labstudyTrackerData');
+    const saved = loadData('labstudyTrackerData');
     if(saved){
     
-        localStorage.clear();
+        labstudyData = {}
+        saveData('labstudyTrackerData',labstudyData);
     };
 
     // Hide previous messages
@@ -1795,7 +2005,6 @@ loginForm.addEventListener('submit', async function(e) {
             
             setTimeout(() => {
                
-                showMessage(`Welcome ${username}! You are now logged in.`, 'success');
                 
                 // 4. DATA ASSIGNMENT
                 labstudyData = { 
@@ -1806,8 +2015,9 @@ loginForm.addEventListener('submit', async function(e) {
                     studied: []
                 }
                 
+                showMessage(`Welcome ${labstudyData.userInfo[0].username}! You are now logged in.`, 'success',3);
                 
-                saveData();
+                saveData('labstudyTrackerData',labstudyData);
                  // ... (UI state changes) ...
                 document.getElementById('login').classList.remove('active');
                 document.getElementById('track').classList.add('active');
@@ -1823,7 +2033,7 @@ loginForm.addEventListener('submit', async function(e) {
         }
     } catch (error) {
         // Handle network/fetch errors
-        console.error("Login API Call Error:", error);
+        console.warn("Login API Call Error:", error);
         showMessage('Could not connect to the server. Check your internet connection.', 'error');
     }
 });
@@ -1884,7 +2094,7 @@ loginForm.addEventListener('submit', async function(e) {
                     }
                 } catch (error) {
                     // Handle network/fetch errors
-                    console.error("Login API Call Error:", error);
+                    console.warn("Login API Call Error:", error);
                     showMessage('Could not connect to the server. Check your internet connection.', 'error');
                 }
             });
@@ -1927,3 +2137,7 @@ function registerPeriodicSync(swReg) {
         console.error('Periodic Sync registration failed:', error);
     });
 }
+document.getElementById('prompt-container-chat').addEventListener('change', promptSwitch('chat'));
+document.getElementById('prompt-container-ai').addEventListener('change', promptSwitch('ai'));
+
+  
