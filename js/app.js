@@ -475,8 +475,8 @@ sent.forEach(message =>{
 					
 					//GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwG6GX04Mgm20Wg2kQkUS5FMFmsf04M7m1K_ZoGIyz6S_FJJ-lXJCDnSVoRO5MvPf91/exec";
 				}
-			   GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzUpmWiSdoiYXmL8JXa1sayazFwI32nB_YC2S1ztDtvy0dvJYmEgr06LMInU_MYTQYq/exec";
-				console.log('updatedUSED: v117');
+			   GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx6to26xRjhacdG6W3bCDfkP_8LxPiqHrM1nLXpGqJqVohybrVkiYl4Ikir2t4WTTRL/exec";
+				console.log('updatedUSED: v118');
 			   // 1. Prepare the JSON data payload for the POST request
 				let payload = {
 				  action: action // Required for the GAS switch statement
@@ -499,7 +499,7 @@ sent.forEach(message =>{
 						// 👇 FIX: Must be 'headers' (plural)
 					    headers: { 
 					      // Do NOT use 'application/json'. Use 'text/plain' to prevent OPTIONS request.
-							'Content-Type': 'text/plain;charset=utf-8',
+							'Content-Type': 'text/plain;charset=utf-8'
 					    },
 					    
 					    body: JSON.stringify(payload) // Data is sent as a JSON string in the body
@@ -2140,6 +2140,7 @@ document.getElementById('prompt-container-chat').addEventListener('change', prom
 document.getElementById('prompt-container-ai').addEventListener('change', promptSwitch('ai'));
 
                 
+
 
 
 
