@@ -461,7 +461,19 @@ sent.forEach(message =>{
 				
 			}
 
-			
+			 GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyIvBl2Q1UnBsFMuy9UDQjIO4ExCMP2NjSCZdOLOeCy5w70rDOiWMr08eRFEQRPGNVW/exec";
+				console.log('updatedUSED: v119');
+
+fetch(GAS_WEB_APP_URL, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'text/plain;charset=utf-8'
+  },
+  body: JSON.stringify({ action: 'ping' })
+}).then(r => r.text())
+  .then(t => console.log('TEXT RESPONSE:', t))
+  .catch(e => console.error('FETCH ERROR:', e));
+
             
            async function callGasApi(action, params = {}, elementId){
                 
@@ -2140,6 +2152,7 @@ document.getElementById('prompt-container-chat').addEventListener('change', prom
 document.getElementById('prompt-container-ai').addEventListener('change', promptSwitch('ai'));
 
                 
+
 
 
 
