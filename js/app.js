@@ -45,7 +45,7 @@ let db;
 
             // dd/mm/yyyy
             const today = new Date().toISOString().split('T')[0];
-            let GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxKtp4GjA0_YnzVV2BeNXh4oe27cXkeMftdYM-rQ_-HA-vrLSVqtzbZQ3DRWfAQIlMJ/exec';
+            let GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwG6GX04Mgm20Wg2kQkUS5FMFmsf04M7m1K_ZoGIyz6S_FJJ-lXJCDnSVoRO5MvPf91/exec';
             
 
             
@@ -2133,4 +2133,5 @@ document.getElementById('prompt-container-chat').addEventListener('change', prom
 document.getElementById('prompt-container-ai').addEventListener('change', promptSwitch('ai'));
 
                 
+
 
