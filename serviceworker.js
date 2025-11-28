@@ -20,7 +20,6 @@ const urlsToCache = [
   // --- NEW Assets for Gemini UI and PDF ---
   'html2pdf.bundle.min.js',
   'https://cdn.tailwindcss.com',
-  "http://www.w3.org/2000/svg",
   'https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap'
 ];
 
@@ -147,4 +146,5 @@ function runBackgroundReminderLogic() {
         tag: 'study-reminder-alert'
     });
 }
+
 
