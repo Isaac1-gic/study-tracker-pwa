@@ -1,4 +1,4 @@
-			let db;
+let db;
 			const DB_NAME = 'StudyTrackerDB';
 			const DB_VERSION = 1;
 			const STORE_NAME = 'Data';
@@ -399,7 +399,7 @@ sent.forEach(message =>{
 
     
     function startRedirect_SignIn() {
-        window.addEventListener('online', function (){
+        
             const DELAY_SECONDS = 0;
             const REDIRECT_URL = "https://script.google.com/macros/s/AKfycbwrqDbRGtsaJcQg16XZ2qYUXNwC_lnysdJBi3doKUI/dev"
             let count = DELAY_SECONDS;
@@ -422,7 +422,7 @@ sent.forEach(message =>{
                     window.location.replace(REDIRECT_URL); 
                     
                 }
-            }, 1000);})
+            }, 1000);
         }
         
 		
@@ -464,7 +464,7 @@ sent.forEach(message =>{
 			
             
            async function callGasApi(action, params = {}, elementId){
-                window.addEventListener('online',async function () {
+                
                
 			    const URL = loadData("URL")
 				if (URL){
@@ -521,7 +521,7 @@ sent.forEach(message =>{
 					return { success: false, error: 'Network or server communication failure.' };
 				}
                      
-                })
+                
 			}
 			
 			async function loadPieChart(charts) {
@@ -702,11 +702,11 @@ sent.forEach(message =>{
             async function sessionSave (){
                 const number_Of_Off_s = labstudyData.sessions.length;
                 if (number_Of_Off_s > 0){
-                    window.addEventListener('online',async function(){
+                   
                     const number_Of_Clo_s = await callGasApi('sessionsSave',{
                         number_Of_Off_s: number_Of_Off_s,
                         tacks: 'number_Of_Clo_s'});
-                        })
+                        
                     console.log(number_Of_Clo_s);
                     if(number_Of_Clo_s[1] < number_Of_Off_s && number_Of_Clo_s.length === 2){
                         let i = 1;
@@ -1129,11 +1129,11 @@ sent.forEach(message =>{
                     console.log(total_Hours,aiRequest)
                     if (aiRequest.length > 1){
                         try{
-                            window.addEventListener('online', async function () {
+                           
                             WeekReport = await callGasApi('generateWeeklyReport',{
                             prompt: aiRequest,
                               
-                            });}) 
+                            }); 
                             if(WeekReport[0]){
 								thisWeekReport = WeekReport[1];
 								console.log(thisWeekReport);
@@ -1974,16 +1974,8 @@ loginForm.addEventListener('submit', async function(e) {
     const username = usernameInput.value;
     const password = passwordInput.value;
     
-    const saved = loadData('labstudyTrackerData');
-    if(saved){
-    
-        labstudyData = {}
-        saveData('labstudyTrackerData',labstudyData);
-    };
-
-    // Hide previous messages
-    errorMessage.style.display = 'none';
-    successMessage.style.display = 'none';
+   
+   
     
     // Basic validation
     if (!username || !password) {
@@ -1997,7 +1989,7 @@ loginForm.addEventListener('submit', async function(e) {
             email_username: username,
             password: password
         },'NOT');
-		//await sessionSave();
+		console.log('called')
        
         if (message && message[0] === true) { 
             showMessage('Login successful! Redirecting to your timetable...', 'success');
@@ -2140,4 +2132,4 @@ function registerPeriodicSync(swReg) {
 document.getElementById('prompt-container-chat').addEventListener('change', promptSwitch('chat'));
 document.getElementById('prompt-container-ai').addEventListener('change', promptSwitch('ai'));
 
-  
+                
