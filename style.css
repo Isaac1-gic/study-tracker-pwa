@@ -1,5 +1,4 @@
-
-            * {
+ * {
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
@@ -270,57 +269,6 @@
 				}
 			}
 
-             /* Style the prompt container */
-            .prompt-container {
-                display: flex;
-                align-items: center;
-                padding: 10px;
-                border-top: 1px solid #ddd;
-                background-color: #f7f7f7;
-            }
-            .prompt-container:hover {
-                transform: translateY(-5px);
-                border-color: #3498db;
-            }
-
-            .attachement-btn {
-                width: 40px;
-                height: 40px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                cursor: pointer;
-            }
-
-            .attachement-btn i {
-                font-size: 40px;
-                color: #666;
-            }
-
-            .prompt-input {
-                flex-grow: 1;
-                height: 40px;
-                border: none;
-                background-color: #fff;
-                font-size: 16px;
-            }
-
-            .send-btn {
-                width: 40px;
-                height: 40px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                cursor: pointer;
-                background-color: #0084ff;
-                border-radius: 50%;
-                margin-left: 10px;
-            }
-
-            .send-btn i {
-                font-size: 20px;
-                color: #fff;
-            }
 
             th {text-align: center; background-color: #5a7d9a; color: white;padding: 12px 15px; border: 1px solid #ddd;}
             tr:nth-child(even) {background-color: #f8f9fa;}
@@ -605,36 +553,39 @@
                 bottom: 50%;
                 background: #e74c3c;
                 color: white;
-                
                 align-items: center;
-                border-radius: 8px;
                 margin-bottom: 20px;
                 display: none;
                 text-align: center;
-                font-size: 0.85rem;  /* smaller text */
-                max-height: auto;
+                font-size: 0.85rem;  /* smaller text */   
                 border-collapse: collapse;
-                min-width: auto; 
+                width: 100%;     
+                border: none;
+                padding: 15px;
+                border-radius: 10px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
             }
 
             .success-message {
-                position: fixed;
-                align-items: center;
+				 position: fixed;
                 bottom: 50%;
-                
                 background: skyblue;
                 color: white;
-                border-radius: 8px;
+                align-items: center;
                 margin-bottom: 20px;
-                max-height: auto;
                 display: none;
                 text-align: center;
-                font-size: 0.85rem;  /* smaller text */
-                
+                font-size: 0.85rem;  /* smaller text */   
                 border-collapse: collapse;
-				min-width: auto;
-                
-      
+                width: 100%;     
+                border: none;
+                padding: 15px;
+                border-radius: 10px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
             }
 
             .footer {
@@ -723,3 +674,14 @@
                 padding: 6px;        /* smaller padding */
             }
             }
+
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+            chat-body {
+                
+                background-color: #e4e7daf5;
+                
+
+                
+                
+            }
+   
