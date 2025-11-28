@@ -470,7 +470,7 @@ sent.forEach(message =>{
 				if (URL){
 					// Ensure GAS_WEB_APP_URL is globally available or defined here
 					GAS_WEB_APP_URL = URL; 
-					console.log(GAS_WEB_APP_URL);
+					console.log('updatedUSED:', GAS_WEB_APP_URL);
 				} else {
 					
 					GAS_WEB_APP_URL = GAS_WEB_APP_URL;
@@ -511,7 +511,7 @@ sent.forEach(message =>{
 				  // URL Update logic (from original code)
 					if ((pureResponse[1] !== GAS_WEB_APP_URL)) {
 						saveData('URL',pureResponse[1]);
-						//console.log('updated:', pureResponse);
+						console.log('updated:', pureResponse);
 					}
 
 					return pureResponse[0];
@@ -2133,5 +2133,6 @@ document.getElementById('prompt-container-chat').addEventListener('change', prom
 document.getElementById('prompt-container-ai').addEventListener('change', promptSwitch('ai'));
 
                 
+
 
 
