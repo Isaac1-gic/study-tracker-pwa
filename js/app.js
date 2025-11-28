@@ -498,7 +498,8 @@ sent.forEach(message =>{
 					    
 						// 👇 FIX: Must be 'headers' (plural)
 					    headers: { 
-					      'Content-Type': 'application/json',// REQUIRED for JSON body
+					      // Do NOT use 'application/json'. Use 'text/plain' to prevent OPTIONS request.
+							'Content-Type': 'text/plain;charset=utf-8',
 					    },
 					    
 					    body: JSON.stringify(payload) // Data is sent as a JSON string in the body
@@ -2139,6 +2140,7 @@ document.getElementById('prompt-container-chat').addEventListener('change', prom
 document.getElementById('prompt-container-ai').addEventListener('change', promptSwitch('ai'));
 
                 
+
 
 
 
