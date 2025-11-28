@@ -491,16 +491,20 @@ sent.forEach(message =>{
 					payload[key] = params[key];
 				  }
 				}
-				try{
-				  // --- CRITICAL CHANGE: Using POST method with JSON body ---
-				  const response = await fetch(GAS_WEB_APP_URL,{
-					method: 'POST', // REQUIRED for doPost()
-					header: {
-					  'Content-Type': 'application/json',// REQUIRED for JSON body
-					  
-					},
-					body: JSON.stringify(payload) // Data is sent as a JSON string in the body
-				  }); 
+					try{
+					  // --- CRITICAL CHANGE: Using POST method with JSON body ---
+					  const response = await fetch(GAS_WEB_APP_URL,{
+					    method: 'POST', // REQUIRED for doPost()
+					    
+						// 👇 FIX: Must be 'headers' (plural)
+					    headers: { 
+					      'Content-Type': 'application/json',// REQUIRED for JSON body
+					    },
+					    
+					    body: JSON.stringify(payload) // Data is sent as a JSON string in the body
+					  }); 
+					// ... (rest of the try/catch block)
+
 				  if(!response.ok){
 					throw Error(`HTTP error! Stetus: ${response.stetus}`);
 				  }
@@ -2135,6 +2139,7 @@ document.getElementById('prompt-container-chat').addEventListener('change', prom
 document.getElementById('prompt-container-ai').addEventListener('change', promptSwitch('ai'));
 
                 
+
 
 
 
