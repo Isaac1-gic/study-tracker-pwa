@@ -20,24 +20,34 @@ const urlsToCache = [
   // --- NEW Assets for Gemini UI and PDF ---
   'html2pdf.bundle.min.js',
   'https://cdn.tailwindcss.com',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap'
+  'https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap',
+  'http://www.w3.org/2000/svg'
 ];
 
 /* * -----------------------------------------------------
  * 1. INSTALL EVENT: Caches all essential App Shell files.
  * -----------------------------------------------------
  */
-self.addEventListener('install', function(event) {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(function(cache) {
-        console.log('[Service Worker] Opened cache and adding files...');
-        // Caching all local and critical external assets
-        return cache.addAll(urlsToCache).catch(error => {
-            console.error('[Service Worker] Error caching some files:', error);
-        });
-      })
-  );
+
+self.addEventListener('install', event => {
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(cache => {
+                // Fetch each asset individually to apply the mode: 'no-cors'
+                return Promise.all(
+                    urlsToCache.map(url => {
+                        return fetch(url, {
+                            mode: 'no-cors' // ⬅️ CRITICAL FIX
+                        }).then(response => {
+                            // Caching the response (will be opaque)
+                            return cache.put(url, response);
+                        }).catch(error => {
+                            console.error(`Failed to cache ${url}:`, error);
+                        });
+                    })
+                );
+            })
+    );
 });
 
 /* * -----------------------------------------------------
@@ -45,6 +55,25 @@ self.addEventListener('install', function(event) {
  * -----------------------------------------------------
  */
 self.addEventListener('fetch', function(event) {
+  const requestUrl = new URL(event.request.url);
+
+    // Check if the request is for the specific external domain
+    if (requestUrl.hostname === 'cdn.tailwindcss.com') {
+        event.respondWith(
+            caches.match(event.request)
+                .then(cachedResponse => {
+                    return cachedResponse || fetch(event.request, { mode: 'no-cors' }) // ⬅️ CRITICAL FIX
+                        .then(response => {
+                            return caches.open(CACHE_NAME)
+                                .then(cache => {
+                                    // Must clone the response before putting it in the cache
+                                    cache.put(event.request, response.clone());
+                                    return response;
+                                });
+                        });
+                })
+        );
+    }
   // Only handle requests for http/https, ignore chrome-extension:// etc.
   if (event.request.url.startsWith('http')) {
     event.respondWith(
@@ -146,5 +175,6 @@ function runBackgroundReminderLogic() {
         tag: 'study-reminder-alert'
     });
 }
+
 
 
