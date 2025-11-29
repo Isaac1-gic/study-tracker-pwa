@@ -1080,7 +1080,7 @@ sent.forEach(message =>{
                 }
                     else{
                         const sessionDiv = document.createElement('div');
-                        document.getElementById("textprompt").style = 'display: none;'
+                        document.getElementById("textprompt-chat").style = 'display: none;'
                         time = new Date(Date.now()).toLocaleTimeString()
                         sessionDiv.className = 'message reminder';
                         sessionDiv.innerHTML = `
@@ -2141,6 +2141,7 @@ document.getElementById('prompt-container-chat').addEventListener('change', prom
 document.getElementById('prompt-container-ai').addEventListener('change', promptSwitch('ai'));
 
                 
+
 
 
 
