@@ -30,8 +30,16 @@
     </head>
     <body>
         <div>
-           
-         
+           	<div id="menu-container">
+            	<p class="menu-btn" onclick="toggleMenu()">☰</p>
+        	</div>
+         	
+		     <iframe id="appFrame"></iframe>  
+		    <div class="error-message" id="errorMessage"></div>
+		    <div class="success-message" id="successMessage">
+				<p id="quoteDisplay" ></p>
+		    </div>
+		    </div>
                 
                 <div id="login" class="login-container">
                     <div class="header">
@@ -410,9 +418,7 @@
 				<div class="profile-text">MGY</div>
 				</div>
                 <!-- Menu Container -->
-        <div id="menu-container">
-            <p class="menu-btn" onclick="toggleMenu()">☰</p>
-        </div>
+      
 
         <!-- Slide-in Menu -->
         <nav class="menu" id="menu">
@@ -426,12 +432,6 @@
         </nav>
   
   
-     <iframe id="appFrame"></iframe>  
-    <div class="error-message" id="errorMessage"></div>
-    <div class="success-message" id="successMessage">
-		<p id="quoteDisplay" ></p>
-    </div>
-    </div>
 
     <script src="js/app.js"></script>
     <script>
@@ -441,5 +441,6 @@
     </script>
     </body>
 </html>
+
 
 
