@@ -474,8 +474,8 @@ sent.forEach(message =>{
 					
 					//GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwG6GX04Mgm20Wg2kQkUS5FMFmsf04M7m1K_ZoGIyz6S_FJJ-lXJCDnSVoRO5MvPf91/exec";
 				}
-			   GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxjwJjUOsmZ3W6oA8qoBh-sxpEO_q4mtymuLvhRlSr1gl3xFFJ2WLtvefjcIbnNLCsh/exec";
-				console.log('updatedUSED: v121');
+			   GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwDa52y4T000qbW5AipN9r6XgG3I1EbKvMMUbmoeTqZohHNj1inKz5xFO-dnZM4UJHK/exec";
+				console.log('updatedUSED: v123');
 			   // 1. Prepare the JSON data payload for the POST request
 				let payload = {
 				  action: action // Required for the GAS switch statement
@@ -2141,6 +2141,7 @@ document.getElementById('prompt-container-chat').addEventListener('change', prom
 document.getElementById('prompt-container-ai').addEventListener('change', promptSwitch('ai'));
 
                 
+
 
 
 
