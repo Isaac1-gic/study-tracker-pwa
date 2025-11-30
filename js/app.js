@@ -1,8 +1,7 @@
-let db;
-			const DB_NAME = 'StudyTrackerDB';
-			const DB_VERSION = 1;
-			const STORE_NAME = 'Data';
-			const DATA_KEY = 'labstudyTrackerData';
+let db = null;
+            let daysPassed;
+            let hoursExpected;
+            const ThisWeekMonday = lastMonday();
 			const todaycheck = new Date().toISOString().split('T')[0];
             const forgotForm = document.getElementById('reLoginForm');
             const loginForm = document.getElementById('loginForm');
@@ -10,6 +9,8 @@ let db;
             const passwordInput = document.getElementById('password');
             const errorMessage = document.getElementById('errorMessage');
             const successMessage = document.getElementById('successMessage');
+            
+			
 			let labstudyData = {}
             // Data storage - uses browser's local storage
              
@@ -36,7 +37,7 @@ let db;
                                 body: '',
                                 conclunsion: '',
                                 yTubeQuery: [],
-                                date: '2025-11-02'
+                                date: 1763802160057
                             }
 
             let studyTopics = {};
@@ -396,8 +397,10 @@ sent.forEach(message =>{
     }
     
 })**/
-
-    
+	 function toggleMenu() {
+        document.getElementById("menu").classList.toggle("active");
+        }
+       
     function startRedirect_SignIn() {
         
             const DELAY_SECONDS = 0;
@@ -465,7 +468,7 @@ sent.forEach(message =>{
            async function callGasApi(action, params = {}, elementId){
                 
                
-			    const URL = loadData("URL")
+			    const URL = await loadData("URL")
 				if (URL){
 					// Ensure GAS_WEB_APP_URL is globally available or defined here
 					GAS_WEB_APP_URL = URL; 
@@ -512,11 +515,11 @@ sent.forEach(message =>{
 				  // Authentication handling (logic from original code)
 				  if(pureResponse[0] === false){
 					labstudyData = {};
-					saveData('labstudyTrackerData',labstudyData);
+					await saveData('labstudyTrackerData',labstudyData);
 				  }
 				  // URL Update logic (from original code)
 					if ((pureResponse[1] !== GAS_WEB_APP_URL)) {
-						saveData('URL',pureResponse[1]);
+						await saveData('URL',pureResponse[1]);
 						console.log('updated:', pureResponse);
 					}
 
@@ -564,10 +567,19 @@ sent.forEach(message =>{
 			})
 			}
 
-
+            async function cloudQuizSave(sessionID_Rate={}) {
+                const quizRateArray = await loadData('QuizRates') ?? [];
+                if(sessionID_Rate.id){
+                    quizRateArray.push(sessionID_Rate);
+                    await saveData('QuizRates',quizRateArray);
+                }
+                return quizRateArray;
+            }
+            
             async function quizMaker(action) {
+               
                 const dropdown = document.getElementById('promptST');
-                document.getElementById('prompt-container-ai').style = 'display: none;'
+                document.getElementById('textprompt-ai').style = 'display: none;'
                 dropdown.style = 'display: block;'
                 if (action !== 'submit')
                         {dropdown.innerHTML = '';
@@ -590,25 +602,29 @@ sent.forEach(message =>{
                        if(sTIndex){
                         //console.log('sTIndex')
                         quizData.sessionTopic = sessionT;
-                        const makeQuiz = await callGasApi('makeQuiz',{
+                        const makeQuiz = await loadData('makeQuiz')/**await callGasApi('makeQuiz',{
                             topic: sessionT[1]+'.'+sessionT[2]
-                        })
-                if(makeQuiz[0]){
-                    quizData.quizQuestions = makeQuiz[1];
-                    
-                    quiz();
-                    return;
-                }
+                        })**/
+                        if(makeQuiz[0]){
+							//await saveData('makeQuiz',makeQuiz)
+                            quizData.quizQuestions = makeQuiz[1];
+                            
+                            quiz();
+                            return;
                         }
+                                }
                         }
                     }
             }
 
             function quiz(action) {
-                document.getElementById('AItextprompt').innerHTML = ``;
+				//resize container so that nodthing is not shown
+                document.getElementById('prompt-container-ai').stlye = `display: none`;
                 const chatContainer = document.getElementById('AIchatsList');
                 const quizContainer = document.createElement('form');
-                const sessionTopic = document.createElement('header')
+                const sessionTopic = document.createElement('header');
+                const disableAI = document.getElementById('mode-button');
+                const disableSent = document.getElementById("send-button-ai");
                 sessionTopic.textContent = quizData.sessionTopic[1]
                 quizContainer.appendChild(sessionTopic)
                 
@@ -622,6 +638,7 @@ sent.forEach(message =>{
                         const selection = document.createElement('select')
                         selection.id = 'question'+i;
                         selection.required = true;
+                       
                         
                         const placeholderOption = document.createElement('option');
 						placeholderOption.textContent = '--- Select an Answer ---';
@@ -638,6 +655,7 @@ sent.forEach(message =>{
                         });
                         quizContainer.appendChild(selection);
                     }else{
+                       
                         const qAnswear = document.createElement('p');
                         qAnswear.style = 'color: green;';
                         qAnswear.textContent = `🎯 `+question[question.answear];
@@ -650,19 +668,26 @@ sent.forEach(message =>{
                     
                 });
                 if(!(action === 'answears')){
+                    disableAI.style = 'display: none;';
+                    disableSent.style = 'display: none;';
                     const submitBt = document.createElement('input');
                     submitBt.type = 'submit'
                     quizContainer.appendChild(submitBt);
+                }
+                else{
+                    disableAI.style = 'display: block;';
+                    disableSent.style = 'display: block;';
                 }
                 chatContainer.appendChild(quizContainer);
                 document.getElementById('quizForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 quizAdmin();
                 }
+                
             )
             }
 
-            function quizAdmin(){
+            async function quizAdmin(){
                 i = 1
                 let totalmarks = 0;
                 quizData.quizQuestions.forEach(quizQuestion =>{
@@ -681,15 +706,19 @@ sent.forEach(message =>{
                 const adminfeedback = document.createElement('label')
                 
                 const overallRate = (totalmarks / 10) * 100;
-                labstudyData.sessions.forEach(session => {
+                for (session of labstudyData.sessions){ 
+                
                     if(String(session.id) === String(quizData.sessionTopic[0])){
-						if (totalmarks > 1){
+						if (totalmarks > 0){
 							const stars = Math.floor(totalmarks / 2); 	
 							session.rate = '⭐'.repeat(stars);
-							saveData('labstudyTrackerData',labstudyData);
-						}
+							await cloudQuizSave({id: session.id,rate: session.rate});
+                            await saveData('labstudyTrackerData',labstudyData);
+						};
+                        
+                       
                     }
-                });
+                };
                 if (overallRate > 50) {
                     Quizresultscont.style = 'display: block;background-color: green;';
                     adminfeedback.innerHTML = `🏆NICE!!`
@@ -702,6 +731,7 @@ sent.forEach(message =>{
                 Quizresults.textContent = overallRate.toFixed(1) + '%';
                 Quizresultscont.appendChild(adminfeedback)
                 quiz('answears')
+                
            
             }
 
@@ -739,16 +769,19 @@ sent.forEach(message =>{
                         };
                         if (sessionsArry.length > 0){
 						const sessionsToSave = JSON.stringify(sessionsArry);
+                        const quizSessionUpdate = JSON.stringify(cloudQuizSave());
 						const topicsToUpdate = JSON.stringify([subject_TIDsArray,processesStudiedSessions()])
                         const is_saved = await callGasApi('sessionsSave',{
                                     tacks: sessionsToSave,
-                                    tacks2: topicsToUpdate
+                                    tacks2: topicsToUpdate,
+                                    tacks3: quizSessionUpdate
                                     });
                          //console.log(is_saved[1]);
                         if(is_saved[1] === 'Session batch saved successfully.'){
 							labstudyData.studied = [];
 							//console.log('Cleared')
-							saveData('labstudyTrackerData',labstudyData)
+							await saveData('labstudyTrackerData',labstudyData);
+                            await saveData('QuizRates',[])
 						}
                                 
                                 }
@@ -758,7 +791,7 @@ sent.forEach(message =>{
                         number_Of_Clo_s[2].forEach(session =>{
                             labstudyData.sessions.unshift(session);
                         })
-                        saveData('labstudyTrackerData',labstudyData)
+                        await saveData('labstudyTrackerData',labstudyData)
                     }
                 }
             }
@@ -826,13 +859,31 @@ sent.forEach(message =>{
                 const textarea = document.getElementById('textprompt-'+kind);
                 
                 const sendButton = document.getElementById('send-button-'+kind);
-                
+                let newMode;
                 const modeButton = document.getElementById('mode-button');
                 const modeDropdown = document.getElementById('mode-dropdown');
                 const currentModeDisplay = document.getElementById('current-mode-'+kind);
                 
-                
-                console.log(currentModeDisplay.value)
+                 // Toggle dropdown
+				modeButton.addEventListener('click', (e) => {
+				  e.stopPropagation();
+				  
+				  modeDropdown.style.display = 'block' 
+				});
+				 // Select mode
+				modeDropdown.querySelectorAll('[data-mode]').forEach(el => {
+				  el.addEventListener('click', () => {
+					
+					const m = el.getAttribute('data-mode');
+					currentModeDisplay.textContent = m;
+					modeDropdown.style.display = 'none';
+				  });
+				});
+
+				// Close dropdown on outside click
+				document.getElementById("prompt-container-ai").addEventListener('click', () => modeDropdown.style.display = 'none');
+			
+                //console.log(currentModeDisplay.value)
                 // --- 1. Textarea Auto-Resize and Send Button Toggle ---
 
                 // Function to resize the textarea height dynamically
@@ -845,7 +896,12 @@ sent.forEach(message =>{
                     textarea.style.height = `${newHeight}px`;
 
                     // Enable/Disable Send button based on content
-                    const isEmpty = textarea.value.trim().length === 0;
+                    let isEmpty = textarea.value.trim().length === 0;
+                    console.log(currentModeDisplay.textContent)
+                    if(currentModeDisplay.textContent === 'Quiz'){
+						isEmpty = false;
+						console.log('Bypassed')
+					}
                     sendButton.disabled = isEmpty;
 
                     // Change button color based on state
@@ -874,7 +930,7 @@ sent.forEach(message =>{
                 modeDropdown.addEventListener('click', (e) => {
                     const modeElement = e.target;
                     if (modeElement.dataset.mode) {
-                        const newMode = modeElement.dataset.mode;
+                        newMode = modeElement.dataset.mode;
                         
                         // 1. Update the display label
                         currentModeDisplay.textContent = newMode;
@@ -882,6 +938,16 @@ sent.forEach(message =>{
                         // 2. Hide the dropdown
                         modeDropdown.classList.add('opacity-0', 'pointer-events-none');
                         
+                        if(newMode === "Question"){
+							textarea.style = 'display: block';
+							document.getElementById('promptST').style = 'display: none';
+							textarea.placeholder = "Ask GIC AI any school question";
+							//console.log('Mode set to:');
+                        }else{
+							textarea.placeholder = `Just require only thinking!! Nice quiz`;
+							quizMaker();
+							
+						}
                         // 3. Log or trigger action based on new mode
                         console.log('Mode set to:', newMode);
                         // **TODO: Integrate state management here to save the selected mode.**
@@ -968,7 +1034,7 @@ sent.forEach(message =>{
                     chatSave(text,pathLink,false);
                     try{
                         const answear = await callGasApi('askQuestion', { 
-                        question: prompt
+                        question: text
                         },kind);
                         
                         //answear = JSON.parse(localStorage.getItem('aiAnswer'))
@@ -1080,12 +1146,12 @@ sent.forEach(message =>{
                 }
                     else{
                         const sessionDiv = document.createElement('div');
-                        document.getElementById("textprompt-chat").style = 'display: none;'
+                        document.getElementById("prompt-container-chat").style = 'display: none;'
                         time = new Date(Date.now()).toLocaleTimeString()
                         sessionDiv.className = 'message reminder';
                         sessionDiv.innerHTML = `
                         <h4>AI   ${time}</h4>
-                        <p>Your friends are studying don\`t disturb them now.</p>
+                        <p>Your friends are studying don't disturb them now.</p>
                     `;
                     chatContainer.appendChild(sessionDiv); 
                 };
@@ -1096,16 +1162,20 @@ sent.forEach(message =>{
 
             async function weekendAnalysis(){
 				let WeekReport;
-                const savedReport = loadData('report');
+                const savedReport = await loadData('report');
+                console.log(savedReport);
                     if (savedReport) {
-                       WeekReport = savedReport; 
-                       thisWeekReport = WeekReport[1]
+						console.log('savedReport')
+						WeekReport = savedReport; 
+						thisWeekReport = WeekReport[1]
                     }
                 week = 24*60*60*1000*7
-                todayTime = new Date(today).getTime()
+                todayTime = Date.now()
+                const dayIndex = new Date(new Date()).getDay();
                 oneWeek = Math.abs(todayTime - week);
-                const lastReportTime = Math.abs(new Date(thisWeekReport.date).getTime())
-                if((todayTime - lastReportTime) >= week){
+                const lastReportTime = thisWeekReport.date;
+                console.log(lastReportTime);
+                if(Math.abs(todayTime - lastReportTime) >= week && (dayIndex >=5 || dayIndex === 0) ){
                     aiRequest = ['I am '+labstudyData.userInfo[0]['username']+' ,my goal is to pass MSCE exams <20 points.This is not easy here in Malawi.Please help me to do that any way.Constract academic research report based on my this week studies below.No fake report that will just interest me. I want real one that will make me success, even one that seems to hate me.'];
                     let total_Hours = 0
                     labstudyData.sessions.forEach(session =>{
@@ -1123,7 +1193,7 @@ sent.forEach(message =>{
                         };
                     })
                     if (Object.keys(labstudyData.missedsubjects).length > 0){
-                        aiRequest.push(`Total studied hours this week: ${total_Hours}. I have missed the following sesseions:`);
+                        aiRequest.push(`Total studied hours this week: ${total_Hours} out of these missed Subjects hours + ${total_Hours}. I have missed the following sesseions:`);
                         Object.keys(labstudyData.missedsubjects).forEach(key =>{
                             missedTopics = Object.entries(labstudyData.missedsubjects[key]).join('->')
                             if(missedTopics){
@@ -1143,9 +1213,9 @@ sent.forEach(message =>{
                             if(WeekReport[0]){
 								thisWeekReport = WeekReport[1];
 								console.log(thisWeekReport);
-								thisWeekReport.date = today;
+								thisWeekReport.date = Date.now();
 								console.log('thisWeekReport')
-								saveData('report',WeekReport);
+								await saveData('report',WeekReport);
 								
 							}
                         }catch (error){
@@ -1342,7 +1412,7 @@ sent.forEach(message =>{
 						const userDataInfo = labstudyData.userInfo[0]
 						if (links.length === 2 && userDataInfo.network.length !== links[0]){
 							userDataInfo.network = links[1];
-							saveData('labstudyTrackerData',labstudyData)
+							await saveData('labstudyTrackerData',labstudyData)
 						}
 						upDateProfile();
 					}
@@ -1393,99 +1463,60 @@ sent.forEach(message =>{
            }
             }
            
-	// Load data from storage when page loads
-            function loadData(DATA_KEY,onload) {
-                try{
-                    const openAppDB = indexedDB.open('StudyTrackerDB', 2);
-                    // This handler runs if the database is new or the version number increases
-                    openAppDB.onupgradeneeded = function(event) {
-                        db = event.target.result;
-                        if (!db.objectStoreNames.contains('Data')) {
-                            db.createObjectStore('Data');
-                            console.log("IndexedDB Object Store created: 'Data'");
-                        }
-                    };
-                    
-                    // This handler runs if the database opens successfully
-                    openAppDB.onsuccess = function(event) {
-                        db = event.target.result;
-                        console.log("IndexedDB connection successful.");
-                        // After successful connection, load data immediately on app start
-                            if (!db) {
-                            console.error("Database not initialized for loading.");
-                            return;
-                        }
-                        
-                        // Start a read-only transaction
-                        const tx = db.transaction('Data', "readonly");
-                        const store = tx.objectStore('Data');
-                        const request = store.get(DATA_KEY); // Get the main data object using the constant key
+		
 
-                        request.onsuccess = function(event) {
-                            const savedDataInDB = event.target.result;
-                            
-                            if (onload === 'onload') {
-                                // Data found! Update your global variable
-                                labstudyData = savedDataInDB;
-                                console.log("Data loaded from IndexedDB.");
-                                // Final steps after loading data
-                                updateDisplay();
-                            }
-                            
-                            
-                            return savedDataInDB;
-                        };
+			// ========== INIT (call once on start) ==========
+			function initDB() {
+			  return new Promise((resolve, reject) => {
+				const openReq = indexedDB.open('StudyTrackerDB', 2);
+				openReq.onupgradeneeded = e => {
+				  db = e.target.result;
+				  if (!db.objectStoreNames.contains('Data')) db.createObjectStore('Data');
+				};
+				openReq.onsuccess = e => {
+				  db = e.target.result;
+				  console.log('IndexedDB ready.');
+				  resolve(db);
+				};
+				openReq.onerror = e => reject(e);
+			  });
+			}
 
-                        request.onerror = function(event) {
-                            console.error("Error reading data from IndexedDB:", event.target.errorCode);
-                        };
-                    };
-                    openAppDB.onerror = function(event) {
-                        console.error("Fails to open IndexedDB:", event.target.errorCode);
-                    };
-                }catch (error){
-                    console.log(error);
-                    keyTrust()
-                }
-				
-	
-                
-            }
+			// ========== LOAD (returns value or null) ==========
+			function loadData(KEY, onloadFlag) {
+			  return new Promise((resolve, reject) => {
+				if (!db) return reject(new Error('DB not initialized'));
+				const tx = db.transaction('Data', 'readonly');
+				const store = tx.objectStore('Data');
+				const req = store.get(KEY);
+				req.onsuccess = e => {
+				  const val = (e.target.result === undefined) ? null : e.target.result;
+				  if (onloadFlag === 'onload') {
+					// your old behavior: assign and update display
+					labstudyData = val;           // keep same global name you used
+					console.log(labstudyData)
+					try { updateDisplay(); } catch (err) {}
+				  }
+				  resolve(val);
+				};
+				req.onerror = e => reject(e.target.error || e);
+			  });
+			}
 
-            
-            // Save data to storage
-            function saveData(DATA_KEY,dataToSave) {
-                    try{
-                    if (!db) {
-                        console.error("Database not initialized for saving.");
-                        return;
-                    }
+			// ========== SAVE (resolves when saved) ==========
+			function saveData(KEY, dataToSave) {
+			  return new Promise((resolve, reject) => {
+				if (!db) return reject(new Error('DB not initialized'));
+				const tx = db.transaction('Data', 'readwrite');
+				const store = tx.objectStore('Data');
+				const req = store.put(dataToSave, KEY);
+				req.onsuccess = () => resolve();
+				req.onerror = e => reject(e.target.error || e);
+			  });
+			}
 
-                    // Start a read/write transaction
-                    const tx = db.transaction('Data', 'readwrite');
-                    const store = tx.objectStore('Data');
-                    
-                    // Put the entire labstudyData object under the consistent key
-                    const request = store.put(dataToSave, DATA_KEY); 
+			
 
-                    request.onsuccess = function() {
-                        console.log("Data successfully saved to IndexedDB.");
-                    };
-
-                    request.onerror = function(event) {
-                        console.error("Error saving data to IndexedDB:", event.target.errorCode);
-                    };
-                    
-                    // The transaction should also complete successfully
-                    tx.oncomplete = function() {
-                        console.log("Save transaction complete.");
-                    };
-                    updateDisplay();
-                }catch (error){
-                    console.log(error)
-                }
-                
-            }
 
 			function keyTrust(){
                 try{
@@ -1511,17 +1542,18 @@ sent.forEach(message =>{
                return is_Allowed
             }
             
-        function profile() {
-        const storedImageData = loadData('image');
+        async function profile() {
+        const storedImageData = await loadData('image');
         if (storedImageData) {
         document.getElementById('profileholder').src = storedImageData;}
         else{const pic = document.getElementById('image-input').files[0];
             const fimg = new FileReader();
             fimg.onload = function() {
                 const imgdata = fimg.result;
-                saveData("image", imgdata);
+                
             };
             fimg.readAsDataURL(pic);}
+            await saveData("image", imgdata);
 
         }
 
@@ -1559,7 +1591,7 @@ sent.forEach(message =>{
             }
         })
 
-        function logStudySession() {
+        async function logStudySession() {
         
             const subjectId = document.getElementById('studySubject').value;
             const date = document.getElementById('studyDate').value;
@@ -1573,11 +1605,12 @@ sent.forEach(message =>{
             if (subjectId && date && hours && !missedTopic) {
                 topic = studyTopics[subjectId];
                 if(topic){
+                    
                     note = '. I\`ve  wrapped up my study session on: '+topic+'. plus my onw topic choise: '+topicnotes+' . '+notes
                 }
                 else{
                     topic = topicnotes;
-                    note = 'Today I\`ve studied: '+topic+' on my wish. '+notes
+                    note = 'Today I\`ve studied: '+topic+' on my wish. '+notes;
                 } 
                 if(subjectId === '1'){
                     labstudyData.sessions.push({
@@ -1661,7 +1694,10 @@ sent.forEach(message =>{
                     if(subjectId === '1'){
                         subject.quesNumSolved += parseFloat(hours);
                     }else{
-                        subject.completedHours += parseFloat(hours);
+                        if(!topicnotes){
+                            subject.completedHours += parseFloat(hours);
+                        }
+                        
                     }
                 }
                 
@@ -1671,7 +1707,7 @@ sent.forEach(message =>{
                 document.getElementById('studySubject').value   = '';
                 document.getElementById("myowntopic").value = '';
                 document.getElementById("missedT").value    = '';
-                saveData('labstudyTrackerData',labstudyData);
+                await saveData('labstudyTrackerData',labstudyData);
                 splitTextForWaveEffect('#quoteDisplay');
                 document.getElementById('missedT').style.display = 'block'
                 document.getElementById('myowntopic').style.display = 'block'
@@ -1761,8 +1797,10 @@ sent.forEach(message =>{
             const filteredSessions = labstudyData.sessions.filter(session => session.subjectId !== 1);
             const totalHours = filteredSessions.reduce((sum, session) => sum + session.hours, 0);
             document.getElementById('totalHours').textContent = totalHours.toFixed(1);
+            const PaceRate = document.getElementById('CompletionRate')
             document.getElementById('subjectsCount').textContent = labstudyData.subjects.length;
 
+           
             // Update progress bars
             const container = document.getElementById('progressList');
             container.innerHTML = '';
@@ -1787,10 +1825,17 @@ sent.forEach(message =>{
             });
 
             // Update completion rate
-            const filteredSubjects = labstudyData.subjects.filter(subject => subject.id !== 1)
+             const filteredSubjects = labstudyData.subjects.filter(subject => subject.id !== 1);
+            const total_Hourscompleted = filteredSubjects.reduce((sum, subject) => sum + subject.completedHours, 0);
             const totalPlanned = filteredSubjects.reduce((sum, subject) => sum + subject.plannedHours, 0);
-            console.log(totalPlanned)
-            const overallRate = totalPlanned > 0 ? (totalHours / totalPlanned) * 100 : 0;
+            const todayRate = hoursExpected > 0 ? (total_Hourscompleted/hoursExpected) * 100 : 0;
+            console.log(todayRate.toFixed(1))
+            if (todayRate.toFixed(1) > 80){
+                PaceRate.textContent = 'Completion Rate: Expected'
+            }else{
+                PaceRate.textContent = 'Completion Rate: Slow'
+            }
+            const overallRate = totalPlanned > 0 ? (total_Hourscompleted / totalPlanned) * 100 : 0;
             document.getElementById('completionRate').textContent = overallRate.toFixed(1) + '%';
         }
 
@@ -1862,7 +1907,9 @@ sent.forEach(message =>{
                                 reminder.innerHTML = inner;
                             }
                             else{
-                                reminder.innerHTML = `🌟 Woow! you've finnished planned sessions for <strong>${subject.name}</strong> .<br>🔬 It's time for random sum up.`;
+                                if(subject.plannedHours <= subject.completedHours){
+                                    reminder.innerHTML = `🌟 Woow! you've finnished planned sessions for <strong>${subject.name}</strong> .<br>🔬 It's time for your random reviews.`;
+                                }
                             }
                             container.appendChild(reminder);
                             
@@ -1875,8 +1922,8 @@ sent.forEach(message =>{
                         
                 });
                 
-                if (container.children.length === 0) {
-                    container.innerHTML = '<p>Great job! You\'re on track with all subjects today. Do the same tomorrow 🎉</p>';
+                if (container.children.length === 0 && new Date().getDay() <= 6 && new Date().getDay() >=1) {
+                    container.innerHTML = `<p>Great job! You\'re on track on today's subjects . Do the same tomorrow 🎉</p>`;
                 }
                 if (container2.children.length > 0){
                     document.getElementById("missedTopicReminders").style.display ="block"
@@ -1890,7 +1937,39 @@ sent.forEach(message =>{
                 console.warn(error)
             }
         }
-//saveData('labstudyTrackerData',labstudyData)
+        function lastMonday() {
+            let lastMonday;
+            let todayDate = new Date()
+            todayDate.setDate(todayDate.getDate()- 7)
+            
+            for (i=0;i<=7;i++){
+                if(todayDate.getDay() === 1){
+                   
+                    lastMonday = todayDate;
+                    
+                    break;
+                }
+                if(!lastMonday && i == 7){
+                    while (true){
+                        n = 5
+                        if(todayDate.getDay() === 1){
+                            lastMonday = todayDate
+                            
+                            break;
+                        }
+                        
+                        todayDate.setDate(todayDate.getDate() - n)
+                        n += 1
+                    }
+                
+                }
+                todayDate.setDate(todayDate.getDate() + i)
+                
+            }
+            return lastMonday;
+        }
+        
+       
         // Update review section
         function updateReview() {
             // Weekly feedback
@@ -1904,13 +1983,12 @@ sent.forEach(message =>{
             }
 
             // Calculate weekly stats
-            const oneWeekAgo = new Date();
-            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            const oneWeekAgo = ThisWeekMonday;
             const rSessions = labstudyData.sessions.filter(session => 
                 session.subjectId !== 1 
             );
             const recentSessions = rSessions.filter(session => 
-                new Date(session.date) >= oneWeekAgo
+                new Date(session.date) >= oneWeekAgo && new Date(session.date).getTime() > 1
             );
 
             const weeklyHours = recentSessions.reduce((sum, session) => sum + session.hours, 0);
@@ -1918,7 +1996,7 @@ sent.forEach(message =>{
             let feedback = `<h4>Last 7 Days Summary</h4>`;
             feedback += `<p>You studied <strong>${weeklyHours.toFixed(1)} hours</strong> this week.</p>`;
 
-            if (weeklyHours < 10) {
+            if (weeklyHours < 15) {
                 feedback += `<p style="color: #e74c3c;">💡 Suggestion: Try to increase your study time to at least 10 hours per week for better results.</p>`;
             } else if (weeklyHours > 25) {
                 feedback += `<p style="color: #27ae60;">🌟 Excellent! You're putting in great effort. Remember to take breaks!</p>`;
@@ -1959,9 +2037,33 @@ sent.forEach(message =>{
         // Set today's date as default in study log
         document.getElementById('studyDate').value = today;
 
+
+
+
+
+
+
+
+
+
+        
+
         // Initialize the app
-	    test = loadData('labstudyTrackerData','onload');
-		console.log(test)
+        window.addEventListener('load', async function () {
+			await initDB(); // app starts
+			await loadData('labstudyTrackerData','onload');
+            day = 1000*60*60*24;
+            
+            const user_plan = labstudyData.userInfo[0];
+            daysPassed = parseInt((new Date(today).getTime()-day)/day)-1;
+            const weekPassed = parseInt(daysPassed/7)
+            if(weekPassed > 0){
+                daysPassed -= weekPassed*2
+                
+            }
+            hoursExpected = user_plan.hours_session* user_plan.number_subjects_day * daysPassed
+            //console.log()
+		});
         window.addEventListener('online',function (){
             sessionSave();
             weekendAnalysis();
@@ -1969,6 +2071,18 @@ sent.forEach(message =>{
 	    
    
         
+
+
+
+
+
+
+
+
+
+
+
+
 
        const trackForm = document.getElementById('form');
        trackForm.addEventListener('submit', function(e) {
@@ -2014,16 +2128,17 @@ loginForm.addEventListener('submit', async function(e) {
                     studied: []
                 }
                 
+				updateDisplay();
                 showMessage(`Welcome ${labstudyData.userInfo[0].username}! You are now logged in.`, 'success',3);
                 
-                saveData('labstudyTrackerData',labstudyData);
-				loadData('labstudyTrackerData','onload')
+                
                  // ... (UI state changes) ...
                 document.getElementById('login').classList.remove('active');
                 document.getElementById('track').classList.add('active');
                 // Reset form
                 loginForm.reset();
             }, 2000);
+            await saveData('labstudyTrackerData',labstudyData);
             
         } else {
             console.log(labstudyData,message)
@@ -2035,7 +2150,8 @@ loginForm.addEventListener('submit', async function(e) {
         // Handle network/fetch errors
         console.warn("Login API Call Error:", error);
         showMessage('Could not connect to the server. Check your internet connection.', 'error');
-    }
+    };
+    
 });
    
 
@@ -2099,7 +2215,7 @@ loginForm.addEventListener('submit', async function(e) {
                 }
             });
             
-            
+           
             
             
             
@@ -2107,7 +2223,7 @@ loginForm.addEventListener('submit', async function(e) {
             
         // Periodic Sync Constants
 const study_Tag = 'Study-Reminder-Sync'; // Renamed tag for clarity
-const min_Interval = 24 * 60 * 60 * 1000; // 1 day in milliseconds (as you set it)
+const min_Interval = 60 * 1000; // 1 day in milliseconds (as you set it)
 
 if ('serviceWorker' in navigator && 'periodicSync' in navigator.serviceWorker) {
     navigator.serviceWorker.ready.then(function(swReg) {
@@ -2137,25 +2253,80 @@ function registerPeriodicSync(swReg) {
         console.error('Periodic Sync registration failed:', error);
     });
 }
-document.getElementById('prompt-container-chat').addEventListener('change', promptSwitch('chat'));
-document.getElementById('prompt-container-ai').addEventListener('change', promptSwitch('ai'));
+document.getElementById('prompt-container-chat').addEventListener('click',function(){
+	 promptSwitch('chat')});
+document.getElementById('prompt-container-ai').addEventListener('click', function(){
+	promptSwitch('ai')});
+document.getElementById('send-button-ai').addEventListener('click', () => {
+	const currentmode = document.getElementById('current-mode-ai').textContent;
+	if(currentmode === 'Quiz'){
+		quizMaker('submit');
+	}
+	})
 
                 
 
+const DB_NAME = 'StudyDataDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'Timetable';
 
+function openDatabase() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        
+        request.onupgradeneeded = function(e) {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+            }
+        };
 
+        request.onsuccess = function(e) {
+            resolve(e.target.result);
+        };
 
+        request.onerror = function(e) {
+            reject('Database error: ' + e.target.error.name);
+        };
+    });
+}
 
+// Function to save the daily study plan when the user is online
+async function saveStudyPlan(day, taskList) {
+    const db = await openDatabase();
+    const transaction = db.transaction([STORE_NAME], 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    
+    // Store data structure: {id: "Monday", tasks: ["Review A", "Solve B"]}
+    store.put({ id: day, tasks: taskList }); 
+}
 
+// Example of how you would call this in your app.js (when the timetable tab is loaded):
+ const mondayTasks = ['Review this week class exercises', 'Your style']; 
+ saveStudyPlan('Monday', mondayTasks);
 
+// --- 5. NOTIFICATION CLICK: Handling user interaction with the notification ---
 
+self.addEventListener('notificationclick', function(event) {
+    console.log('[Service Worker] Notification click received.');
 
+    event.notification.close();
+    const targetURL = event.notification.data.url || '/index.html';
 
-
-
-
-
-
-
-
-
+    event.waitUntil(
+        clients.matchAll({ type: 'window' })
+        .then(function(clientList) {
+            // Look for an existing app window and focus it
+            for (let i = 0; i < clientList.length; i++) {
+                const client = clientList[i];
+                if (client.url.includes(targetURL) && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            // If no existing window, open a new one to the target URL
+            if (clients.openWindow) {
+                return clients.openWindow(targetURL);
+            }
+        })
+    );
+});
