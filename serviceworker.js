@@ -15,13 +15,10 @@ const urlsToCache = [
   'style.css',// Old asset
 
   // Existing External Font
-  'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap',
+  
 
   // --- NEW Assets for Gemini UI and PDF ---
-  'html2pdf.bundle.min.js',
-  'https://cdn.tailwindcss.com',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap',
-  'http://www.w3.org/2000/svg'
+  'html2pdf.bundle.min.js'
 ];
 
 /* * -----------------------------------------------------
@@ -56,7 +53,7 @@ self.addEventListener('install', event => {
  */
 self.addEventListener('fetch', function(event) {
   const requestUrl = new URL(event.request.url);
-
+  runBackgroundReminderLogic()
     // Check if the request is for the specific external domain
     if (requestUrl.hostname === 'cdn.tailwindcss.com') {
         event.respondWith(
@@ -175,6 +172,7 @@ function runBackgroundReminderLogic() {
         tag: 'study-reminder-alert'
     });
 }
+
 
 
 
