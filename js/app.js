@@ -1,6 +1,7 @@
-let db = null;
+			let db = null;
             let daysPassed;
             let hoursExpected;
+            let todaySubjectReminders = [];
             const ThisWeekMonday = lastMonday();
 			const todaycheck = new Date().toISOString().split('T')[0];
             const forgotForm = document.getElementById('reLoginForm');
@@ -39,393 +40,84 @@ let db = null;
                                 yTubeQuery: [],
                                 date: 1763802160057
                             }
-
+			let quotesAndSayings = [];
+			let topics = {};
             let studyTopics = {};
             let subjectnames = {};
             let pathLink = labChatsData.chats;
+            let chatPollingIntervalId = null;
+            let timeStamp = Date.now();
+            const CHAT_POLLING_INTERVAL = 30000;
 
             // dd/mm/yyyy
             const today = new Date().toISOString().split('T')[0];
-            let GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwG6GX04Mgm20Wg2kQkUS5FMFmsf04M7m1K_ZoGIyz6S_FJJ-lXJCDnSVoRO5MvPf91/exec';
+            let GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzVgUYoIQCSnm__YH3gW4kvNqUV_Rs1y9qxw1BEd-wzm1p5hKEm3TmCico1ALRc_I8R/exec';
             
 
             
-            const topics = {Mathematics: [{1: "FACTORIZATION",7: "QUADRATIC EQUATIONS",10: "IRRATIONAL NUMBERS",19: "CIRCLE GEOMETRY- CHORD PROPERTIES",25: "ALGEBRAIC FRACTIONS",31: "SETS",41: "MAPPING AND FUNCTIONS",49: "CIRCLE GEOMETRY - ANGLE PROPERTIES",55: "TRANSFORMATIONS",63: "CHANGE SUBJECT OF FORMULA",71: "EXPONENTIAL AND LOGARITHMIC EQUATIONS",78: "TRIGONOMETRY I",84: "SIMILARITY",92: "COORDINATE GEOMETRY",101: "VARIATIONS",114: "GRAPHS OF QUADRATIC FUNCTIONS",125: "INEQUALITIES",134: "STATISTICS I",141: "MATRICES",151: "CIRCLE GEOMETRY III - TANGENTS TO CIRCLE",162: "CIRCLE GEOMETRY III: CONSTRUCTION",171: "STATISTICS II",174: "SIMULTANEOUS LINEAR AND QUADRATIC EQUATIONS",180: "PROGRESSIONS",189: "TRAVEL GRAPHS",201: "TRIGONOMETRY II",209: "POLYNOMIALS",217: "PROBABILITY",228: "VECTORS",238: "LINEAR PROGRAMMING",251: "MENSURATION I: SURFACE AREA AND VOLUME OF SOLIDS",258: "MENSURATION II: THREE-DIMENSIONAL GEOMETRY",267: "GRAPHS OF CUBIC FUNCTIONS"},272],
-                            Chemistry: [{1: "Experimental techniques",29: "Nitrogen, Sulphur and Phosphorus",66: "Chemical bonding and properties of matter",90: "Stoichiometry",146: "Chemical Reactions",166: "Alkanols",183: "Alkanals and Alkanones",197: "Alkanole Acids",211: "Alkanoates",220: "Identification of unknown organic compounds",231: "Rates of reactions",264: "Acids and Bases",296: "Reduction and Oxidation reactions",332: "Electrolysis",360: "Isomerism",378: "Polymerisation",390: "Water", 178: "Greenhouse gases and ozone layer", 194: "Waste management"},397],
-                            Agriculture: [{1: "Physical properties of soil",20: "Chemical properties of soil",33: "Agricultural development agencies and their services",49: "Farm records and accounts",70: "Farm budgeting",76: "Economic principles for decision making in agriculture",88: "Enterprise combinations",103: "Agricultural cooperatives",109: "Vegetative planting materials",121: "Cropping systems",140: "Mushroom production",160: "Livestock feeds and feeding",167: "Sheep production",181: "Goat production",194: "Soil degradation",201: "Agriculture and climate change: mitigation measures to climate change",212: "Land drainage",218: "Farm mechanisation",228: "Farm power",240: "Gender and agricultural technology",249: "Improved farming technology for food security",259: "Agricultural marketing and trading",277: "Price elasticity of demand and supply",287: "Crop improvement",296: "Crop processing",303: "Pasture",329: "Growing mangoes",344: "The reproductive systems of cattle and poultry and the processes of reproduction",361: "Livestock improvement",369: "Breeds and management of beef cattle",384: "Breeds and management of dairy cattle"},394],
-                            Physics: [{1: "Measurements II",27: "Scientific Investigations",54: "The kinetic theory of matter",64: "Thermometry",78: "Pressure",128: "Gas Laws",158: "Scalars and Vectors",173: "Linear Motion",218: "Work and Energy",240: "Machines",266: "Electric Current and Potential Difference",279: "Electrical Resistance",297: "Electric Circuit, Energy and Power",322: "Oscillations and Waves",355: "Sound",380: "Thermal expansion",394: "Newton's laws of motion",421: "Frictional force",432: "Hooke's law",440: "Uniform circular motion",471: "Moment of a force",498: "Magnetism",508: "Electromagnetism",527: "Electromagnetic induction",558: "Introduction to digital electronics",594: "Electromagnetic Spectrum",612: "Light and lenses",650: "Isotopes",655: "Radioactivity"},658],
-                            Biology: [{1: "Living things and their environment",49: "Plant structure and function",97: "Vertebrates and invertebrates",107: "Human digestive system",127: "Human circulatory system",147: "Human reproductive system",170: "Genetics I",201: "Plant responses",213: "Human respiratory system",236: "Human excretory system",251: "Co-ordination",274: "Immunity",286: "Genetics II",301: "Evolution",319: "Biotechnology",328: "Infectious and non-infectious diseases"},338],
-                            History: [{1: "The 19th and early 20th centuries immigrants into central Africa",35: "Growth of trade in pre-colonial east and central Africa: The Portuguese factor",54: "The Missionary Factor in Malawi",71: "European occupation and administration of central Africa",107: "Economic development in central Africa from colonial rule up to independence",123: "Political developments in central Africa from colonial period to independence",139: "Causes and Results of the First World War",165: "Developments in the Interwar Period (1919-1939)",189: "Developments in the Interwar Period (1919-1939)",207: "The Communist Revolution in Russia",235: "Development of Autocratic Government in Germany",263: "Causes and Results of the Second World War",285: "Formation of the United Nations Organisation",303: "Post War Alliances",313: "The Cold War",334: "Decolonisation in India",351: "Kenya",365: "Post-Colonial Crises and Challenges up to 2000"},385],
-                            LifeSkills: [{1: "Enhancing self-esteem",12: "Time management",18: "Challenges associated with adolescence",31: "Blood donation",36: "Use and abuse of prescribed drugs",39: "Non-communicable diseases",42: "Basic facts about HIV and AIDS",51: "Rights of PLWHA",54: "Social and moral responsibility in one's community",61: "Peaceful co-existence in the community",67: "Morals and values",75: "Cultural practices and HIV and AIDS",78: "Supporting the vulnerable",84: "Effects of sexual identity, sexual health and reproduction and sexualisation on behaviour",91: "Business values and ethics",102: "Managing a business venture",114: "Self esteem",121: "Career planning",131: "Growth and development",128: "Preventive medicine",142: "Basic facts about HIV and AIDS",151: "Blood donation",154: "Social and moral responsibilities in the country",161: "Peaceful co-existence in the country and the world",169: "Morals and values in the nation and the world",175: "Cultural practices, gender and HIV and AIDS",184: "Supporting the vulnerable people in the country and the world",189: "Sexual reproductive health and human behaviour",202: "Sexual harassment",209: "Risk taking and creativity in business",215: "Job seeking strategies",225: "Saving culture",228: "Basic tax calculations"},232],
-                            BibleKnowledge: [{1: "The Uses of the Bible",6: "Prophet Isaiah",19: "The Word of Second Isaiah",31: "Third Isaiah",37: "The Gospels",42: "The Infancy Narratives",57: "The Ministry of Jesus: Baptism of Jesus and His Temptations",64: "The Ministry of Jesus: Miracles of Jesus",70: "The Ministry of Jesus: The Parables",77: "Jesus' Teaching on Discipleship",84: "Jesus' Teaching about Prayer",90: "Jesus' other Teachings",109: "The Passion of Jesus Christ",126: "The Birth of the Church",131: "The Spread of the Church",139: "The Spread of the Early Church: Paul's Missionary Work",154: "Themes in the Book of Acts",167: "Jesus' Fulfillment of the Old Testament",173: "Worship",180: "Biblical Beliefs",186: "Biblical Practices: Biblical Symbols",191: "Biblical Practices: Marriage",195: "Christianity and Contemporary Issues: Environmental Degradation",201: "Christianity and Contemporary Issues: The Church and State",206: "Christianity and Contemporary Issues: Spread of HIV and AIDS"},213]
-                          };
-			
-			const quotesAndSayings = [
-    // 1. Focused on effort, determination, knowledge acquisition, and positive study habits. (100 items)
-    [
-        "The best way to get started is to quit talking and begin doing.",
-        "Strive for progress, not perfection.",
-        "You don't have to be great to start, but you have to start to be great.",
-        "The only place where success comes before work is in the dictionary.",
-        "Develop a passion for learning. If you do, you will never cease to grow.",
-        "Go the extra mile. It's never crowded.",
-        "Reading is to the mind what exercise is to the body.",
-        "Don't wish it were easier, wish you were better.",
-        "Your hard work will pay off.",
-        "The mind once stretched by a new idea, never returns to its original dimensions.",
-        "An empty sack does not stand upright.",
-        "Diligence is the mother of good luck.",
-        "The journey of a thousand miles begins with a single step.",
-        "Our greatest glory is not in never falling, but in rising every time we fall.",
-        "Failure is simply the opportunity to begin again, this time more intelligently.",
-        "If you are not willing to learn, no one can help you. If you are determined to learn, no one can stop you.",
-        "The difference between the impossible and the possible lies in a person's determination.",
-        "Don't let yesterday take up too much of today.",
-        "A goal without a plan is just a wish.",
-        "If you quit once, it becomes a habit. Never quit.", // REPLACED
-        "Every master was once a disaster.",
-        "Keep your eye on the ball.",
-        "Success is walking from failure to failure with no loss of enthusiasm.", // REPLACED
-        "I haven't failed, I've just found 10,000 ways that won't work.",
-        "When the going gets tough, the tough get going.",
-        "No matter how hard the past is, you can always begin again.",
-        "The secret of getting ahead is getting started.",
-        "The best way to appreciate your job is to imagine yourself without one.",
-        "Success is not measured by what you accomplish, but by the opposition you have encountered.",
-        "Where there is a will, there is a way.",
-        "There are two kinds of people: those who do the work and those who take the credit.",
-        "Shoot for the moon. Even if you miss, you'll land among the stars.",
-        "The only limits are the ones you place on yourself.",
-        "Don't stop when you're tired. Stop when you're done.",
-        "Success is the sum of small efforts repeated daily.",
-        "What we dwell on is who we become.",
-        "You must do the things you think you cannot do.",
-        "The best preparation for tomorrow is doing your best today.",
-        "The beautiful thing about learning is that nobody can take it away from you.",
-        "Be stubborn about your goals and flexible about your methods.",
-        "The secret of getting ahead is getting started.",
-        "Action is the foundational key to all success.", // REPLACED
-        "Setting goals is the first step in turning the invisible into the visible.", // REPLACED
-        "Determination is the key to success.",
-        "If opportunity doesn't knock, build a door.",
-        "The future belongs to those who believe in the beauty of their dreams.",
-        "In the middle of difficulty lies great opportunity, which we must find.",
-        "Focus on being productive instead of busy.",
-        "We are what we repeatedly do. Excellence, then, is not an act, but a habit.",
-        "There is no elevator to success, you have to take the stairs.",
-        "Be the change that you wish to see in the world.",
-        "Life begins at the end of your comfort zone.",
-        "Believe you can and you’re halfway there.", // REPLACED
-        "Nothing is impossible, the word itself says 'I'm possible'!",
-        "Learning never exhausts the mind.",
-        "Study hard, study smart.",
-        "Sweat the small stuff when it comes to effort.",
-        "Leave no stone unturned.",
-        "Consistency is more important than intensity.",
-        "Put your nose to the grindstone.",
-        "The future belongs to those who prepare for it today.",
-        "The harder you work for something, the greater you'll feel when you achieve it.",
-        "Fall seven times, stand up eight.",
-        "Tomorrow belongs to the people who prepare for it today.",
-        "The mind is its own place, and in itself can make a heaven of hell, a hell of heaven.",
-        "Genius is 1% inspiration and 99% perspiration.",
-        "Make hay while the sun shines.",
-        "Always do your best. What you plant now, you will harvest later.",
-        "The only way to win is to learn faster than anyone else.",
-        "Don't let the fear of striking out keep you from playing the game.",
-        "Take risks. If you win, you'll be happy; if you lose, you'll be wise.",
-        "Perseverance is not a long race; it is many short races one after the other.",
-        "If you want something, go get it. Period.",
-        "The man who moves a mountain begins by carrying away small stones.",
-        "Press on. Nothing in the world can take the place of persistence.",
-        "The road to success and the road to failure are almost exactly the same.",
-        "Every moment is a fresh beginning.",
-        "Education is the key to unlocking the world.",
-        "Learn something new every day.",
-        "You can't cross the sea merely by standing and staring at the water.",
-        "Take one step at a time.",
-        "Do it with passion or not at all.",
-        "Always keep your head held high.",
-        "It's not about perfect. It's about effort.",
-        "Today’s actions are tomorrow’s results.",
-        "Success is the progressive realization of a worthy goal.",
-        "Be thirsty for knowledge.",
-        "Sharpen the saw.",
-        "Keep the ball rolling.",
-        "The greatest discovery in life is self-discovery.",
-        "The future is bright.",
-        "The mind is everything. What you think you become.", // REPLACED
-        "The difference between winning and losing is most often not quitting.",
-        "Your ability to learn is the greatest gift.", // REPLACED
-        "Make every day count.",
-        "Stay positive.",
-        "Attitude is everything.",
-        "A winner is a dreamer who never gives up.", // REPLACED
-        "Take control.",
-        "Every morning, you have two choices: continue to sleep with your dreams, or wake up and chase them."
-    ],
-    // 2. General wisdom, life skills, and sayings related to time, habits, and self-improvement. (100 items)
-    [
-        "To err is human; to forgive, divine.",
-        "The only true wisdom is in knowing you know nothing.", // REPLACED
-        "Don't cry over spilt milk.",
-        "Actions speak louder than words.",
-        "Variety is the spice of life.",
-        "The squeaky wheel gets the grease.",
-        "You can't teach an old dog new tricks.",
-        "Walk a mile in their shoes.",
-        "A picture is worth a thousand words.",
-        "All roads lead to Rome.",
-        "Let the chips fall where they may.",
-        "The early bird gets the worm.",
-        "Give credit where credit is due.",
-        "You miss 100% of the shots you don't take.",
-        "There is no time like the present.",
-        "Better safe than sorry.",
-        "He who hesitates is lost.",
-        "The apple doesn't fall far from the tree.",
-        "Do unto others as you would have them do unto you.",
-        "A stitch in time saves nine.",
-        "Burn the candle at both ends.",
-        "Cross that bridge when you come to it.",
-        "If you want to go fast, go alone. If you want to go far, go together.",
-        "Don't give up the day job.",
-        "The cat is out of the bag.",
-        "A friend in need is a friend indeed.",
-        "The proof is in the pudding.",
-        "It takes two to tango.",
-        "When you judge others, you do not define them, you define yourself.", // REPLACED
-        "The grass is always greener on the other side of the fence.",
-        "All that glitters is not gold.",
-        "Birds of a feather flock together.",
-        "Honesty is the best policy.",
-        "Two wrongs don't make a right.",
-        "Look before you leap, for you know not where you will fall.", // REPLACED
-        "An apple a day keeps the doctor away.",
-        "The show must go on.",
-        "There's no place like home.",
-        "You can't have your cake and eat it too.",
-        "If you can't beat 'em, join 'em.",
-        "Absence makes the heart grow fonder.",
-        "Beauty is in the eye of the beholder.",
-        "Necessity is the mother of invention.",
-        "People who live in glass houses shouldn't throw stones.",
-        "Practice what you preach.",
-        "The best things in life are free.",
-        "Too many cooks spoil the broth.",
-        "What goes around comes around.",
-        "While the cat's away, the mice will play.",
-        "A drowning man will clutch at a straw.",
-        "Be kind, for everyone you meet is fighting a battle you know nothing about.", // REPLACED
-        "The unexamined life is not worth living.", // REPLACED
-        "Don't look a gift horse in the mouth.",
-        "Good things come to those who wait.",
-        "Don't judge a book by its cover, but by what's inside.",
-        "Rome wasn't built in a day.",
-        "The best revenge is massive success.", // REPLACED
-        "Strike while the iron is hot.",
-        "To each his own.",
-        "Don't burn your bridges.",
-        "The walls have ears.",
-        "Every dark cloud has a silver lining.",
-        "It's raining cats and dogs.",
-        "Give someone the benefit of the doubt.",
-        "The quieter you become, the more you are able to hear.",
-        "In the nick of time.",
-        "Put your best foot forward and never give up.",
-        "Take it with a grain of salt.",
-        "Once in a blue moon.",
-        "You can lead a horse to water, but you can't make him drink.",
-        "That's the last straw.",
-        "Put your foot in your mouth.",
-        "Under the weather.",
-        "Speak of the devil.",
-        "Money doesn't grow on trees.",
-        "The elephant in the room.",
-        "If you always do what you always did, you will always get what you always got.",
-        "The greatest discovery in life is self-discovery.",
-        "The truth is rarely pure and never simple.", // REPLACED
-        "Cost an arm and a leg.",
-        "A journey of a thousand miles begins with a single step.", // REPLACED
-        "Back to the drawing board.",
-        "Add insult to injury.",
-        "The only thing necessary for the triumph of evil is for good men to do nothing.", // REPLACED
-        "When pigs fly.",
-        "By the skin of your teeth.",
-        "Nothing comes from nothing.",
-        "You must be the change you wish to see in the world.", // REPLACED
-        "Go back to square one.",
-        "Get a taste of your own medicine.",
-        "Give him the cold shoulder.",
-        "Every dog has his day.",
-        "Look after the pennies, and the pounds will look after themselves.",
-        "Comparing apples to oranges.",
-        "If you want to live a happy life, tie it to a goal, not to people or things.", // REPLACED
-        "Cry over spilled milk.",
-        "Throw caution to the wind.",
-        "Half a loaf is better than none",
-        "Take a rain check.",
-        "It's no use crying over spilt milk."
-    ],
-    // 3. Focused on caution, avoiding procrastination, consequences of poor choices, and attention to detail. (100 items)
-    [
-        "Look before you leap.",
-        "Don't count your chickens before they are fully ready to hatch.", // REPLACED
-        "Curiosity killed the cat.",
-        "It's no use locking the stable door after the horse has bolted.",
-        "You reap what you sow.",
-        "The devil is in the details.",
-        "Cut your coat according to your cloth.",
-        "Don't put all your eggs in one basket.",
-        "If you can't stand the heat, get out of the kitchen.",
-        "Beware of Greeks bearing gifts.",
-        "The devil is in the details, so pay close attention.", // REPLACED
-        "A bird in the hand is worth two in the bush.",
-        "You can lead a horse to water, but you can't make him drink.",
-        "An ounce of prevention is worth a pound of cure.",
-        "Never trouble trouble until trouble troubles you.",
-        "Don't judge a book by its cover.",
-        "Measure twice, cut once.",
-        "The darkest hour is just before the dawn.",
-        "Don't throw the baby out with the bathwater.",
-        "Never invest in a business you cannot understand.", // REPLACED
-        "Where there's a will, there's a loophole.",
-        "Give him an inch and he will surely take an entire mile.", // REPLACED
-        "A drowning man will clutch at a straw.", // REPLACED
-        "The only thing we have to fear is fear itself.", // REPLACED
-        "Be careful what you wish for.",
-        "Don't miss the forest for the trees.",
-        "A moment of patience in a moment of anger prevents a hundred moments of regret.", // REPLACED
-        "That ship has sailed.",
-        "Don't air your dirty laundry in public.",
-        "You made your bed, now lie in it.",
-        "Discretion is the better part of valor.",
-        "Fools rush in where angels fear to tread.",
-        "The road to hell is paved with good intentions.",
-        "If you can't be good, be careful.",
-        "Don't throw good money after bad.",
-        "Better the devil you know than the devil you don't.",
-        "Never look a gift horse in the mouth.",
-        "Never bite the hand that feeds you.",
-        "Don't cross the bridge until you come to it.",
-        "If you lie down with dogs, you get up with fleas.",
-        "When in doubt, do nothing.",
-        "If you play with fire, you get burned.",
-        "Never spend your money before you have earned it.",
-        "A word to the wise is sufficient.",
-        "Be careful what you wish for, you just might get it.",
-        "One false move and you're out.",
-        "Better safe than sorry.",
-        "There are two sides to every coin.",
-        "Don't change horses in midstream.",
-        "If you cannot beat the system, don't try to change it.",
-        "Give him enough rope and he will hang himself.",
-        "You scratch my back, and I'll scratch yours.",
-        "Let sleeping dogs lie.",
-        "Loose lips sink ships.",
-        "He who lives by the sword shall die by the sword.",
-        "The best defense is a good offense.",
-        "There's many a slip 'twixt the cup and the lip.",
-        "A drowning man will clutch at a straw.",
-        "The biggest lesson in life is to know that even fools are right sometimes.", // REPLACED
-        "Don't sell the bear's skin before you have caught the bear.",
-        "You can't make an omelet without breaking a few eggs.",
-        "Never attribute to malice that which is adequately explained by stupidity.", // REPLACED
-        "Don't let your mouth write checks your body can't cash.",
-        "Hindsight is 20/20, but foresight is divine.", // REPLACED
-        "Leave well enough alone.",
-        "Once bitten, twice shy.",
-        "Nothing good happens after midnight.",
-        "Forewarned is forearmed.",
-        "Keep your friends close and your enemies closer.",
-        "Penny wise, pound foolish.",
-        "The cure is worse than the disease.",
-        "Slow and steady wins the race.",
-        "Be careful what you put in writing.",
-        "Don't buy a pig in a poke.",
-        "Don't jump the gun.",
-        "It is no use crying over spilt milk.", // REPLACED
-        "You cannot get blood from a stone.", // REPLACED
-        "The road to hell is paved with good intentions.", // REPLACED
-        "Where there is a loophole, use it carefully.",
-        "You can't get blood from a stone.",
-        "A leopard cannot change its spots.",
-        "If you don't succeed, try, try again.",
-        "Never put off till tomorrow what you can do today.",
-        "An idle mind is the devil's workshop.",
-        "Where ignorance is bliss, 'tis folly to be wise.",
-        "It is better to keep your mouth shut and appear stupid than to open it and remove all doubt.",
-        "The best laid schemes of mice and men often go awry.",
-        "The consequences of a bad decision always outweigh the speed of the decision.",
-        "Every action has an equal and opposite reaction.",
-        "You must think twice before speaking once.", // REPLACED
-        "If you can't be a good example, then you'll just have to be a terrible warning.",
-        "Don't be penny-wise and pound-foolish.",
-        "The biggest risk is not taking any risk.",
-        "Procrastination is the thief of time.",
-        "Never take a permanent decision based on a temporary emotion.",
-        "Success is not final, failure is not fatal: It is the courage to continue that counts.",
-        "The harder you work for something, the greater you’ll feel when you achieve it.",
-        "Don’t watch the clock; do what it does. Keep going.",
-        "It always seems impossible until it’s done.",
-        "Fall seven times and stand up eight."
-    ]
-];
 
-/**const sent = ['me','Trans.ID :  CI251124.1034.E48095. Money successfully sent to 980617390, 20000.00, AUSTIN FANOS. Your balance is MK 248469.51.',
-            'Trans.ID :  CI251124.1050.G50374. Money successfully sent to 980617390, 400.00, FELIX SQUARE. Your balance is MK 246969.51.',
-            'Trans.ID :  CI251124.1517.G78355. Money successfully sent to 980617390, 15000.00, MAHMOUDJOHN MWALE. Your balance is MK 279969.51.',
-            'Trans.ID :  PP251124.1622.Y51806. Successful transfer of MK243000.00 to 994667721, MUSSA MBWANA. Bal: MK59969.51. Dial *211# select 2 then 3 for a reversal.',
-            'Trans.ID :  CI251124.1741.B95912. Money successfully sent to 992345676, 1000.00, ESNART CHRISTOPHER. Your balance is MK 279869.51.','i']
-
-sent.forEach(message =>{
-    try{
-        const Trans = message.match(/Trans.ID.:..[\S]+/)[0];
-        const Trans_ID = Trans.slice(12,-1);
-        const Number_Amount = message.match(/sent.to.[0-9]+,.[0-9]+./)[0];
-        const Phone_Number = parseInt(Number_Amount.slice(8,17)) === 980617390;
-        const amount = parseInt(Number_Amount.slice(19,-1)) >= 2000;
-        if(!amount || !Phone_Number){
-            showMessage('Please just paste Transaction message, only Trans.ID will be taken.','error',5);
-            return
+        function startChatPolling(){
+            if(chatPollingIntervalId){
+                clearInterval(chatPollingIntervalId);
+            };
+            getChats();
+            chatPollingIntervalId = setInterval(getChats,CHAT_POLLING_INTERVAL)
         }
-        
-    }catch {
-        
-        showMessage('Wrong message.For help if message pasted is correct contact: +265980617390','error',5)
-        return
-    }
-    
-})**/
+
+        function stopChatPolling(){
+            if(chatPollingIntervalId !== null){
+                clearInterval(chatPollingIntervalId);
+                chatPollingIntervalId =  null;
+            }
+        }
+        async function getChats(){
+            const chats = await callGasApi('chats',{task: 'task',timeStamp: timeStamp});
+                        if (chats.length >0){
+							console.log(chats)
+							timeStamp = chats.timeStamp;
+							chatSave(chats,pathLink,'chats');
+                                chatbox()
+							}
+        }
+		async function loadStaticData() {
+			try {
+				// 1. Fetch the data.json file from the same directory
+				const response = await fetch('data.json');
+				
+				// 2. Check for a successful response (e.g., file found)
+				if (!response.ok) {
+					//throw new Error(`HTTP error! Status: ${response.status} - Could not load data.json`);
+				}
+				
+				// 3. Parse the JSON response body
+				const data = await response.json();
+				
+				// 4. Assign the parsed data to your global variables
+				quotesAndSayings = data.quotesAndSayings || [];
+				topics = data.topics || [];
+				
+				//console.log('Static data loaded successfully.');
+
+			} catch (error) {
+				//console.error('Failed to load static data:', error);
+				// You can use a fallback here if the fetch fails (e.g., hardcoded default)
+				quotesAndSayings = ["Error: Quotes failed to load."]; 
+			}
+		}
+
+
 	 function toggleMenu() {
         document.getElementById("menu").classList.toggle("active");
         }
        
     function startRedirect_SignIn() {
-        
-            const DELAY_SECONDS = 0;
-            const REDIRECT_URL = "https://script.google.com/macros/s/AKfycbwrqDbRGtsaJcQg16XZ2qYUXNwC_lnysdJBi3doKUI/dev"
-            let count = DELAY_SECONDS;
-            let deferredPrompt;
-        let redirectTimer;
-        
-        const countdownElement = document.getElementById('signIn');
-            // Clear any previous timer to ensure we only have one running
-            if (redirectTimer) clearInterval(redirectTimer);
-            
-            // --- CRITICAL REDIRECT: Start the 5-second countdown to redirect ---
-            redirectTimer = setInterval(() => {
-                count--;
-                countdownElement.textContent = count;
-                
-                if (count <= 0) {
-                    clearInterval(redirectTimer);
-                    // Perform the final redirect
-                    
-                    window.location.replace(REDIRECT_URL); 
-                    
-                }
-            }, 1000);
+        const frame = document.getElementById("appFrame")
+        document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.classList.remove('active');
+                 });
+                 document.getElementById("appFrame").classList.add('active');
+        //console.log('Starting')
+        frame.src = "https://script.google.com/macros/s/AKfycbx7-kpkhNWmH3OsmIDUnynqP4Yxli-TdusS_ymzpYqB5s4AGHBpYjEmisCTKscf7wbN/exec"   
         }
         
 		
@@ -467,26 +159,20 @@ sent.forEach(message =>{
             
            async function callGasApi(action, params = {}, elementId){
                 
-               
-			    const URL = await loadData("URL")
-				if (URL){
-					// Ensure GAS_WEB_APP_URL is globally available or defined here
-					GAS_WEB_APP_URL = URL; 
-					console.log('updatedUSED:', GAS_WEB_APP_URL);
-				} else {
-					
-					//GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwG6GX04Mgm20Wg2kQkUS5FMFmsf04M7m1K_ZoGIyz6S_FJJ-lXJCDnSVoRO5MvPf91/exec";
+				if(!(elementId === 'NOT')){
+					const URL = await loadData("URL")
+					if (URL){
+						GAS_WEB_APP_URL = URL; 
+						console.log('updatedUSEDFrom inside');
+					} 
 				}
-			   GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwDa52y4T000qbW5AipN9r6XgG3I1EbKvMMUbmoeTqZohHNj1inKz5xFO-dnZM4UJHK/exec";
-				console.log('updatedUSED: v123');
-			   // 1. Prepare the JSON data payload for the POST request
 				let payload = {
 				  action: action // Required for the GAS switch statement
 				};
 				// 2. Append User ID and Trust (if elementId is not 'NOT')
 				if(!(elementId === 'NOT')){
 				  payload.user_ID = labstudyData.userInfo[0].userId;
-					payload.trust = labstudyData.userInfo[0].approved.toString(); // Ensure 'true'/'false' is sent as string
+					payload.trust = labstudyData.userInfo[0].approved.toString();
 				};
 				for(const key in params){
 				  if(params.hasOwnProperty(key)){
@@ -496,31 +182,30 @@ sent.forEach(message =>{
 					try{
 					  // --- CRITICAL CHANGE: Using POST method with JSON body ---
 					  const response = await fetch(GAS_WEB_APP_URL,{
-					    method: 'POST', // REQUIRED for doPost()
-					    
-						// 👇 FIX: Must be 'headers' (plural)
-					    headers: { 
-					      // Do NOT use 'application/json'. Use 'text/plain' to prevent OPTIONS request.
+					    method: 'POST', 
+					    headers: {
 							'Content-Type': 'text/plain;charset=utf-8'
 					    },
 					    
-					    body: JSON.stringify(payload) // Data is sent as a JSON string in the body
+					    body: JSON.stringify(payload) 
 					  }); 
-					// ... (rest of the try/catch block)
+					
 
 				  if(!response.ok){
 					throw Error(`HTTP error! Stetus: ${response.stetus}`);
 				  }
 				  const pureResponse = await response.json();
+				  //console.log('updated:', pureResponse);
 				  // Authentication handling (logic from original code)
 				  if(pureResponse[0] === false){
 					labstudyData = {};
 					await saveData('labstudyTrackerData',labstudyData);
+					console.log('updated: change');
 				  }
 				  // URL Update logic (from original code)
 					if ((pureResponse[1] !== GAS_WEB_APP_URL)) {
 						await saveData('URL',pureResponse[1]);
-						console.log('updated:', pureResponse);
+						console.log('updated:from server', pureResponse[1]);
 					}
 
 					return pureResponse[0];
@@ -602,11 +287,10 @@ sent.forEach(message =>{
                        if(sTIndex){
                         //console.log('sTIndex')
                         quizData.sessionTopic = sessionT;
-                        const makeQuiz = await loadData('makeQuiz')/**await callGasApi('makeQuiz',{
+                        const makeQuiz = await callGasApi('makeQuiz',{
                             topic: sessionT[1]+'.'+sessionT[2]
-                        })**/
+                        })
                         if(makeQuiz[0]){
-							//await saveData('makeQuiz',makeQuiz)
                             quizData.quizQuestions = makeQuiz[1];
                             
                             quiz();
@@ -738,7 +422,7 @@ sent.forEach(message =>{
             async function sessionSave (){
                 const number_Of_Off_s = labstudyData.sessions.length;
                 if (number_Of_Off_s > 0){
-                   
+                console.log(await cloudQuizSave())  
                     const number_Of_Clo_s = await callGasApi('sessionsSave',{
                         number_Of_Off_s: number_Of_Off_s,
                         tacks: 'number_Of_Clo_s'});
@@ -769,7 +453,7 @@ sent.forEach(message =>{
                         };
                         if (sessionsArry.length > 0){
 						const sessionsToSave = JSON.stringify(sessionsArry);
-                        const quizSessionUpdate = JSON.stringify(cloudQuizSave());
+                        const quizSessionUpdate = JSON.stringify(await cloudQuizSave());
 						const topicsToUpdate = JSON.stringify([subject_TIDsArray,processesStudiedSessions()])
                         const is_saved = await callGasApi('sessionsSave',{
                                     tacks: sessionsToSave,
@@ -863,6 +547,7 @@ sent.forEach(message =>{
                 const modeButton = document.getElementById('mode-button');
                 const modeDropdown = document.getElementById('mode-dropdown');
                 const currentModeDisplay = document.getElementById('current-mode-'+kind);
+                loading = document.getElementById('loading-'+kind);
                 
                  // Toggle dropdown
 				modeButton.addEventListener('click', (e) => {
@@ -927,7 +612,7 @@ sent.forEach(message =>{
                 });
 
                 // Handle mode selection from dropdown
-                modeDropdown.addEventListener('click', (e) => {
+                modeDropdown.addEventListener('click',  (e) => {
                     const modeElement = e.target;
                     if (modeElement.dataset.mode) {
                         newMode = modeElement.dataset.mode;
@@ -962,24 +647,37 @@ sent.forEach(message =>{
 
                 // --- 3. Action Handlers (Example) ---
 
-                sendButton.addEventListener('click', () => {
+                sendButton.addEventListener('click', async () => {
                     const promptText = textarea.value.trim();
                     const currentMode = currentModeDisplay.textContent;
                     
                     if (promptText) {
                         console.log(`Sending Prompt (${currentMode}): "${promptText}"`);
                         if(currentMode === 'Quiz'){
-                            quizMaker('submit');
+                            loading.classList.add('rotate')
+                            loading.style.display = 'block'
+                            await quizMaker('submit') ;
+                            loading.classList.remove('rotate');
+                            loading.style.display = 'none';
+                            
                         }
                         else if (currentMode === 'Question'){
-                            chatPrompt(promptText,kind);
+                            loading.classList.add('rotate')
+                            loading.style.display = 'block'
+                            await chatPrompt(promptText,kind) 
+                            loading.classList.remove('rotate')
+                            loading.style.display = 'none';
+                            
                         }
                         else if(currentMode === 'Chat'){
-                            chatPrompt(promptText,kind);
+                            loading.classList.add('rotate');
+                            loading.style.display = 'block';
+                            chatPrompt(promptText,kind)
+                             loading.classList.remove('rotate')
+                            loading.style.display = 'none';
+                            
                         }
-                        // **TODO: Replace this console log with your actual callGasApi() function**
-                        
-                        // Clear and reset the input area after sending
+                       
                         textarea.value = '';
                         resizeTextarea(); // Reset height and disable button
                     }
@@ -1136,9 +834,11 @@ sent.forEach(message =>{
                     }
                     
                     sessionDiv.innerHTML = `
-                        <h4>${messager}    ${time}</h4>
-                        <p>${chat.prompt}</p>
-                    `;
+                        <h4>${messager}    ${time}</h4>`;
+                    // Correct way:
+					const msgP = document.createElement('p');
+					msgP.textContent = chat.prompt;
+					sessionDiv.appendChild(msgP);
                     chatContainer.appendChild(sessionDiv);
                     scrollToBottom(chatContainer)
                     console.log(chat)
@@ -1376,6 +1076,7 @@ sent.forEach(message =>{
             // Switch between tabs
             async function switchTab(tabName) {
                 console.log('switch')
+                try{
 					keyTrust();
                     // Hide all tabs
                     document.querySelectorAll('.tab-content').forEach(tab => {
@@ -1390,14 +1091,13 @@ sent.forEach(message =>{
                     event.target.classList.add('active');
                     document.getElementById("menu").classList.toggle("active");
                     if(tabName === 'group'){
-                        const chats = await callGasApi('chats',{task: 'task'});
-                        if (chats.length >0){
-							console.log(chats)
-                        chatSave(chats,pathLink,'chats');
-                                chatbox()
-							}
+                        startChatPolling();
                     }
-                    else if(tabName === 'progress'){
+                    else{
+                        stopChatPolling();
+                    };
+
+                    if(tabName === 'progress'){
                         updateProgress();
                     }
                     else if (tabName === 'review'){               
@@ -1416,30 +1116,12 @@ sent.forEach(message =>{
 						}
 						upDateProfile();
 					}
-                
+                }catch{
+
+                }
             }
             
-            function saveAsPDF(id,fileName){
-			  const content = document.getElementById(id)
-				const options = {
-				  margin: 5,
-				  filename: fileName,
-				  image: {type: 'jpeg',quality: 1},
-				  html2canvas: {scale: 1, scrollY: 0},
-				  pagebreak: {mode: ['avoid-all','css','legacy']},
-				  jsPDF: {
-					orientation: 'portriat',
-					format: 'a4',
-					unit: 'mm'
-					}
-				};
-				html2pdf.set(options).from(content).toPdf().get('pdf').then(function(pdf) {
-				  const nPages = pdf.internal.getNumberOfPages();
-				  if (nPages > 1){
-					pdf.deletePage(2)
-				  }
-				}).save()
-			}
+         
 			
 			function Timetable() {
 
@@ -1495,7 +1177,8 @@ sent.forEach(message =>{
 					// your old behavior: assign and update display
 					labstudyData = val;           // keep same global name you used
 					console.log(labstudyData)
-					try { updateDisplay(); } catch (err) {}
+					try { updateDisplay();
+							switchTab('track') } catch (err) {}
 				  }
 				  resolve(val);
 				};
@@ -1528,7 +1211,7 @@ sent.forEach(message =>{
                 }
                 
                if (!is_Allowed){
-				 labstudyData = {}
+				 //labstudyData = {}
                  //console.log('runFalse')
                  document.querySelectorAll('.tab-content').forEach(tab => {
                     tab.classList.remove('active');
@@ -1542,20 +1225,6 @@ sent.forEach(message =>{
                return is_Allowed
             }
             
-        async function profile() {
-        const storedImageData = await loadData('image');
-        if (storedImageData) {
-        document.getElementById('profileholder').src = storedImageData;}
-        else{const pic = document.getElementById('image-input').files[0];
-            const fimg = new FileReader();
-            fimg.onload = function() {
-                const imgdata = fimg.result;
-                
-            };
-            fimg.readAsDataURL(pic);}
-            await saveData("image", imgdata);
-
-        }
 
         function processesStudiedSessions(){
             try{
@@ -1894,6 +1563,7 @@ sent.forEach(message =>{
                             const formattedDate = currentDate.toDateString('en-GB').split(' ').slice(1).join('');
                             todayTopic = subjTopics[formattedDate]
                             todaystopic[subject.id] = todayTopic;
+                            todaySubjectReminders.push(subject.name);
                             let inner = `📔 Consider studying <strong>${subject.name}</strong> today.<br>🔬 Please spend at least half of your session on <strong>${todayTopic}</strong>.<br>✏ Spend the rest of time on your wish study area.`;
                             if(subject.id === 1){
                                 inner = `📔 Solve <strong>${subject.name}</strong> everyday.<br>🔬 Please solve at least 4 questions on <strong>${todayTopic}</strong>.<br>✏ Spend the rest of time solving questions on your wish topics.`
@@ -1924,6 +1594,8 @@ sent.forEach(message =>{
                 
                 if (container.children.length === 0 && new Date().getDay() <= 6 && new Date().getDay() >=1) {
                     container.innerHTML = `<p>Great job! You\'re on track on today's subjects . Do the same tomorrow 🎉</p>`;
+                }else{
+                    createReminder('Study Tracker Reminders','Study these subjects today: '+todaySubjectReminders.join(', '),new Date().toISOString())
                 }
                 if (container2.children.length > 0){
                     document.getElementById("missedTopicReminders").style.display ="block"
@@ -1940,35 +1612,21 @@ sent.forEach(message =>{
         function lastMonday() {
             let lastMonday;
             let todayDate = new Date()
-            todayDate.setDate(todayDate.getDate()- 7)
             
-            for (i=0;i<=7;i++){
+            while (true){
+                n = 1
                 if(todayDate.getDay() === 1){
-                   
-                    lastMonday = todayDate;
-                    
+                    lastMonday = todayDate
+                    console.log('loopingbackward')
                     break;
                 }
-                if(!lastMonday && i == 7){
-                    while (true){
-                        n = 5
-                        if(todayDate.getDay() === 1){
-                            lastMonday = todayDate
-                            
-                            break;
-                        }
                         
-                        todayDate.setDate(todayDate.getDate() - n)
-                        n += 1
-                    }
-                
-                }
-                todayDate.setDate(todayDate.getDate() + i)
+                todayDate.setDate(todayDate.getDate() - n)
                 
             }
-            return lastMonday;
+             return lastMonday;
         }
-        
+       
        
         // Update review section
         function updateReview() {
@@ -2051,18 +1709,49 @@ sent.forEach(message =>{
         // Initialize the app
         window.addEventListener('load', async function () {
 			await initDB(); // app starts
+			//switchTab('track')
+			//await saveData('labstudyTrackerData',[])
 			await loadData('labstudyTrackerData','onload');
-            day = 1000*60*60*24;
+			console.log(labstudyData)
             
-            const user_plan = labstudyData.userInfo[0];
-            daysPassed = parseInt((new Date(today).getTime()-day)/day)-1;
-            const weekPassed = parseInt(daysPassed/7)
-            if(weekPassed > 0){
-                daysPassed -= weekPassed*2
+            day = 1000*60*60*24;
+            try{
+				const user_plan = labstudyData.userInfo[0];
+				daysPassed = Math.abs(parseInt((new Date(today).getTime()-user_plan.fMEdate[0])/day)-1);
+                //console.log(daysPassed,user_plan.fMEdate[0])
+                const dateDate = user_plan.fMEdate;
+                now = Date.now();
+                const daysToGo = Math.abs(parseInt((new Date(today).getTime()-dateDate[2])/day));
+                let rem;
+                if(!(dateDate[1] < now && dateDate[2] > now)){
+                    console.log('inside',now);
+                    showMessage('Account deactived. Pay to activate before two months','error',5)
+                    rem = {id:'r'+ Date.now(),title: 'Study Tracker Reminder',body: 'Account deactived. Pay to activate before two months.'};
+                    showLocalNotification(rem);
+                }
+                else if(daysToGo <= 5){
+                    showMessage(`You've remain with ${daysToGo} days. Please get online to avoid data loss.`,'error',5);
+                    rem = {id:'r'+ Date.now(),title: 'Study Tracker Reminder',body: `You've remain with ${daysToGo} days. Please get online to avoid data loss.`};
+                    showLocalNotification(rem)
+                }
+                
+				const weekPassed = parseInt(daysPassed/7)
+				if(weekPassed > 0){
+					daysPassed -= weekPassed*2
                 
             }
             hoursExpected = user_plan.hours_session* user_plan.number_subjects_day * daysPassed
             //console.log()
+            }catch (e){console.warn(e)}
+            try{
+            requestNotificationPermission();
+            registerServiceWorker();
+            syncRemindersOnLoad();
+            createReminder('r'+ Date.now(),'Study Tracker Reminder','Solve Maths everyday.',new Date().toISOString(),'Dairy')
+            console.log('Reminder system ready');
+        }catch(e){       
+            console.error('Init failed', e);
+        }
 		});
         window.addEventListener('online',function (){
             sessionSave();
@@ -2108,7 +1797,7 @@ loginForm.addEventListener('submit', async function(e) {
     try {
         const message = await callGasApi('login', {
             email_username: username,
-            password: password
+            password: btoa(password)
         },'NOT');
 		console.log('called')
        
@@ -2220,113 +1909,111 @@ loginForm.addEventListener('submit', async function(e) {
             
             
             
-            
-        // Periodic Sync Constants
-const study_Tag = 'Study-Reminder-Sync'; // Renamed tag for clarity
-const min_Interval = 60 * 1000; // 1 day in milliseconds (as you set it)
-
-if ('serviceWorker' in navigator && 'periodicSync' in navigator.serviceWorker) {
-    navigator.serviceWorker.ready.then(function(swReg) {
-        // 1. Check for permission
-        navigator.permissions.query({ name: 'periodic-background-sync', public: true })
-            .then(function(permissionStatus) {
-                if (permissionStatus.state === 'granted' || permissionStatus.state === 'prompt') {
-                    registerPeriodicSync(swReg);
-                } else {
-                    console.warn('Periodic Sync permission denied. Background reminders disabled.');
-                }
-            });
-    });
-} else {
-    console.warn('Periodic Background Sync is not supported on this browser/OS.');
-}
-
-function registerPeriodicSync(swReg) {
-    swReg.periodicSync.register(study_Tag, {
-        minInterval: min_Interval
-    })
-    .then(() => {
-        // This confirms the sync task is successfully scheduled.
-        console.log(`Periodic sync registered for tag: ${study_Tag}`);
-    })
-    .catch(error => {
-        console.error('Periodic Sync registration failed:', error);
-    });
-}
+let loading           
+const stBt = document.getElementById('send-button-ai');   
 document.getElementById('prompt-container-chat').addEventListener('click',function(){
-	 promptSwitch('chat')});
+	loading = document.getElementById('loading-chat');
+	promptSwitch('chat')});
 document.getElementById('prompt-container-ai').addEventListener('click', function(){
+	loading = document.getElementById('loading-ai');
 	promptSwitch('ai')});
-document.getElementById('send-button-ai').addEventListener('click', () => {
+stBt.addEventListener('click', async () => {
 	const currentmode = document.getElementById('current-mode-ai').textContent;
 	if(currentmode === 'Quiz'){
-		quizMaker('submit');
+        
+        loading = document.getElementById('loading-ai');
+        loading.classList.add('rotate')
+        loading.style.display = 'block'
+        console.log('locked')
+		await quizMaker('submit');
+        loading.classList.remove('rotate');
+        loading.style.display = 'none';
 	}
 	})
 
                 
 
-const DB_NAME = 'StudyDataDB';
-const DB_VERSION = 1;
-const STORE_NAME = 'Timetable';
+    // 1. requestNotificationPermission(): ask for permission
+    async function requestNotificationPermission() {
+        if (!("Notification" in window)) throw new error("Notifications not supported");
+            const result = await Notification.requestPermission();
+        if (!(result === 'granted')) throw new error("Notification permission denied");
+            return true;
+    }
 
-function openDatabase() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        
-        request.onupgradeneeded = function(e) {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-                db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-            }
-        };
-
-        request.onsuccess = function(e) {
-            resolve(e.target.result);
-        };
-
-        request.onerror = function(e) {
-            reject('Database error: ' + e.target.error.name);
-        };
-    });
-}
-
-// Function to save the daily study plan when the user is online
-async function saveStudyPlan(day, taskList) {
-    const db = await openDatabase();
-    const transaction = db.transaction([STORE_NAME], 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
-    
-    // Store data structure: {id: "Monday", tasks: ["Review A", "Solve B"]}
-    store.put({ id: day, tasks: taskList }); 
-}
-
-// Example of how you would call this in your app.js (when the timetable tab is loaded):
- const mondayTasks = ['Review this week class exercises', 'Your style']; 
- saveStudyPlan('Monday', mondayTasks);
-
-// --- 5. NOTIFICATION CLICK: Handling user interaction with the notification ---
-
-self.addEventListener('notificationclick', function(event) {
-    console.log('[Service Worker] Notification click received.');
-
-    event.notification.close();
-    const targetURL = event.notification.data.url || '/index.html';
-
-    event.waitUntil(
-        clients.matchAll({ type: 'window' })
-        .then(function(clientList) {
-            // Look for an existing app window and focus it
-            for (let i = 0; i < clientList.length; i++) {
-                const client = clientList[i];
-                if (client.url.includes(targetURL) && 'focus' in client) {
-                    return client.focus();
+    // 2. registerServiceWorker(): register SW
+    async function registerServiceWorker() {
+        if ('serviceWorker' in navigator){
+            const reg = await navigator.serviceWorker.register('serviceworker.js', {scope: './'});
+            console.log('SW registred', reg);
+            // try to register periodic sync (optional)
+            if('periodicSync' in reg){
+                try{
+                    await reg.periodicSync.register('reminder-sync',{minInterval: 15 * 60 * 1000});
+                     console.log('Periodic sync registered (may not be supported)');
+                }catch(e){
+                    console.warn('PeriodicSync failed', e)
                 }
             }
-            // If no existing window, open a new one to the target URL
-            if (clients.openWindow) {
-                return clients.openWindow(targetURL);
+            return reg;
+        }
+        else{
+            console.error('Service workers not supported');
+        }
+    }
+
+    // 5. showLocalNotification(reminder): message SW to show notification
+    async function showLocalNotification(reminder) {
+        const sw = await navigator.serviceWorker.ready;
+        sw.active.postMessage({type: 'SHOW_NOTIFICATION', payload: reminder});
+    }
+
+    async function saveReminder(reminders = []) {
+        const todayReminders = [];
+        if(reminders.length >= 1){
+            reminders.forEach(rem =>{
+                todayReminders.unshift(rem);
+            })
+            await saveData('reminders',todayReminders)
+        }
+    }
+
+    // 4. scheduleInPage(reminder): schedule using setTimeout while page is active
+    function scheduleInPage(reminder) {
+        const fireAt = new Date(reminder.timeISO).getTime();
+        const now = Date.now();
+        const ms = fireAt - now;
+        if (ms <= 0) return; // already passed or immediate handling should be done elsewhere
+        // store timer id to cancel if needed
+        reminder._timerId = setTimeout(() => {
+            // show notification through SW
+            showLocalNotification(reminder);
+            if (reminder.repeat === 'daily') {
+            // reschedule for next day
+            const next = new Date(fireAt + 24*60*60*1000);
+            reminder.timeISO = next.toISOString();
+            saveReminder([reminder]);
+            scheduleInPage(reminder);
             }
+        }, ms);
+    }
+
+    // 6. syncRemindersOnLoad(): call on app start to schedule upcoming reminders
+    async function syncRemindersOnLoad() {
+        const all = await loadData('reminders');
+        all.forEach(rem =>{
+            scheduleInPage(rem);
         })
-    );
-});
+    }
+
+    // Utility to create and register a reminder
+    async function createReminder(title, body, timeISO, repeat=null) {
+        const id = 'r-'+ Date.now();
+        const rem = {id,title,body,timeISO,repeat};
+        
+        saveReminder([rem]);
+        scheduleInPage(rem);
+        return rem;
+    }
+
+  
