@@ -1,178 +1,182 @@
-// A unique name for your cache (update this if you change app shell files)
-const CACHE_NAME = 'study-tracker-cache-v1';
-// NEW: Dedicated cache for third-party files (CDNs, Google Fonts, etc.)
-const CACHE_EXTERNAL_NAME = 'external-assets-cache-v1';
+// serviceworker.js
 
-// List of files required for the app to run offline (the "App Shell")
-const urlsToCache = [
-  './', // Caches the root path (index.html)
-  'index.html',
-  'js/app.js',
-  'manifest.json',
-  'icon-192.png',
-  'icon-512.jpg',
-  'all.min.css',
-  'style.css',// Old asset
+// --- CONFIGURATION ---
+const CACHE_NAME = 'study-tracker-v1'; // Increment this version when you update app files!
+const CACHE_EXTERNAL_NAME = 'external-assets-cache-v1'; // For third-party assets
+const STUDY_TAG = 'Dairy-Study-Remainder';
 
-  // Existing External Font
-  
-
-  // --- NEW Assets for Gemini UI and PDF ---
-  'html2pdf.bundle.min.js'
+// List of files to cache for offline access (App Shell)
+const OFFLINE_URLS = [
+    '/',
+    '/index.html',
+    '/js/app.js',
+    '/data.js', 
+    '/style.css',
+    '/manifest.json',
+    '/icon-192.png',
+    '/icon-512.png',
+    '/all.min.css' 
 ];
 
-/* * -----------------------------------------------------
- * 1. INSTALL EVENT: Caches all essential App Shell files.
- * -----------------------------------------------------
- */
-
-self.addEventListener('install', event => {
+// --- 1. INSTALLATION: Cache the App Shell ---
+self.addEventListener('install', function(event) {
+    console.log('[Service Worker] Install Event: Caching assets.');
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => {
-                // Fetch each asset individually to apply the mode: 'no-cors'
+            .then(function(cache) {
+                console.log('[Service Worker] Pre-caching app shell.');
+                
+                // We map over the URLs to handle them individually. 
+                // This helps identify which specific file fails if one does.
                 return Promise.all(
-                    urlsToCache.map(url => {
-                        return fetch(url, {
-                            mode: 'no-cors' // ⬅️ CRITICAL FIX
-                        }).then(response => {
-                            // Caching the response (will be opaque)
+                    OFFLINE_URLS.map(url => {
+                        return fetch(url).then(response => {
+                            if (!response.ok) {
+                                throw new Error(`Request for ${url} failed with status ${response.status}`);
+                            }
                             return cache.put(url, response);
                         }).catch(error => {
-                            console.error(`Failed to cache ${url}:`, error);
+                            console.error(`[Service Worker] Failed to cache ${url}:`, error);
                         });
                     })
                 );
             })
+            .then(() => self.skipWaiting()) // Activate immediately
     );
 });
 
-/* * -----------------------------------------------------
- * 2. FETCH EVENT: Implements the Cache-First strategy with dynamic external caching.
- * -----------------------------------------------------
- */
-self.addEventListener('fetch', function(event) {
-  const requestUrl = new URL(event.request.url);
-  runBackgroundReminderLogic()
-    // Check if the request is for the specific external domain
-    if (requestUrl.hostname === 'cdn.tailwindcss.com') {
-        event.respondWith(
-            caches.match(event.request)
-                .then(cachedResponse => {
-                    return cachedResponse || fetch(event.request, { mode: 'no-cors' }) // ⬅️ CRITICAL FIX
-                        .then(response => {
-                            return caches.open(CACHE_NAME)
-                                .then(cache => {
-                                    // Must clone the response before putting it in the cache
-                                    cache.put(event.request, response.clone());
-                                    return response;
-                                });
-                        });
-                })
-        );
-    }
-  // Only handle requests for http/https, ignore chrome-extension:// etc.
-  if (event.request.url.startsWith('http')) {
-    event.respondWith(
-      caches.match(event.request).then(function(response) {
-        // 1. CACHE-FIRST: If the asset is found in the cache, return it immediately.
-        if (response) {
-          console.log('[Service Worker] Found in Cache:', event.request.url);
-          return response;
-        }
-
-        // 2. NETWORK-FALLBACK & DYNAMIC CACHING: If not found, fetch from network and cache.
-        return fetch(event.request).then(function(response) {
-            // Check if we received a valid response
-            if(!response || response.status !== 200) {
-                return response;
-            }
-            
-            // Check if the response is cacheable (type 'basic' for same-origin, 'opaque' for cross-origin)
-            if(response.type !== 'basic' && response.type !== 'opaque') {
-                return response;
-            }
-
-            // Determine which cache to use
-            let cacheToUse = CACHE_NAME;
-            
-            // NEW: If the URL is external, use the external cache
-            if (!event.request.url.includes(location.origin)) {
-                cacheToUse = CACHE_EXTERNAL_NAME;
-            }
-
-            // Clone the response so we can use one for the cache and one for the browser.
-            const responseToCache = response.clone();
-
-            caches.open(cacheToUse)
-              .then(function(cache) {
-                // Cache the newly fetched resource for future use.
-                cache.put(event.request, responseToCache);
-              });
-
-            return response;
-        });
-      }).catch(function() {
-          // If both cache and network fail (which happens when offline),
-          console.log('[Service Worker] Cache and Network failed for:', event.request.url);
-          // return caches.match('offline.html'); 
-      })
-    );
-  }
-});
-
-/* * -----------------------------------------------------
- * 3. ACTIVATE EVENT: Cleans up old caches.
- * -----------------------------------------------------
- */
+// --- 2. ACTIVATION: Clean up old caches ---
 self.addEventListener('activate', function(event) {
-  // UPDATED: Whitelist now includes the new external cache name.
-  const cacheWhitelist = [CACHE_NAME, CACHE_EXTERNAL_NAME];
+    console.log('[Service Worker] Activate Event: Clearing old caches.');
+    const cacheWhitelist = [CACHE_NAME, CACHE_EXTERNAL_NAME];
 
-  event.waitUntil(
-    caches.keys().then(function(cacheNames) {
-      return Promise.all(
-        cacheNames.map(function(cacheName) {
-          // Delete any cache that is not on the whitelist
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            console.log('[Service Worker] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
+    event.waitUntil(
+        caches.keys().then(function(cacheNames) {
+            return Promise.all(
+                cacheNames.map(function(cacheName) {
+                    if (cacheWhitelist.indexOf(cacheName) === -1) {
+                        console.log('[Service Worker] Deleting old cache:', cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        }).then(() => self.clients.claim()) // Take control of all clients immediately
+    );
 });
 
-/* * -----------------------------------------------------
- * 4. PERIODIC SYNC EVENT: The code that runs in the background. (PRESERVED)
- * -----------------------------------------------------
- */
-self.addEventListener('periodicsync', function(event) {
-    // Check the tag to ensure we run the correct task
-    if (event.tag === 'Study-Reminder-Sync') {
-        
-        // event.waitUntil() ensures the Service Worker stays alive until this promise resolves.
-        event.waitUntil(
-            // This function is preserved from your original code.
-            runBackgroundReminderLogic() 
-        );
-    }
+// --- 3. FETCH: Cache First Strategy with External Handling ---
+self.addEventListener('fetch', function(event) {
+    // Only intercept HTTP/S requests (ignore chrome-extension://, etc.)
+    if (!event.request.url.startsWith('http')) return;
+
+    const requestUrl = new URL(event.request.url);
+
+    // SPECIAL CASE: Tailwind CDN or other external assets requiring no-cors
+    if (requestUrl.hostname === 'cdn.tailwindcss.com' || requestUrl.hostname === 'fonts.googleapis.com' || requestUrl.hostname === 'fonts.gstatic.com') {
+        event.respondWith(
+            caches.match(event.request).then(cachedResponse => {
+                if (cachedResponse) return cachedResponse;
+
+                // Fetch with no-cors for opaque caching
+                return fetch(event.request, { mode: 'no-cors' })
+                    .then(response => {
+                        return caches.open(CACHE_EXTERNAL_NAME).then(cache => {
+                            cache.put(event.request, response.clone());
+                            return response;
+                        });
+                    });
+            })
+        );
+        return; // Exit function for this special case
+    }
+
+    // STANDARD STRATEGY: Cache First, then Network
+    event.respondWith(
+        caches.match(event.request).then(function(response) {
+            // 1. Return cached response if found
+            if (response) {
+                return response;
+            }
+
+            // 2. Fetch from network
+            return fetch(event.request).then(function(networkResponse) {
+                // Check if we received a valid response
+                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+                    return networkResponse;
+                }
+
+                // 3. Cache the new file for next time
+                const responseToCache = networkResponse.clone();
+                caches.open(CACHE_NAME).then(function(cache) {
+                    cache.put(event.request, responseToCache);
+                });
+
+                return networkResponse;
+            }).catch(function() {
+                // Network failed and not in cache? 
+                // Optional: Return a custom offline page here if navigation request
+                // if (event.request.mode === 'navigate') { return caches.match('/offline.html'); }
+            });
+        })
+    );
 });
 
-// A placeholder function for what the Service Worker should actually do (PRESERVED)
-function runBackgroundReminderLogic() {
-    // 1. Fetch data from IndexedDB or storage
-    // 2. Check if the time/conditions for a study reminder have been met
-    // 3. If so, display a notification:
-    
-    return self.registration.showNotification('Study Reminder', {
-        body: 'It is time for your scheduled study session!',
-        icon: 'icon-192.png',
-        tag: 'study-reminder-alert'
-    });
+// --- 4. MESSAGING: Handle local notifications from App ---
+self.addEventListener('message', event => {
+    const { type, payload } = event.data || {};
+    if (type === 'SHOW_NOTIFICATION') {
+        showLocalNotification(payload);
+    }
+});
+
+function showLocalNotification(rem) {
+    const title = rem.title || 'Study Reminder';
+    const options = {
+        body: rem.body || '',
+        tag: rem.id,
+        renotify: true,
+        data: { id: rem.id, timeISO: rem.timeISO }, // Store data for click handler
+        icon: '/icon-512.png',
+        badge: '/icon-192.png'
+    };
+    self.registration.showNotification(title, options);
 }
 
+// --- 5. NOTIFICATION CLICK HANDLER ---
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+    
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+            // If the app is open, focus it
+            if (clients && clients.length) {
+                const client = clients[0];
+                client.focus();
+                client.postMessage({ type: 'NOTIFICATION_CLICK', payload: event.notification.data });
+            } else {
+                // If app is closed, open it
+                self.clients.openWindow('/');
+            }
+        })
+    );
+});
 
+// --- 6. PERIODIC SYNC (Background Logic) ---
+self.addEventListener('periodicsync', event => {
+    if (event.tag === 'reminder-sync') {
+        event.waitUntil(runBackgroundReminderLogic());
+    }
+});
 
-
+// Placeholder for background logic
+async function runBackgroundReminderLogic() {
+    // In a real scenario, you'd read IndexedDB here to check for missed reminders.
+    // For now, this just confirms the sync fired.
+    console.log('[Service Worker] Periodic Sync fired.');
+    
+    /* Example logic:
+    const db = await openDB(); 
+    const reminders = await getReminders(db);
+    reminders.forEach(rem => { if(shouldFire(rem)) showLocalNotification(rem); });
+    */
+}
