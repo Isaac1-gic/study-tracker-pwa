@@ -4,10 +4,10 @@
         <title>Study Tracker</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width initial-scale=1.0">
-        <link rel="stylesheet" href="style.css">
+       
         <link rel="manifest" href="manifest.json">
-        <link rel="stylesheet" href="all.min.css">
-        <script src="html2pdf.bundle.min.js"></script>
+        
+        
         
         <script>
             // Wait for the window to fully load to ensure all resources are ready
@@ -26,7 +26,8 @@
                 }
             };
         </script>
-       
+       <link rel="stylesheet" href="all.min.css">
+		<link rel="stylesheet" href="style.css">
     </head>
     <body>
         <div>
@@ -34,13 +35,19 @@
             	<p class="menu-btn" onclick="toggleMenu()">☰</p>
         	</div>
          	
-		     <iframe id="appFrame"></iframe>  
+		      
 		    <div class="error-message" id="errorMessage"></div>
 		    <div class="success-message" id="successMessage">
 				<p id="quoteDisplay" ></p>
 		    </div>
 		    </div>
+            
+            <div id="none" class="tab-content">
                 
+            </div>
+
+
+                <!--Login page-->
                 <div id="login" class="login-container">
                     <div class="header">
                         <h1>Academic Study Tracker</h1>
@@ -110,7 +117,7 @@
             
          <!-- Track Study Tab -->
          
-        <div id="track" class="tab-content active">
+        <div id="track" class="tab-content">
 			<header>
                 <h1>📚 Study Tracker Pro</h1>
                 <p>Track your progress and improve your study habits - 90% Offline</p>
@@ -124,6 +131,7 @@
                 <select id="studySubject" onfocus="document.getElementById('MissedTopic').style.display = 'block'; document.getElementById('myowntopic').style.display = 'block'" required >
                     <!-- Subjects will be populated here -->
                 </select>
+                
                 <div id='MissedTopic'>
                 <label>Missed Topic</label>
                 <h4>Choose one to be back on track</h4>
@@ -148,7 +156,7 @@
             <button>Save Study Session</button>
             </form>
             <div id="todayReminders" class="reminder">
-                <h3>📢 Today's Remainders</h3>
+                <h3>📢 Today's Reminders</h3>
                 <div id="reminderList"></div>
             </div>
             <div id="missedTopicReminders" class="reminder" style="display: none;background-color: red;">
@@ -185,6 +193,51 @@
             </div>
         </div>
         
+        <!-- about App-->
+        <div id="about" class="tab-content">
+            <header>
+                <h1>About App</h1>
+            </header>
+            <div>
+                <dt>Full App Name:</dt><dd><a href="#">MSCE G Study Tracker</a></dd>
+                <br>
+                <dt>Version:</dt><dd> 1.0 {Studying Register V:2.0}</dd>
+                <br>
+                <dt>Purpose:</dt>
+                    <dd>App is designed improve Malawi enducation by to help MSCE students efficiently track and manage study or session data related to multiple subjects. 
+                    It ensures that all academic progress is accurately logged and easily accessible. 
+                    It also reduce panic when MSCE final exams is aroun the corner. 
+                    This app is expected to improve MSCE results if it has been used correctly from first day.</dd>
+                <br>
+                <dt>Key Features:</dt>
+                    <dd>* Secure User Management (via GAS).
+                    * Subject & Session Tracking with time logging.
+                    * Data Synchronization between the PWA and Google Sheets.
+                    * Automated Report Generation (Weekly reports, charts).
+                    * AI Integration for chat assistance, quizzes, and question-answering.</dd>
+                <br>
+                <dt>Terms & Policies:</dt> 
+                    <dd>As an PWA tool, Data security and privacy are paramount. 
+                    All user data (Subjects, Sessions, Emails) is stored exclusively within developer linked Google Sheets. 
+                    The application does not share sensitive information. 
+                    Review our <a href="#">Privacy Policy</a> for full details.</dd>
+                    <br>
+            </div>
+            <div>
+                <dt>Developer:</dt> <dd><a href="#">Isaac G Chitsakamire</a></dd>
+                <br>
+                <dt>Acknowledgements:</dt> 
+                    <dd>We extend our sincere gratitude to all the poeple who took thier time helping me collecting topics and those who were testing this app.</dd>
+                <br>
+                <dt>Support & Feedback:</dt> 
+                    <dd>For technical issues, feature requests, or bug reports, please submit an issue to <a href="">developer</a>. 
+                    Your feedback is invaluable for improving the app.</dd>
+                <br>
+                
+            </div>
+            <footer>@<a href="#">MGY</a>2026...............<a href="#">IGC</a></footer>
+        </div>
+
         <!-- Group -->
         <div id="group" class="tab-content " >
 			<header>
@@ -216,7 +269,7 @@
 				  <!-- Right side actions -->
 				  <div class="actions-right">
 					<div style="display: none;"><span id="current-mode-chat">Chat</span></div>
-
+                    <div id="loading-chat" class="loading-Net" style="display: none;"></div>
 					<button id="send-button-chat" class="send-button" disabled title="Send">
 					  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="transform:rotate(90deg)">
 						<path d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.599 60.599 0 0 0 18.442-8.31.75.75 0 0 0 0-1.374 60.599 60.599 0 0 0-18.442-8.31Z"/>
@@ -285,7 +338,7 @@
 				  <!-- Right side actions -->
 				  <div class="actions-right">
 					<div id="mode-display-compact"><span id="current-mode-ai">Question</span></div>
-
+                    <div id="loading-ai" class="loading-Net" style="display: none;"></div>
 					<button id="send-button-ai" class="send-button" disabled title="Send">
 					  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="transform:rotate(90deg)">
 						<path d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.599 60.599 0 0 0 18.442-8.31.75.75 0 0 0 0-1.374 60.599 60.599 0 0 0-18.442-8.31Z"/>
@@ -305,7 +358,7 @@
     
             <div ></div>
             
-            
+    
         </div>
         <!-- profile Tab-->
          <div id="profile" class="tab-content">
@@ -313,7 +366,9 @@
                 <div id="userDetails" class="reminder">
                     
                 </div>
-                <div class="divider"><span>---</span></div>
+               <div>
+               
+               </div>
                  <!--Timetable Created-->
                  <div id="timetable">   
             
@@ -332,13 +387,17 @@
                                   <tr><td>Saturday</td><td colspan="6"><ul>-Write some exams pastpapers[<ol>=>Try to make environment like MANED exam room.</ol><ol>=>Finnish writing the paper 15min before allowed Time.</ol><ol>=>Find some to mark you and correct You or use AI but don`t depend on it.</ol><ol>=>Note: You`ll be doing this alone, so you'll be killing yourself by cheating or missing.</ol>]</ul><ul>-Review this week class exercises</ul><ul>-Your style</ul></td></tr>
                                   <tr><td>Sunday</td><td colspan="6"><ul>-Write one composition(letter,speech,report,short story)[<ol>=>Try to make environment like MANED exam room.</ol><ol>=>Finnish writing the composition within 45min.</ol><ol>=>Tomorrow Submit to your English teacher to mark you and make sure you recieve oral feedback.</ol><ol>=>Note: You`ll be doing this alone, so you'll be killing yourself by cheating or missing.</ol>]</ul><ul>-Review last week most challenging topic.</ul><ul>-Your style</ul></td></tr>  
                                 </table>
-                      <button class="login-btn" onclick="saveAsPDF('timetable','Study Timetable')">Save</button>
                       
-                      
-                </div>     
+                </div> 
+                
+                    
                       
             </div>
-
+            
+         <!-- SignIn -->
+		<div id="SignIN">
+				<iframe id="appFrame" class="tab-content" allowfullscreen ></iframe> 
+         </div>
          <!-- Review Tab -->
         <div id="review" class="tab-content">
 			<header>
@@ -347,13 +406,15 @@
             <div id="weeklyFeedback" class="reminder">
                 <p>Your weekly feedback will appear here after you start tracking your study sessions.</p>
             </div>
+           
+            <div id='History'>
             <header>
 				<h3>Study History</h3>
 			</header>
             <div id="studyHistory">
                 <!-- Study sessions will appear here -->
             </div>
-           
+           </div>
         </div>
 
         
@@ -373,11 +434,13 @@
             <a class="nav-tab" onclick="switchTab('group')">Chat space</a>
             <a class="nav-tab" onclick="switchTab('gic')">GIC AI</a>
             <a class="nav-tab" onclick="switchTab('profile')">Profile</a>
+            <a class="nav-tab" onclick="switchTab('about')">About</a>
         </nav>
   
   
 
     <script src="js/app.js"></script>
+    <script src="data.js"></script>
     </body>
 </html>
 
