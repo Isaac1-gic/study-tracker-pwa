@@ -1,67 +1,69 @@
-			let db = null;
-            let daysPassed;
-            let hoursExpected;
-            let todaySubjectReminders = [];
-            const ThisWeekMonday = lastMonday();
-			const todaycheck = new Date().toISOString().split('T')[0];
-            const forgotForm = document.getElementById('reLoginForm');
-            const loginForm = document.getElementById('loginForm');
-            const usernameInput = document.getElementById('username');
-            const passwordInput = document.getElementById('password');
-            const errorMessage = document.getElementById('errorMessage');
-            const successMessage = document.getElementById('successMessage');
-            
-			
-			let labstudyData = {}
-            // Data storage - uses browser's local storage
-             
-            
+        let db = null;
+        let daysPassed;
+        let hoursExpected;
+        let todaySubjectReminders = [];
+        const today = new Date().toISOString().split('T')[0];
+        let requestURL = 'https://script.google.com/macros/s/AKfycbyWqzA1y2CGRkOek0FswFAnbnOOxurslxgsqv0K0B_oxNjIcsyhtEp08k3dF8dTG6St/exec';
+        const ThisWeekMonday = lastMonday();
+        const todaycheck = new Date().toISOString().split('T')[0];
+        const forgotForm = document.getElementById('reLoginForm');
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        let requesting = 'GO';
+                    
+        let userStudyData = {};
+                    // Data storage - uses browser's local storage
             
 
-            let labChatsData = {
-                chats: [],
-                AIchats: []
-            }
+                    
+                    
 
-            let quizData = {
-                    sessionTopic: [],
-                    quizQuestions: [
-                        {},
-                        {},
-                        {},
-                        {},
-                        {}
-                        ]
+        let labChatsData = {
+                        chats: [],
+                        AIchats: []
                     };
-            let thisWeekReport = {title: '',
-                                intro: '',
-                                body: '',
-                                conclunsion: '',
-                                yTubeQuery: [],
-                                date: 1763802160057
-                            }
-			let quotesAndSayings = [];
-			let topics = {};
-            let studyTopics = {};
-            let subjectnames = {};
-            let pathLink = labChatsData.chats;
-            let chatPollingIntervalId = null;
-            let timeStamp = Date.now();
-            const CHAT_POLLING_INTERVAL = 30000;
 
-            // dd/mm/yyyy
-            const today = new Date().toISOString().split('T')[0];
-            let GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw4uuc-nRarh4pRQlEejuVuhD_TkO2hDiLTZJszF97B-PaC3EEe-Ol1IymhA4rvYHah/exec';
-            
+        let quizData = {
+                            sessionTopic: [],
+                            quizQuestions: [
+                                {},
+                                {},
+                                {},
+                                {},
+                                {}
+                                ]
+                            };
+        let thisWeekReport = {title: '',
+                                        intro: '',
+                                        body: '',
+                                        conclunsion: '',
+                                        yTubeQuery: [],
+                                        date: 1763802160057
+                            };
+        let quotesAndSayings = [];
+        let topics = {};
+        let studyTopics = {};
+        let subjectnames = {};
+        let pathLink = labChatsData.chats;
+        let chatPollingIntervalId = null;
+        let timeStamp = Date.now();
+        const CHAT_POLLING_INTERVAL = 30000;
 
-            
-
+                    // dd/mm/yyyy
+        
         function startChatPolling(){
+            const hour = new Date().getHours();
+            const day = new Date().getDay();
+            if ((hour >= 17 && hour < 20) || (day === 6 || day === 0)) {
             if(chatPollingIntervalId){
                 clearInterval(chatPollingIntervalId);
             };
             getChats();
             chatPollingIntervalId = setInterval(getChats,CHAT_POLLING_INTERVAL)
+            }     
         }
 
         function stopChatPolling(){
@@ -71,57 +73,35 @@
             }
         }
         async function getChats(){
-            const chats = await callGasApi('chats',{task: 'task',timeStamp: timeStamp});
-                        if (chats.length >0){
-							console.log(chats)
+            try{
+            const chats = await HTTPSrequest('chats',{task: 'task',timeStamp: timeStamp});
+                        if (chats && chats.length > 0){
+							
 							timeStamp = chats.timeStamp;
 							chatSave(chats,pathLink,'chats');
                                 chatbox()
 							}
+            } catch (e){}
         }
-		async function loadStaticData() {
-			try {
-				// 1. Fetch the data.json file from the same directory
-				const response = await fetch('data.json');
-				
-				// 2. Check for a successful response (e.g., file found)
-				if (!response.ok) {
-					//throw new Error(`HTTP error! Status: ${response.status} - Could not load data.json`);
-				}
-				
-				// 3. Parse the JSON response body
-				const data = await response.json();
-				
-				// 4. Assign the parsed data to your global variables
-				quotesAndSayings = data.quotesAndSayings || [];
-				topics = data.topics || [];
-				
-				//console.log('Static data loaded successfully.');
-
-			} catch (error) {
-				//console.error('Failed to load static data:', error);
-				// You can use a fallback here if the fetch fails (e.g., hardcoded default)
-				quotesAndSayings = ["Error: Quotes failed to load."]; 
-			}
-		}
+		
 
 
-	 function toggleMenu() {
-        document.getElementById("menu").classList.toggle("active");
-        }
+	 
+
+
+function toggleMenu() {
+    const menu = document.getElementById("menu");
+    if(menu) menu.classList.toggle("active");
+}
        
-    function startRedirect_SignIn() {
-        const frame = document.getElementById("appFrame")
-        document.querySelectorAll('.tab-content').forEach(tab => {
-                    tab.classList.remove('active');
-                 });
-                 document.getElementById("appFrame").classList.add('active');
-        //console.log('Starting')
-        frame.src = "https://script.google.com/macros/s/AKfycbx7-kpkhNWmH3OsmIDUnynqP4Yxli-TdusS_ymzpYqB5s4AGHBpYjEmisCTKscf7wbN/exec"   
-        }
         
 		
-         
+function startRedirect_SignIn() {
+    const frame = document.getElementById("appFrame");
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    frame.classList.add('active');
+    frame.src = "https://script.google.com/macros/s/AKfycbw4uuc-nRarh4pRQlEejuVuhD_TkO2hDiLTZJszF97B-PaC3EEe-Ol1IymhA4rvYHah/exec"; 
+}
            
             //splitTextForWaveEffect('#quoteDisplay')
             /**
@@ -132,7 +112,7 @@
 				
 				const index = Math.random();
 				const selectedQuote = quotesAndSayings[Math.floor(index*3)][Math.floor(index*100)]
-				console.log(Math.floor(index*3),Math.floor(index*100),selectedQuote)
+				
 				
 				showMessage(selectedQuote,'sucess',10);
 				
@@ -157,31 +137,37 @@
 			}
 
             
-           async function callGasApi(action, params = {}, elementId){
+           async function HTTPSrequest(action, params = {}, elementId){
                 
-				if(!(elementId === 'NOT')){
-					const URL = await loadData("URL")
-					if (URL){
-						GAS_WEB_APP_URL = URL; 
-						console.log('updatedUSEDFrom inside');
-					} 
-				}
+				if(requesting !== 'GO') {
+                    setTimeout(() =>{
+                        showMessage(`You've reached your request Limit for today`,'error'
+                       
+                    )},20000)
+                    
+                    return null;
+                
+                }
+
 				let payload = {
 				  action: action // Required for the GAS switch statement
 				};
+
 				// 2. Append User ID and Trust (if elementId is not 'NOT')
 				if(!(elementId === 'NOT')){
-				  payload.user_ID = labstudyData.userInfo[0].userId;
-					payload.trust = labstudyData.userInfo[0].approved.toString();
+				  payload.user_ID = userStudyData.userInfo[0].userId;
+					payload.trust = userStudyData.userInfo[0].approved.toString();
 				};
+
 				for(const key in params){
 				  if(params.hasOwnProperty(key)){
 					payload[key] = params[key];
 				  }
 				}
+
 					try{
 					  // --- CRITICAL CHANGE: Using POST method with JSON body ---
-					  const response = await fetch(GAS_WEB_APP_URL,{
+					  const response = await fetch(requestURL,{
 					    method: 'POST', 
 					    headers: {
 							'Content-Type': 'text/plain;charset=utf-8'
@@ -192,27 +178,33 @@
 					
 
 				  if(!response.ok){
-					throw Error(`HTTP error! Stetus: ${response.stetus}`);
+					return null;
 				  }
 				  const pureResponse = await response.json();
-				  //console.log('updated:', pureResponse);
+				 
 				  // Authentication handling (logic from original code)
 				  if(pureResponse[0] === false){
-					labstudyData = {};
-					await saveData('labstudyTrackerData',labstudyData);
-					console.log('updated: change');
+					userStudyData = {};
+					await saveData('labstudyTrackerData',userStudyData);
+					
 				  }
-				  // URL Update logic (from original code)
-					if ((pureResponse[1] !== GAS_WEB_APP_URL)) {
-						await saveData('URL',pureResponse[1]);
-						console.log('updated:from server', pureResponse[1]);
+                  
+                    if (pureResponse[1][1] === 'STOP'){
+                        requesting = 'STOP';
+                        await saveData('STOP',Date.now())
+                    }
+
+
+					if ((pureResponse[1][0].length > 15 && pureResponse[1][0] !== requestURL)) {
+						await saveData('URL',pureResponse[1][0]);
+                        requestURL = pureResponse[1][0];
+                        
+						
 					}
 
 					return pureResponse[0];
 				}catch (error) {
-					console.error("API Call Failed:", error);
-					// showMessage('Could not connect to the server. Check your internet connection.', 'error');
-					return { success: false, error: 'Network or server communication failure.' };
+					return null;
 				}
                      
                 
@@ -229,7 +221,7 @@
                         imgElement = document.getElementById('pieChartImage');
                     }
 				if (typeof chartDataUrl === 'string' && chartDataUrl.startsWith('ERROR:')) {
-					console.error(chartDataUrl);
+					
 					
 					imgElement.alt = chartDataUrl; 
 					showMessage('Chart unavailable. ' + chartDataUrl, 'warning');
@@ -242,10 +234,10 @@
 					// Set the Base64 Data URL as the image source
 					imgElement.src = chartDataUrl;
 					imgElement.style.display = 'block';
-					console.log('Chart loaded successfully.');
+					
                     i += 1
 				} else {
-					console.error('Failed to load chart: Unexpected response format.');
+					
 					imgElement.alt = 'Failed to load chart due to data format error.';
 					imgElement.style.display = 'none';
 				}
@@ -261,284 +253,280 @@
                 return quizRateArray;
             }
             
-            async function quizMaker(action) {
-               
-                const dropdown = document.getElementById('promptST');
-                document.getElementById('textprompt-ai').style = 'display: none;'
-                dropdown.style = 'display: block;'
-                if (action !== 'submit')
-                        {dropdown.innerHTML = '';
 
-                    labstudyData.sessions.reverse().forEach(session => {
-                        const option = document.createElement('option');
-                        option.value = session.id;
-                        option.textContent = `${session.topic} ${session.date}`
-                        const key = session.id
-                        quizData.sessionTopic.push([session.id,session.topic,session.notes])
-                        dropdown.appendChild(option);
-                        //console.log(quizData)
-                    });
-                }else{
-                    const topic = dropdown.value;
-                    
-                    for (sessionT of quizData.sessionTopic){
-                        console.log(sessionT[0],topic)
-                       let sTIndex = String(sessionT[0]) === String(topic);
-                       if(sTIndex){
-                        //console.log('sTIndex')
-                        quizData.sessionTopic = sessionT;
-                        const makeQuiz = await callGasApi('makeQuiz',{
-                            topic: sessionT[1]+'.'+sessionT[2]
-                        })
-                        if(makeQuiz[0]){
-                            quizData.quizQuestions = makeQuiz[1];
-                            
-                            quiz();
-                            return;
-                        }
-                                }
-                        }
-                    }
+
+
+async function quizMaker(action) {
+    const dropdown = document.getElementById('promptST');
+    const textArea = document.getElementById('textprompt-ai');
+    
+    textArea.style.display = 'none';
+    dropdown.style.display = 'block';
+
+    if (action !== 'submit') {
+        dropdown.innerHTML = '';
+        const placeholder = document.createElement('option');
+        placeholder.textContent = "Select a previous session topic";
+        placeholder.value = '';
+        placeholder.disabled = true;
+        placeholder.selected = true;
+        dropdown.appendChild(placeholder);
+
+        // Populate dropdown with past sessions
+        userStudyData.sessions.slice().reverse().forEach(session => {
+            const option = document.createElement('option');
+            option.value = session.id;
+            option.textContent = `${session.topic || 'No Topic'} (${session.date})`;
+            
+            // Store metadata for retrieval
+            quizData.sessionTopic.push({id: session.id, topic: session.topic, notes: session.notes}); 
+            dropdown.appendChild(option);
+        });
+    } else {
+        const selectedId = dropdown.value;
+        if(!selectedId) showMessage('Please Select Quiz topic','error')
+        const sessionMeta = quizData.sessionTopic.find(s => String(s.id) === String(selectedId));
+        
+        if (sessionMeta) {
+            const makeQuiz = await HTTPSrequest('makeQuiz', {
+                topic: `${sessionMeta.topic}. ${sessionMeta.notes}`
+            });
+
+            if (makeQuiz && makeQuiz[0]) {
+                quizData.quizQuestions = makeQuiz[1];
+                quiz('start');
+            } else {
+                showMessage("Failed to generate quiz. Try again.", 'error');
             }
+        }
+    }
+}
 
-            function quiz(action) {
-				//resize container so that nodthing is not shown
-                document.getElementById('prompt-container-ai').stlye = `display: none`;
-                const chatContainer = document.getElementById('AIchatsList');
-                const quizContainer = document.createElement('form');
-                const sessionTopic = document.createElement('header');
-                const disableAI = document.getElementById('mode-button');
-                const disableSent = document.getElementById("send-button-ai");
-                sessionTopic.textContent = quizData.sessionTopic[1]
-                quizContainer.appendChild(sessionTopic)
-                
-                quizContainer.id = 'quizForm';
-                i = 1;
-                quizData.quizQuestions.forEach(question =>{
-                    const questionContainer = document.createElement('strong');
-                    questionContainer.textContent = i+'	'+question.question;
-                    quizContainer.appendChild(questionContainer);
-                    if(!(action === 'answears')){
-                        const selection = document.createElement('select')
-                        selection.id = 'question'+i;
-                        selection.required = true;
-                       
-                        
-                        const placeholderOption = document.createElement('option');
-						placeholderOption.textContent = '--- Select an Answer ---';
-						placeholderOption.value = ''; // Set value to empty string for validation
-						placeholderOption.disabled = true; // User cannot re-select this
-						placeholderOption.selected = true; // Make this the initial default
-						selection.appendChild(placeholderOption);
-                        const options = ['A','B','C','D'];
-                        options.forEach(option =>{
-                            const questionOption = document.createElement('option');
-                            questionOption.textContent = option+'. '+question[option];
-                            selection.appendChild(questionOption)
 
-                        });
-                        quizContainer.appendChild(selection);
-                    }else{
-                       
-                        const qAnswear = document.createElement('p');
-                        qAnswear.style = 'color: green;';
-                        qAnswear.textContent = `🎯 `+question[question.answear];
-                        quizContainer.appendChild(qAnswear);
-                        if(i === 5){
-                            document.getElementById('prompt-container-ai').style = 'display: block;'
-                        }
-                    }
-                    i += 1;
-                    
-                });
-                if(!(action === 'answears')){
-                    disableAI.style = 'display: none;';
-                    disableSent.style = 'display: none;';
-                    const submitBt = document.createElement('input');
-                    submitBt.type = 'submit'
-                    quizContainer.appendChild(submitBt);
-                }
-                else{
-                    disableAI.style = 'display: block;';
-                    disableSent.style = 'display: block;';
-                }
-                chatContainer.appendChild(quizContainer);
-                document.getElementById('quizForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                quizAdmin();
-                }
-                
-            )
-            }
+function quiz(action) {
+    // Hide AI Input during quiz
+    document.getElementById('prompt-container-ai').style.display = 'none';
+    
+    const chatContainer = document.getElementById('AIchatsList');
+    chatContainer.innerHTML = ''; // Clear chat area for quiz
 
-            async function quizAdmin(){
-                i = 1
-                let totalmarks = 0;
-                quizData.quizQuestions.forEach(quizQuestion =>{
-                    const studentChoise = String(document.getElementById('question'+i).value.trim('.')[0]);
-                    if (studentChoise === String(quizQuestion.answear)) {
-                       //console.log(studentChoise,'studentChoise',quizQuestion.answear,i);
-                       totalmarks += 2;
-                    }
-                    else{
-                    //console.log(studentChoise)
-                    }
-                    i +=1
-                })
-                document.getElementById('AIchatsList').innerHTML = ``;
-                const Quizresultscont = document.getElementById('Quizresultscont');
-                const adminfeedback = document.createElement('label')
-                
-                const overallRate = (totalmarks / 10) * 100;
-                for (session of labstudyData.sessions){ 
-                
-                    if(String(session.id) === String(quizData.sessionTopic[0])){
-						if (totalmarks > 0){
-							const stars = Math.floor(totalmarks / 2); 	
-							session.rate = '⭐'.repeat(stars);
-							await cloudQuizSave({id: session.id,rate: session.rate});
-                            await saveData('labstudyTrackerData',labstudyData);
-						};
-                        
-                       
-                    }
-                };
-                if (overallRate > 50) {
-                    Quizresultscont.style = 'display: block;background-color: green;';
-                    adminfeedback.innerHTML = `🏆NICE!!`
+    const quizContainer = document.createElement('form');
+    quizContainer.id = 'quizForm';
+    
+    const header = document.createElement('h2');
+    header.textContent = "Quiz Time!";
+    quizContainer.appendChild(header);
+
+    let i = 1;
+    quizData.quizQuestions.forEach(question => {
+        const qBlock = document.createElement('div');
+        qBlock.className = 'chat-card message'; 
+        qBlock.style.background = '#fff';
+        
+        const qText = document.createElement('strong');
+        qText.textContent = `${i}. ${question.question}`;
+        qBlock.appendChild(qText);
+
+        if (action !== 'answears') {
+            const selection = document.createElement('select');
+            selection.id = 'question' + i;
+            selection.className = 'quiz-select';
+            selection.required = true;
+
+            const defOpt = document.createElement('option');
+            defOpt.text = 'Select Answer';
+            defOpt.value = '';
+            defOpt.disabled = true;
+            defOpt.selected = true;
+            selection.add(defOpt);
+
+            ['A', 'B', 'C', 'D'].forEach(opt => {
+                if(question[opt]) {
+                    const option = document.createElement('option');
+                    option.value = opt;
+                    option.textContent = `${opt}. ${question[opt]}`;
+                    selection.appendChild(option);
                 }
-                else{
-                    Quizresultscont.style = 'display: block;background-color: red;';
-                    adminfeedback.innerHTML = `🥇Review this topic before days.`
-                }
-                const Quizresults = document.getElementById('Quizresults');
-                Quizresults.textContent = overallRate.toFixed(1) + '%';
-                Quizresultscont.appendChild(adminfeedback)
-                quiz('answears')
-                
-           
-            }
+            });
+            qBlock.appendChild(selection);
+        } else {
+            // Show Answers
+            const ansP = document.createElement('p');
+            ansP.style.color = 'green';
+            ansP.textContent = `✅ Correct: ${question.answear} - ${question[question.answear]}`;
+            qBlock.appendChild(ansP);
+        }
+        quizContainer.appendChild(qBlock);
+        i++;
+    });
+
+    if (action !== 'answears') {
+        const submitBtn = document.createElement('button');
+        submitBtn.type = 'submit';
+        submitBtn.textContent = "Submit Quiz";
+        submitBtn.className = "login-btn"; // reuse style
+        quizContainer.appendChild(submitBtn);
+    } else {
+        // Restore AI Interface
+        document.getElementById('prompt-container-ai').style.display = 'block';
+    }
+
+    chatContainer.appendChild(quizContainer);
+
+    if (action !== 'answears') {
+        document.getElementById('quizForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            quizAdmin();
+        });
+    }
+}
+
+
+async function quizAdmin() {
+    let totalmarks = 0;
+    let i = 1;
+    quizData.quizQuestions.forEach(q => {
+        const select = document.getElementById('question' + i);
+        if (select && select.value === q.answear) {
+            totalmarks += 2;
+        }
+        i++;
+    });
+
+    const resultsDiv = document.getElementById('Quizresultscont');
+    const scoreDisplay = document.getElementById('Quizresults');
+    const overallRate = (totalmarks / (quizData.quizQuestions.length * 2)) * 100;
+    
+    resultsDiv.style.display = 'block';
+    resultsDiv.style.backgroundColor = overallRate >= 50 ? '#2ecc71' : '#e74c3c';
+    scoreDisplay.textContent = `${overallRate.toFixed(0)}%`;
+    
+    quiz('answears'); // Show answers
+}
+
+
+
+
+
+function sanitizeHTML(str) {
+    const temp = document.createElement('div');
+    temp.textContent = str;
+    return temp.innerHTML;
+}
+
 
             async function sessionSave (){
-                const number_Of_Off_s = labstudyData.sessions.length;
-                if (number_Of_Off_s > 0){
-                console.log(await cloudQuizSave())  
-                    const number_Of_Clo_s = await callGasApi('sessionsSave',{
-                        number_Of_Off_s: number_Of_Off_s,
-                        tacks: 'number_Of_Clo_s'});
-                        
-                    console.log(number_Of_Clo_s);
-                    if(number_Of_Clo_s[1] < number_Of_Off_s && number_Of_Clo_s.length === 2){
-                        let i = 1;
-                        let sessionsArry = [];
-                        let subject_TIDsArray = [];
-                        labstudyData.subjects.forEach(subject =>{
-                            if(subject.id !== 1){
-								subject_TIDsArray.push({
-									id: subject.id,
-									completedHours: subject.completedHours,
-								})
-							}else{
-								subject_TIDsArray.push({
-									id: subject.id,
-									quesNumSolved: subject.quesNumSolved,
-								});
-							};
-                        });
-                        for(const session of labstudyData.sessions){
-                            if (i > number_Of_Clo_s[1]){
-                                sessionsArry.push(session);
-                            }
-                            i += 1;
-                        };
-                        if (sessionsArry.length > 0){
-						const sessionsToSave = JSON.stringify(sessionsArry);
-                        const quizSessionUpdate = JSON.stringify(await cloudQuizSave());
-						const topicsToUpdate = JSON.stringify([subject_TIDsArray,processesStudiedSessions()])
-                        const is_saved = await callGasApi('sessionsSave',{
-                                    tacks: sessionsToSave,
-                                    tacks2: topicsToUpdate,
-                                    tacks3: quizSessionUpdate
+                try{
+                    const number_Of_Off_s = userStudyData.sessions.length;
+                    if (number_Of_Off_s > 0){
+                    
+                        const number_Of_Clo_s = await HTTPSrequest('sessionsSave',{
+                            number_Of_Off_s: number_Of_Off_s,
+                            tacks: 'number_Of_Clo_s'});
+                            
+                       
+                        if(number_Of_Clo_s[1] < number_Of_Off_s && number_Of_Clo_s.length === 2){
+                            let i = 1;
+                            let sessionsArry = [];
+                            let subject_TIDsArray = [];
+                            userStudyData.subjects.forEach(subject =>{
+                                if(subject.id !== 1){
+                                    subject_TIDsArray.push({
+                                        id: subject.id,
+                                        completedHours: subject.completedHours,
+                                    })
+                                }else{
+                                    subject_TIDsArray.push({
+                                        id: subject.id,
+                                        quesNumSolved: subject.quesNumSolved,
                                     });
-                         //console.log(is_saved[1]);
-                        if(is_saved[1] === 'Session batch saved successfully.'){
-							labstudyData.studied = [];
-							//console.log('Cleared')
-							await saveData('labstudyTrackerData',labstudyData);
-                            await saveData('QuizRates',[])
-						}
-                                
+                                };
+                            });
+                            for(const session of userStudyData.sessions){
+                                if (i > number_Of_Clo_s[1]){
+                                    sessionsArry.push(session);
                                 }
+                                i += 1;
+                            };
+                            if (sessionsArry.length > 0){
+                            const sessionsToSave = JSON.stringify(sessionsArry);
+                            const quizSessionUpdate = JSON.stringify(await cloudQuizSave());
+                            const topicsToUpdate = JSON.stringify([subject_TIDsArray,processesStudiedSessions()])
+                            const is_saved = await HTTPSrequest('sessionsSave',{
+                                        tacks: sessionsToSave,
+                                        tacks2: topicsToUpdate,
+                                        tacks3: quizSessionUpdate
+                                        });
+                            
+                            if(is_saved[1] === 'Session batch saved successfully.'){
+                                userStudyData.studied = [];
+                               
+                                await saveData('labstudyTrackerData',userStudyData);
+                                await saveData('QuizRates',[])
+                            }
+                                    
+                                    }
+                        }
+                        else if (number_Of_Clo_s.length > 2){
+                            //userStudyData.sessions.length = 0
+                            number_Of_Clo_s[2].forEach(session =>{
+                                userStudyData.sessions.unshift(session);
+                            })
+                            await saveData('labstudyTrackerData',userStudyData)
+                        }
                     }
-                    else if (number_Of_Clo_s.length > 2){
-						//labstudyData.sessions.length = 0
-                        number_Of_Clo_s[2].forEach(session =>{
-                            labstudyData.sessions.unshift(session);
-                        })
-                        await saveData('labstudyTrackerData',labstudyData)
-                    }
-                }
+                }catch (e){}
             }
 
-            function AIchatbox(){
-                hour = new Date().getHours();
-                day = new Date().getDay();
+function AIchatbox() {
+    const chatContainer = document.getElementById('AIchatsList');
+    chatContainer.innerHTML = '';
+
+
+    const recentChatsSorted = [labChatsData.AIchats].sort((a, b) => new Date(b.chatId) - new Date(a.chatId)).slice(0, 25);
     
-                const chatContainer = document.getElementById('AIchatsList')
-                 // Study chats
-            chatContainer.innerHTML = '';
-            if((17<=20)){//has placeHolder for max request a day
-                const recentChatsSorted = [labChatsData.AIchats].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 25);
+    labChatsData.AIchats.forEach(chat => {
+        const sessionDiv = document.createElement('div');
+        const time = new Date(chat.chatId).toLocaleTimeString();
+        const me = (chat.senderId === userStudyData.userInfo[0].username);
 
-                recentChatsSorted.forEach(chats => {
-                    chats.forEach(chat =>{
-                        console.log(chat)
-                        const sessionDiv = document.createElement('div');
-                        time = new Date(chat['chatId']).toLocaleTimeString()
-                        me = (chat.senderId == labstudyData.userInfo[0].username)
-                        if (!me){
-                            sessionDiv.className = 'message chat-card';
-                            messager = chat.senderId;
-                            sessionDiv.innerHTML = `
-								<h4>${messager}    ${time}</h4>`;
-							
-							//console.log(chat.prompt)
-                            chat.prompt.forEach(line =>{
-								message = document.createElement('p');
-								message.textContent = line;
-								sessionDiv.appendChild(message)})
-						}
-                        else{
-                            sessionDiv.className = 'message mychat-card';
-                            messager = 'You';
-                            message = chat.prompt
-                            sessionDiv.innerHTML = `
-								<h4>${messager}    ${time}</h4>
-								<p>${message}</p>
-							`;
-                        };
-                        
-                        chatContainer.appendChild(sessionDiv);
-                    })
-            });
-            }
-                else{
-                    const sessionDiv = document.createElement('div');
-                    document.getElementById("textprompt").style = 'display: none;'
-                    time = new Date(Date.now()).toLocaleTimeString()
-                    sessionDiv.className = 'message reminder';
-                    sessionDiv.innerHTML = `
-                    <h4>AI   ${time}</h4>
-                    <p>Your friends are studying don\`t disturb them now.</p>
-                `;
-                chatContainer.appendChild(sessionDiv); 
-            };
-                if (labChatsData.AIchats.length > 10){
-                    labChatsData.AIchats.pop()
-                };
-            }
+        if (!me) {
+            sessionDiv.className = 'message chat-card';
+            const h4 = document.createElement('h4');
+            h4.textContent = `${chat.senderId}    ${time}`;
+            sessionDiv.appendChild(h4);
 
-            async function promptSwitch(kind = String) {
+            
+            if (Array.isArray(chat.prompt)) {
+                chat.prompt.forEach(line => {
+                    const p = document.createElement('p');
+                    p.textContent = line;
+                    sessionDiv.appendChild(p);
+                });
+            } else {
+                const p = document.createElement('p');
+                p.textContent = chat.prompt;
+                sessionDiv.appendChild(p);
+            }
+        } else {
+            sessionDiv.className = 'message mychat-card';
+            const h4 = document.createElement('h4');
+            h4.textContent = `You    ${time}`;
+            const p = document.createElement('p');
+            p.textContent = chat.prompt;
+            
+            sessionDiv.appendChild(h4);
+            sessionDiv.appendChild(p);
+        }
+        chatContainer.appendChild(sessionDiv);
+    });
+
+    if (labChatsData.AIchats.length > 20) labChatsData.AIchats.shift();
+}            
+
+            
+
+async function promptSwitch(kind = String) {
                 
                 const textarea = document.getElementById('textprompt-'+kind);
                 
@@ -568,7 +556,7 @@
 				// Close dropdown on outside click
 				document.getElementById("prompt-container-ai").addEventListener('click', () => modeDropdown.style.display = 'none');
 			
-                //console.log(currentModeDisplay.value)
+                
                 // --- 1. Textarea Auto-Resize and Send Button Toggle ---
 
                 // Function to resize the textarea height dynamically
@@ -582,10 +570,10 @@
 
                     // Enable/Disable Send button based on content
                     let isEmpty = textarea.value.trim().length === 0;
-                    console.log(currentModeDisplay.textContent)
+                    
                     if(currentModeDisplay.textContent === 'Quiz'){
 						isEmpty = false;
-						console.log('Bypassed')
+						
 					}
                     sendButton.disabled = isEmpty;
 
@@ -627,15 +615,12 @@
 							textarea.style = 'display: block';
 							document.getElementById('promptST').style = 'display: none';
 							textarea.placeholder = "Ask GIC AI any school question";
-							//console.log('Mode set to:');
+							
                         }else{
 							textarea.placeholder = `Just require only thinking!! Nice quiz`;
 							quizMaker();
 							
 						}
-                        // 3. Log or trigger action based on new mode
-                        console.log('Mode set to:', newMode);
-                        // **TODO: Integrate state management here to save the selected mode.**
                     }
                 });
 
@@ -650,32 +635,23 @@
                 sendButton.addEventListener('click', async () => {
                     const promptText = textarea.value.trim();
                     const currentMode = currentModeDisplay.textContent;
-                    
-                    if (promptText) {
-                        console.log(`Sending Prompt (${currentMode}): "${promptText}"`);
-                        if(currentMode === 'Quiz'){
-                            loading.classList.add('rotate')
-                            loading.style.display = 'block'
-                            await quizMaker('submit') ;
+
+                    if (promptText || currentMode === 'Quiz') {
+                        textarea.value = '';
+                        loading.classList.add('rotate');
+                        loading.style.display = 'block';
+                        
+                        try {
+                            if (currentMode === 'Quiz') {
+                                await quizMaker('submit');
+                            } else if (currentMode === 'Question' || currentMode === 'Chat') {
+                                await chatPrompt(promptText, kind);
+                            }
+                        } finally {
                             loading.classList.remove('rotate');
                             loading.style.display = 'none';
-                            
-                        }
-                        else if (currentMode === 'Question'){
-                            loading.classList.add('rotate')
-                            loading.style.display = 'block'
-                            await chatPrompt(promptText,kind) 
-                            loading.classList.remove('rotate')
-                            loading.style.display = 'none';
-                            
-                        }
-                        else if(currentMode === 'Chat'){
-                            loading.classList.add('rotate');
-                            loading.style.display = 'block';
-                            chatPrompt(promptText,kind)
-                             loading.classList.remove('rotate')
-                            loading.style.display = 'none';
-                            
+                            textarea.value = '';
+                            textarea.style.height = 'auto'; // Reset height
                         }
                        
                         textarea.value = '';
@@ -697,191 +673,163 @@
 
                 
             }
+
+function showMessage(message, type, time) {
+    if (type === 'error') {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        successMessage.style.display = 'none';
+    } else {
+        // Safe Text Injection
+        const quoteP = document.getElementById('quoteDisplay');
+        if (quoteP) {
+            quoteP.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+    }
+
+    const duration = (time && time !== 'static') ? time * 1000 : 3000;
+    if (time !== 'static') {
+        setTimeout(() => {
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+        }, duration);
+    }
+}
             
-              // Show message function
-            function showMessage(message, type,time) {
-                if (type === 'error') {
-                    errorMessage.textContent = message;
-                    errorMessage.style.display = 'block';
-                    successMessage.style.display = 'none';
-                } else {
-                    successMessage.innerHTML = `<p id="quoteDisplay" >${message}</p>`
-                    successMessage.style.display = 'block';
-                    errorMessage.style.display = 'none';
-                }
-                
-                // Auto-hide messages after 3 seconds
-                if(time && time !== 'static'){
-					seconds = time * 1000;
-                }else{
-					seconds = 3000;
-				}
-				
-				if(time !== 'static'){
-                    setTimeout(() => {
-                        successMessage.style.display = 'none';
-                        errorMessage.style.display = 'none';
-                    }, seconds);
-				}
+
+async function chatPrompt(text, kind) {
+    const hour = new Date().getHours();
+    const day = new Date().getDay();
+    if (kind === "ai") {
+        pathLink = labChatsData.AIchats;
+        chatSave(text, pathLink, false); 
+        try {
+            const answear = await HTTPSrequest('askQuestion', { question: text }, kind);
+            if (answear && answear[0]) {
+                chatSave(answear[1], pathLink, true); 
+                AIchatbox();
             }
-            
-            async function chatPrompt(text,kind) {
-                
-                if (kind === "ai"){
-                    pathLink = labChatsData.AIchats;
-                    chatSave(text,pathLink,false);
-                    try{
-                        const answear = await callGasApi('askQuestion', { 
-                        question: text
-                        },kind);
-                        
-                        //answear = JSON.parse(localStorage.getItem('aiAnswer'))
-                        //localStorage.setItem('aiAnswer',JSON.stringify(answear[1]))
-                        //answear = [true,[1,3,'you',5]]
-                        if(answear[0]){
-							//console.log(answear)
-                            chatSave(answear[1],pathLink,true);
-                            AIchatbox()
-                        }
-                        
-                    }
-                    catch (error) {
-                        // Handle network/fetch errors
-						console.error("Error:", error);
-                        showMessage('Could not connect to the server. Check your internet connection.', 'error',id);
-                    }
-                    
-                }else{
-                    pathLink = labChatsData.chats;
-                    
-                    try{
-                       const chats = await callGasApi('chats', {
-                       chatId: Date.now(),
-                       senderId: labstudyData.userInfo[0].username,
-						prompt: text
-                        },kind);
-                        
-                        //chats = JSON.parse(localStorage.getItem('ochats'))
-                        if(chats[0]){
-							// chats = JSON.parse(localStorage.getItem('ochats'))
-                        //localStorage.setItem('ochats',JSON.stringify(chats
-                        //console.log(chats);
-                            chatSave(chats,pathLink,'chats');
-                            chatbox()
-                        }
-                    }
-                    catch (error) {
-                        // Handle network/fetch errors
-                        console.error("Error:", error);
-                        showMessage('Could not connect to the server. Check your internet connection.', 'error');
-                    }
-                }
-                
-                
+        } catch (error) {
+            showMessage("Failed to send. Please try again.",'error');
+        }
+    } else {
+        try {
+            if (!(hour >= 17 && hour < 20) || !(day === 6 || day === 0)) return;
+            const chats = await HTTPSrequest('chats', {
+                chatId: Date.now(),
+                senderId: userStudyData.userInfo[0].username,
+                prompt: text,
+                timeStamp: timeStamp
+            }, kind);
+
+            if (chats && chats[0]) {
+                getChats(); 
             }
+        } catch (error) {
+            showMessage("Failed to send. Please try again.",'error');
+        }
+    }
+}
+       
             
-            function chatSave(prompt,type,AI){
-                hour = new Date().getHours();
-                day = new Date().getDay();
-                if(AI !== 'chats'){
-                    if (AI){
-                    sender = 'GIC AI'
-                    }
-                    else{
-                        sender = labstudyData.userInfo[0].username
-                    }
-                      
-                        type.push(
-                            {
-                                chatId: Date.now(),
-                                senderId: sender,
-                                prompt: prompt
-                            }
-                        );
-                }else{
-					type.length = 0
-                    prompt.forEach(message =>{
-                    console.log(message);
-                        type.push(message);
-                        //console.log(message);
-                    })
-                }
-            }           
+
+function chatSave(prompt, type, AI) {
+    if (AI !== 'chats') {
+        const sender = AI ? 'GIC AI' : userStudyData.userInfo[0].username;
+        if(!type.includes(prompt)){
+                type.push({
+                chatId: Date.now(),
+                senderId: sender,
+                prompt: prompt 
+            });
+        }
+    } else {
+
+        prompt.forEach(message => {
+           if(!type.includes(message)) type.push(message);
+        });
+    }
+}            
             
             function scrollToBottom(divElement){
 				divElement.scrollTop = divElement.scrollHeight;
 			}
 
-            function chatbox(){
-                hour = new Date().getHours();
-                day = new Date().getDay();
-                const chatContainer = document.getElementById('chatsList')
-                 // Study chats
-                chatContainer.innerHTML = '';
-                if((17<=hour && hour<20) || (day === 6 || day === 0 )){
-                const recentChatsSorted = [labChatsData.chats].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 25);
-				
-                labChatsData.chats.forEach(chat => {
-                    const sessionDiv = document.createElement('div');
-                    time = new Date(parseInt(chat.chatId)).toLocaleTimeString()
-                    me = chat.senderId === labstudyData.userInfo[0].username
-                    if (!me){
-                        sessionDiv.className = 'message chat-card';
-                        messager = chat.senderId}
-                    else{
-                        sessionDiv.className = 'message mychat-card';
-                        messager = 'You';
-                    }
-                    
-                    sessionDiv.innerHTML = `
-                        <h4>${messager}    ${time}</h4>`;
-                    // Correct way:
-					const msgP = document.createElement('p');
-					msgP.textContent = chat.prompt;
-					sessionDiv.appendChild(msgP);
-                    chatContainer.appendChild(sessionDiv);
-                    scrollToBottom(chatContainer)
-                    console.log(chat)
-                });
-                }
-                    else{
-                        const sessionDiv = document.createElement('div');
-                        document.getElementById("prompt-container-chat").style = 'display: none;'
-                        time = new Date(Date.now()).toLocaleTimeString()
-                        sessionDiv.className = 'message reminder';
-                        sessionDiv.innerHTML = `
-                        <h4>AI   ${time}</h4>
-                        <p>Your friends are studying don't disturb them now.</p>
-                    `;
-                    chatContainer.appendChild(sessionDiv); 
-                };
-                if (labChatsData.chats.length > 25){
-                    labChatsData.chats.pop()
-                };
+function chatbox() {
+    const hour = new Date().getHours();
+    const day = new Date().getDay();
+    const chatContainer = document.getElementById('chatsList');
+    chatContainer.innerHTML = '';
+
+    // Allow chat only between 5PM-8PM or Weekends (Sat/Sun)
+    if ((hour >= 17 && hour < 20) || (day === 6 || day === 0)) {
+        const recentChatsSorted = [labChatsData.chats].sort((a, b) => new Date(b.chatId) - new Date(a.chatId)).slice(0, 25);
+        
+        let i = 0;
+        labChatsData.chats.forEach(chat => {
+            const sessionDiv = document.createElement('div');
+            const time = new Date(parseInt(chat.chatId)).toLocaleTimeString();
+            const me = (chat.senderId === userStudyData.userInfo[0].username);
+
+            if (!me) {
+                sessionDiv.className = 'message chat-card';
+                messager = chat.senderId;
+            } else {
+                sessionDiv.className = 'message mychat-card';
+                messager = 'You';
             }
+
+            // SAFE DOM CREATION (No innerHTML for user content to prevent XSS)
+            const header = document.createElement('h4');
+            header.textContent = `${messager}    ${time}`;
+            
+            const p = document.createElement('p');
+            p.textContent = chat.prompt; 
+            sessionDiv.appendChild(header);
+            sessionDiv.appendChild(p);
+            chatContainer.appendChild(sessionDiv);
+            
+            i++;
+        });
+        scrollToBottom(chatContainer);
+    } else {
+        const sessionDiv = document.createElement('div');
+        document.getElementById("prompt-container-chat").style.display = 'none';
+        const time = new Date().toLocaleTimeString();
+        sessionDiv.className = 'message reminder';
+        sessionDiv.textContent = `AI ${time}: Your friends are studying. Don't disturb them now. Chat opens 17:00-20:00.`;
+        chatContainer.appendChild(sessionDiv);
+    }
+
+    if (labChatsData.chats.length > 60) {
+        labChatsData.chats.shift(); 
+    }
+}
 
             async function weekendAnalysis(){
 				let WeekReport;
                 const savedReport = await loadData('report');
-                console.log(savedReport);
+                
                     if (savedReport) {
-						console.log('savedReport')
+						
 						WeekReport = savedReport; 
 						thisWeekReport = WeekReport[1]
                     }
                 week = 24*60*60*1000*7
                 todayTime = Date.now()
                 const dayIndex = new Date(new Date()).getDay();
-                oneWeek = Math.abs(todayTime - week);
+                oneWeek = Math.abs(ThisWeekMonday.getTime()-((week/7)*2));
                 const lastReportTime = thisWeekReport.date;
-                console.log(lastReportTime);
+               
                 if(Math.abs(todayTime - lastReportTime) >= week && (dayIndex >=5 || dayIndex === 0) ){
-                    aiRequest = ['I am '+labstudyData.userInfo[0]['username']+' ,my goal is to pass MSCE exams <20 points.This is not easy here in Malawi.Please help me to do that any way.Constract academic research report based on my this week studies below.No fake report that will just interest me. I want real one that will make me success, even one that seems to hate me.'];
+                    aiRequest = ['I am '+userStudyData.userInfo[0]['username']+' ,my goal is to pass MSCE exams <20 points.This is not easy here in Malawi.Please help me to do that any way.Constract academic research report based on my this week studies below.No fake report that will just interest me. I want real one that will make me success, even one that seems to hate me.'];
                     let total_Hours = 0
-                    labstudyData.sessions.forEach(session =>{
+                    userStudyData.sessions.forEach(session =>{
                         if(new Date(session.date).getTime() >= oneWeek){
                             
-                            //console.log(total_Hours,'Lthis')
+                            
                             let studied = `subject: ${subjectnames[session.subjectId]},Date: ${session.date}, hours spent: ${session.hours}, Quiz Admin rate: ${session.rate}, Notes for you to focus: ${session.notes}.`;
                             if(session.subjectId === 1){
                                 studied = `subject: ${subjectnames[session.subjectId]},Date: ${session.date}, numberOfQuestSolved: ${session.numberOfQuestSolved}, Quiz Admin rate: ${session.rate}, Notes for you to focus: ${session.notes}.`;
@@ -892,34 +840,34 @@
                             aiRequest.push(studied)
                         };
                     })
-                    if (Object.keys(labstudyData.missedsubjects).length > 0){
+                    if (Object.keys(userStudyData.missedsubjects).length > 0){
                         aiRequest.push(`Total studied hours this week: ${total_Hours} out of these missed Subjects hours + ${total_Hours}. I have missed the following sesseions:`);
-                        Object.keys(labstudyData.missedsubjects).forEach(key =>{
-                            missedTopics = Object.entries(labstudyData.missedsubjects[key]).join('->')
+                        Object.keys(userStudyData.missedsubjects).forEach(key =>{
+                            missedTopics = Object.entries(userStudyData.missedsubjects[key]).join('->')
                             if(missedTopics){
                             missedsubject = subjectnames[key]+'; '+missedTopics
                             aiRequest.push(missedsubject);}
                         }) 
                     } 
                     
-                    console.log(total_Hours,aiRequest)
+                    
                     if (aiRequest.length > 1){
                         try{
                            
-                            WeekReport = await callGasApi('generateWeeklyReport',{
+                            WeekReport = await HTTPSrequest('generateWeeklyReport',{
                             prompt: aiRequest,
                               
                             }); 
                             if(WeekReport[0]){
 								thisWeekReport = WeekReport[1];
-								console.log(thisWeekReport);
+								
 								thisWeekReport.date = Date.now();
-								console.log('thisWeekReport')
+								
 								await saveData('report',WeekReport);
 								
 							}
                         }catch (error){
-                            console.log(error)
+                            
                         }
                     }
 
@@ -927,41 +875,25 @@
                     
                 if(thisWeekReport.yTubeQuery.length > 1){       
 
-                    const report = document.getElementById('report');
-                    report.innerHTML = '';
-                    report.innerHTML = `<h2 style="font-size: larger; color: red; text-align: center;font-family: 'Times New Roman', Times, serif;">Week Review & Analysis</h2>
-                                        `
-                    const reportCont = document.createElement('div')
-
                     try{
                         
                         
-                        reportCont.className = 'message reminder'
-                        reportCont.innerHTML = `<header>${thisWeekReport.title}</header><br>
-                                        <p>${thisWeekReport.intro}</P><br>
-                                        <p>${thisWeekReport.body}</P><br>
-                                        <p>${thisWeekReport.conclunsion}</P><br>
-                                        <div>
-                        <a href="https://www.youtube.com/watch?v=${thisWeekReport.yTubeQuery[0]}" target="_blank" rel="noopener noreferrer">
-                        <img src="https://img.youtube.com/vi/${thisWeekReport.yTubeQuery[0]}/hqdefault.jpg" alt="YouTube Video" width='100%'>
-                        </a><p>${thisWeekReport.yTubeQuery[1]}</p></div>
-                        <div >
-                        <h2>Studies Breakdown</h2>
-                        <img id="lineChartImage" class="chart" src="" alt="Study Breakdown Pie Chart" >
-                        <!-- chart will appear here -->
                         
-                            <h2>Subject Study Breakdown</h2>
-                            <img id="pieChartImage" class="chart" src="" alt="Study Breakdown Pie Chart" >
-                        </div>
-                        <div class="divider"><span>---</span></div>
-                        <div><button id="saveBtn">Save</button></div>`
+                        document.getElementById('title').textContent = thisWeekReport.title;
+                        document.getElementById('intro').textContent = thisWeekReport.intro;
+                        document.getElementById('body').textContent = thisWeekReport.body;
+                        document.getElementById('concl').textContent = thisWeekReport.conclunsion;
+
+                        const youtubeCont = document.getElementById('youtube');
+                        youtubeCont.innerHTML = '';
+                        youtubeCont.innerHTML = `<a href="https://www.youtube.com/watch?v=${thisWeekReport.yTubeQuery[0]}" target="_blank" rel="noopener noreferrer">
+                                                <img src="https://img.youtube.com/vi/${thisWeekReport.yTubeQuery[0]}/hqdefault.jpg" alt="YouTube Video" width='100%'>
+                                                </a><p>${thisWeekReport.yTubeQuery[1]}</p><br>`
+                                                
                         
                     }catch {
-                        reportCont.classList = 'message reminder';
-                        reportCont.style = 'color: red;';
-                        reportCont.innerHTML = `<strong>Something went wrong. Please Get back online</strong>`
+                        showMessage("Failed to make report. Please try again.",'error');
                     }
-                    report.appendChild(reportCont);
                     loadPieChart(WeekReport[2])
                 }
             }
@@ -970,7 +902,7 @@
                     today_long = new Date(); 
                       
                     try{
-                        labstudyData.subjects.forEach(subject =>{
+                        userStudyData.subjects.forEach(subject =>{
                             const topics = subject.tid;
                             const dates = Object.keys(topics);
                             missedTopics = {}
@@ -981,37 +913,49 @@
                                     
                                 }
                             });
-                            labstudyData.missedsubjects[subject.id] = missedTopics;
+                            userStudyData.missedsubjects[subject.id] = missedTopics;
                         })
                     }catch (error){
-                        console.warn(error)
+                       
                     }
 
             }
 
-            function upDateProfile(){
-                const userDataInfo = labstudyData.userInfo[0];
-                const profileCont = document.getElementById('userDetails');
-                profileCont.innerHTML = `<label><strong>Username:</strong> ${userDataInfo.username}</label>
-										<label><strong>Your LinkedID:</strong> ${userDataInfo.linkID}</label>
-                                        <label><strong>You are under:</strong> ${userDataInfo.userLinkedId}</label>
-                                        <br>
-                                        `;
-                const networkcont = document.createElement('div');
-                networkcont.className = 'remainder'
-                networkcont.innerHTML = `<header>This is your Network</header>
-										<canvas id="myNetworkChart" style="width: 100%; height: 400px;"></canvas>`
-                profileCont.appendChild(networkcont);
-                
-				const chartData = {
-					parent: { name: userDataInfo.linkID },
-					children: userDataInfo.network
-				};
 
-				
-				drawNetworkChart('myNetworkChart', chartData);
-            }
-			
+function upDateProfile() {
+    if (!userStudyData.userInfo[0]) return;
+    const userDataInfo = userStudyData.userInfo[0];
+    
+    const container = document.getElementById('userDetails');
+    container.innerHTML = ''; 
+
+    const nameLabel = document.createElement('h4');
+    nameLabel.textContent = `User: ${userDataInfo.username}`;
+    container.appendChild(nameLabel);
+
+    const linkLabel = document.createElement('p');
+    linkLabel.textContent = `LinkedID: ${userDataInfo.linkID}`;
+    container.appendChild(linkLabel);
+
+    const netC = document.createElement('header');
+    netC.textContent = `Your Linking Freinds`;
+    container.appendChild(netC)
+   
+    const canvas = document.createElement('canvas');
+    canvas.id = 'myNetworkChart';
+    canvas.style.width = '100%';
+    canvas.style.height = '400px';
+    container.appendChild(canvas);
+
+    const chartData = {
+        parent: { name: userDataInfo.linkID },
+        children: userDataInfo.network || []
+    };
+    drawNetworkChart('myNetworkChart', chartData);
+    Timetable();
+}
+
+
 			function drawNetworkChart(canvasId, data) {
 				const canvas = document.getElementById(canvasId);
 				if (!canvas || !data || !data.children || data.children.length === 0) return;
@@ -1024,10 +968,10 @@
 				const numChildren = data.children.length;
 				const pR = 30, cR = 20, padding = 50;
 
-				// Parent Position (Centered near the top)
+				
 				const pPos = { x: canvas.width / 2, y: 50 };
 
-				// Child Positions (Distributed horizontally near the bottom)
+				
 				const aW = canvas.width - 2 * padding;
 				const startX = padding;
 				const cY = canvas.height - 80;
@@ -1036,7 +980,7 @@
 					y: cY
 				}));
 
-				// --- Draw Links ---
+				
 				ctx.strokeStyle = '#3b82f6';
 				ctx.lineWidth = 1;
 				ctx.beginPath();
@@ -1046,16 +990,16 @@
 				});
 				ctx.stroke();
 
-				// --- Draw Nodes and Labels ---
+				
 				const drawNode = (pos, radius, color, label, isParent) => {
-					// Draw Circle
+					
 					ctx.fillStyle = color;
 					ctx.beginPath();
 					ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
 					ctx.fill();
 					ctx.stroke();
 
-					// Draw Label
+					
 					ctx.fillStyle = '#1f2937';
 					ctx.font = '12px Arial';
 					ctx.textAlign = 'center';
@@ -1063,21 +1007,20 @@
 					ctx.fillText(label, pos.x, labelY);
 				};
 
-				// Draw Parent
+				
 				drawNode(pPos, pR, '#10b981', data.parent.name, true);
 
-				// Draw Children
+				
 				data.children.forEach((child, i) => {
 					const label = `${child}`;
 					drawNode(cPositions[i], cR, '#f59e0b', label, false);
 				});
 			}
 
-            // Switch between tabs
-            async function switchTab(tabName) {
-                console.log('switch')
+             async function switchTab(tabName) {
+                
                 try{
-					keyTrust();
+					if(!keyTrust()) return;
                     // Hide all tabs
                     document.querySelectorAll('.tab-content').forEach(tab => {
                         tab.classList.remove('active');
@@ -1107,14 +1050,14 @@
                         weekendAnalysis()
                     }
                     else if(tabName == 'profile'){
-						Timetable();
-						const links = await callGasApi('networkLinks');
-						const userDataInfo = labstudyData.userInfo[0]
+						upDateProfile();
+						const links = await HTTPSrequest('networkLinks');
+						const userDataInfo = userStudyData.userInfo[0]
 						if (links.length === 2 && userDataInfo.network.length !== links[0]){
 							userDataInfo.network = links[1];
-							await saveData('labstudyTrackerData',labstudyData)
+							await saveData('labstudyTrackerData',userStudyData)
 						}
-						upDateProfile();
+						
 					}
                 }catch{
 
@@ -1122,28 +1065,39 @@
             }
             
          
-			
-			function Timetable() {
+function Timetable() {
+    const rowscontainer = [
+        document.getElementById('Monday'), document.getElementById('Tuesday'),
+        document.getElementById('Wednesday'), document.getElementById('Thursday'),
+        document.getElementById('Friday'), document.getElementById('Saturday'),
+        document.getElementById('Sunday')
+    ];
+    
+    // Clear existing cells properly
+    rowscontainer.forEach(row => { if(row) row.innerHTML = ''; });
 
-            const rowscontainer = [document.getElementById('Monday'),document.getElementById('Tuesday'),document.getElementById('Wednesday'),document.getElementById('Thursday'),document.getElementById('Friday'),document.getElementById('Saturday'),document.getElementById('Sunday')]
-            rowscontainer.innerHTML = '';
-            rows = ['Mon','Tue','Wed','Thu','Fri','Monday','Tuesday','Wednesday','Thursday','Friday']
-            for (i=0;i<5;i++) {
-                const cell = document.createElement('td');
-                
-                cell.innerHTML = rows[i+5];
-                rowscontainer[i].appendChild(cell);
-                subjectLimit = 1
-            labstudyData.subjects.forEach(subject => {
-                if (subject.days.includes(rows[i]) && subjectLimit <= labstudyData.userInfo[0].number_subjects_day){
+    const rows = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    for (let i = 0; i < 5; i++) {
+        const cell = document.createElement('td');
+        cell.textContent = rows[i]; // Use textContent
+        if(rowscontainer[i]) rowscontainer[i].appendChild(cell);
+        
+        let subjectLimit = 1;
+        userStudyData.subjects.forEach(subject => {
+            if (subject.name !== 'Mathematics') {
+                if (subject.days.includes(rows[i]) && subjectLimit <= userStudyData.userInfo[0].number_subjects_day) {
                     const cell1 = document.createElement('td');
-                    cell1.innerHTML = `${subject.name}`;    
-                    rowscontainer[i].appendChild(cell1);
-                    subjectLimit +=1
+                    cell1.textContent = subject.name; // Use textContent
+                    if(rowscontainer[i]) rowscontainer[i].appendChild(cell1);
+                    subjectLimit++;
                 }
-            });
-           }
             }
+        });
+    }
+    // Handle weekend logic separately if needed
+}
+    
+
            
 		
 
@@ -1157,7 +1111,7 @@
 				};
 				openReq.onsuccess = e => {
 				  db = e.target.result;
-				  console.log('IndexedDB ready.');
+				 
 				  resolve(db);
 				};
 				openReq.onerror = e => reject(e);
@@ -1175,8 +1129,8 @@
 				  const val = (e.target.result === undefined) ? null : e.target.result;
 				  if (onloadFlag === 'onload') {
 					// your old behavior: assign and update display
-					labstudyData = val;           // keep same global name you used
-					console.log(labstudyData)
+					userStudyData = val;           // keep same global name you used
+					
 					try { updateDisplay();
 							switchTab('track') } catch (err) {}
 				  }
@@ -1201,35 +1155,32 @@
 			
 
 
-			function keyTrust(){
-                try{
-                    is_Allowed = labstudyData.userInfo[0].approved === true;
-                    //console.log(is_Allowed)
-                }
-                catch {
-                    is_Allowed = false
-                }
-                
-               if (!is_Allowed){
-				 //labstudyData = {}
-                 //console.log('runFalse')
-                 document.querySelectorAll('.tab-content').forEach(tab => {
-                    tab.classList.remove('active');
-                 });
-                 document.getElementById('login').classList.add('active');
-                 const menuCont = document.getElementById('menu-container');
-                 menuCont.style = 'display: none;'
-                 return is_Allowed
-               }
-               //console.log('runTrue')
-               return is_Allowed
-            }
+function keyTrust() {
+    let is_Allowed = false;
+    try {
+        if (userStudyData.userInfo && userStudyData.userInfo[0]) {
+            is_Allowed = (String(userStudyData.userInfo[0].approved) === 'true');
+        }
+    } catch (e) { is_Allowed = false; }
+
+    if (!is_Allowed) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.getElementById('login').classList.add('active');
+        const menuCont = document.getElementById('menu-container');
+        if (menuCont) menuCont.style.display = 'none';
+        return false;
+    }
+    
+    const menuCont = document.getElementById('menu-container');
+    if (menuCont) menuCont.style.display = 'block';
+    return true;
+}
             
 
         function processesStudiedSessions(){
             try{
                 const studiedDict = {}
-                labstudyData.studied.forEach(Element =>{
+                userStudyData.studied.forEach(Element =>{
                     if (!studiedDict[Element[0]]){
                         studiedDict[Element[0]] = [];
                         studiedDict[Element[0]].push(Element[1]);
@@ -1237,10 +1188,10 @@
                         studiedDict[Element[0]].push(Element[1]) 
                     }
                 })
-                //console.log('here10',studiedDict)
+                
                 return studiedDict;
                 }catch (error){
-                    console.warn(error);
+                    
                 }
         }
 
@@ -1251,12 +1202,17 @@
             
             var studyHours = document.getElementById('studyHours');
             const subjectID = subjectSelected.value
-            //console.log(subjectID)
+            
             if (subjectID === '1'){
                 studyHours.min = 4;
                 studyHours.max = 24;
                 studyHours.placeholder = 4;
                 document.getElementById('hourslabel').textContent= `Number Of Questions Solved`;
+            }else{
+                studyHours.min = 1;
+				studyHours.max = 3;
+				studyHours.placeholder = 2;
+				document.getElementById('hourslabel').textContent= `Hours Studied`;
             }
         })
 
@@ -1275,14 +1231,14 @@
                 topic = studyTopics[subjectId];
                 if(topic){
                     
-                    note = '. I\`ve  wrapped up my study session on: '+topic+'. plus my onw topic choise: '+topicnotes+' . '+notes
+                    note = '. I\`ve  wrapped up my study session on: '+topic+' plus: '+topicnotes+' . '+notes
                 }
                 else{
                     topic = topicnotes;
-                    note = 'Today I\`ve studied: '+topic+' on my wish. '+notes;
+                    note = 'Today I\`ve studied: '+topic+'. '+notes;
                 } 
                 if(subjectId === '1'){
-                    labstudyData.sessions.push({
+                    userStudyData.sessions.push({
                         id: Date.now(),
                         subjectId: parseInt(subjectId),
                         date: date,
@@ -1291,13 +1247,10 @@
                         notes: note,
                         rate: 0
                     })
-                    studyHours.min = 1;
-					studyHours.max = 3;
-					studyHours.placeholder = 2;
-					document.getElementById('hourslabel').textContent= `Hours Studied`;
+                    
 					}
                 else{
-                    labstudyData.sessions.push({
+                    userStudyData.sessions.push({
                         id: Date.now(),
                         subjectId: parseInt(subjectId),
                         date: date,
@@ -1310,11 +1263,11 @@
                 if (topic != topicnotes)
                 {
                     let subjectTopicsdict = 0;
-                    labstudyData.subjects.some(subject =>{if(subject.id === parseInt(subjectId)){subjectTopicsdict = subject.tid}});
+                    userStudyData.subjects.some(subject =>{if(subject.id === parseInt(subjectId)){subjectTopicsdict = subject.tid}});
                     key = Object.keys(subjectTopicsdict).find(key => subjectTopicsdict[key] === topic);
                     
-                    //console.log('here1',key)
-                    labstudyData.studied.push([subjectId,key]) 
+                    
+                    userStudyData.studied.push([subjectId,key]) 
                     delete subjectTopicsdict[key];
                 }
                 //showMessage('Study session saved successfully!','sucess',2);
@@ -1322,10 +1275,10 @@
                
             }
             else if(missedTopic){
-                topic = labstudyData.missedsubjects[subjectId][missedTopic];
+                topic = userStudyData.missedsubjects[subjectId][missedTopic];
                 missedDate = new Date(missedTopic.slice(0,3)+' '+missedTopic.slice(3,5)+' '+missedTopic.slice(5)).toLocaleDateString('en-GB');
                 if(subjectId == '1'){
-                    labstudyData.sessions.push({
+                    userStudyData.sessions.push({
                         id: Date.now(),
                         subjectId: parseInt(subjectId),
                         date: date,
@@ -1335,7 +1288,7 @@
                         notes: '. I\'ve covered: '+topic+' to be back on track for missing it earlier on: '+missedDate+". "+notes             
                         });  
                 }else{                    
-                    labstudyData.sessions.push({
+                    userStudyData.sessions.push({
                         id: Date.now(),
                         subjectId: parseInt(subjectId),
                         date: date,
@@ -1346,19 +1299,19 @@
                     });
                 }
                         
-                delete labstudyData.missedsubjects[subjectId][missedTopic];
+                delete userStudyData.missedsubjects[subjectId][missedTopic];
                 
-                var subject = labstudyData.subjects.find(subject => subject.id === parseInt(subjectId))
+                var subject = userStudyData.subjects.find(subject => subject.id === parseInt(subjectId))
                     
-                        //console.log('here2',missedTopic)
-                        //labstudyData['studied'] = []
-                        labstudyData.studied.push([subjectId,missedTopic])
+                        
+                        //userStudyData['studied'] = []
+                        userStudyData.studied.push([subjectId,missedTopic])
                         delete subject.tid[missedTopic];
                         //showMessage('compensated  successfully!','sucess',2);
                 
             }
              // Update subject completed hours
-                subject = labstudyData.subjects.find(s => s.id === parseInt(subjectId));
+                subject = userStudyData.subjects.find(s => s.id === parseInt(subjectId));
                 if (subject) {
                     if(subjectId === '1'){
                         subject.quesNumSolved += parseFloat(hours);
@@ -1376,7 +1329,7 @@
                 document.getElementById('studySubject').value   = '';
                 document.getElementById("myowntopic").value = '';
                 document.getElementById("missedT").value    = '';
-                await saveData('labstudyTrackerData',labstudyData);
+                await saveData('labstudyTrackerData',userStudyData);
                 splitTextForWaveEffect('#quoteDisplay');
                 document.getElementById('missedT').style.display = 'block'
                 document.getElementById('myowntopic').style.display = 'block'
@@ -1405,12 +1358,18 @@
             const dropdown = document.getElementById('missedT');
             const subjectId = parseInt(document.getElementById('studySubject').value);
             dropdown.innerHTML = '';
-                missedSubjectTopicsdic = labstudyData.missedsubjects[subjectId]
+                missedSubjectTopicsdic = userStudyData.missedsubjects[subjectId]
                 
                 subjectTopicsdic = Object.entries(missedSubjectTopicsdic);
                 if (subjectTopicsdic.length > 0){
                     document.getElementById('myowntopic').value = ''
                     document.getElementById('myowntopic').style.display = 'none'
+                    const placeholder = document.createElement('option');
+                    placeholder.textContent = 'Select missed topic...'
+                    placeholder.value = '';
+                    placeholder.disabled = true;
+                    placeholder.selected = true;
+                    dropdown.add(placeholder)
                     subjectTopicsdic.reverse().forEach(unit =>{
                     missedDate = new Date(unit[0].slice(0,3)+' '+unit[0].slice(3,5)+' '+unit[0].slice(5)).toDateString();                    
                     const option = document.createElement('option');
@@ -1430,9 +1389,15 @@
             const subjectId = parseInt(document.getElementById('studySubject').value);
             dropdown.innerHTML = '';
                 subjectsel = 0
-                labstudyData.subjects.some(subject =>{if (subject.id === subjectId){subjectsel = subject.name; return true}});
+                userStudyData.subjects.some(subject =>{if (subject.id === subjectId){subjectsel = subject.name; return true}});
                 subjectTopicsdic = topics[subjectsel][0];
                 subjectTopicsdic = Object.entries(subjectTopicsdic);
+                const placeholder = document.createElement('option');
+                    placeholder.textContent = 'Select topic you study on your wish'
+                    placeholder.value = '';
+                    placeholder.disabled = true;
+                    placeholder.selected = true;
+                    dropdown.add(placeholder)
                 subjectTopicsdic.reverse().forEach(unit =>{
                     unit = unit[1];
                     const option = document.createElement('option');
@@ -1448,33 +1413,38 @@
             try{
                 const dropdown = document.getElementById('studySubject');
                 dropdown.innerHTML = '';
-
-                labstudyData.subjects.forEach(subject => {
+                const placeholder = document.createElement('option');
+                    placeholder.textContent = 'Select subject...'
+                    placeholder.value = '';
+                    placeholder.disabled = true;
+                    placeholder.selected = true;
+                    dropdown.add(placeholder)
+                userStudyData.subjects.forEach(subject => {
                     const option = document.createElement('option');
                     option.value = subject.id;
                     option.textContent = subject.name;
                     dropdown.appendChild(option);
                 });
             }catch (error){
-                console.warn(error)
+                
             }
         }
 
         // Update progress display
         function updateProgress() {
             // Update stats
-            const filteredSessions = labstudyData.sessions.filter(session => session.subjectId !== 1);
+            const filteredSessions = userStudyData.sessions.filter(session => session.subjectId !== 1);
             const totalHours = filteredSessions.reduce((sum, session) => sum + session.hours, 0);
             document.getElementById('totalHours').textContent = totalHours.toFixed(1);
             const PaceRate = document.getElementById('CompletionRate')
-            document.getElementById('subjectsCount').textContent = labstudyData.subjects.length;
+            document.getElementById('subjectsCount').textContent = userStudyData.subjects.length;
 
            
             // Update progress bars
             const container = document.getElementById('progressList');
             container.innerHTML = '';
 
-            labstudyData.subjects.forEach(subject => {
+            userStudyData.subjects.forEach(subject => {
                 let subjectiInfoArray = [subject.completedHours,subject.plannedHours,' hours ']
                 if (subject.id === 1){
                     subjectiInfoArray = [subject.quesNumSolved,subject.plannedNumber,' questioans ']
@@ -1494,11 +1464,11 @@
             });
 
             // Update completion rate
-             const filteredSubjects = labstudyData.subjects.filter(subject => subject.id !== 1);
+             const filteredSubjects = userStudyData.subjects.filter(subject => subject.id !== 1);
             const total_Hourscompleted = filteredSubjects.reduce((sum, subject) => sum + subject.completedHours, 0);
             const totalPlanned = filteredSubjects.reduce((sum, subject) => sum + subject.plannedHours, 0);
             const todayRate = hoursExpected > 0 ? (total_Hourscompleted/hoursExpected) * 100 : 0;
-            console.log(todayRate.toFixed(1))
+           
             if (todayRate.toFixed(1) > 80){
                 PaceRate.textContent = 'Completion Rate: Expected'
             }else{
@@ -1518,12 +1488,12 @@
 
                 const today = new Date().toISOString().split('T')[0];
                 
-                const todaySessions = labstudyData.sessions.filter(session => session.date === today);
+                const todaySessions = userStudyData.sessions.filter(session => session.date === today);
                 const todaystopic = {};
                 const subjectNames = {};
 
                 // Check for subjects not studied today
-                labstudyData.subjects.forEach(subject => {
+                userStudyData.subjects.forEach(subject => {
                     const studiedToday = todaySessions.some(session => session.subjectId === subject.id);
                     const weekdays = {1:'Mon', 2:'Tue', 3:'Wed', 4:'Thu', 5:'Fri', 6:'Sat',7:'Sun'}
                     dat = new Date();
@@ -1534,7 +1504,7 @@
                     bool = subject.days.includes(day);
                     subjectNames[subject.id] = subject.name;
                     try{
-                    if(Object.entries(labstudyData.missedsubjects[subject.id]).length > 0){
+                    if(Object.entries(userStudyData.missedsubjects[subject.id]).length > 0){
 
                             currentDate = new Date()
                             
@@ -1547,7 +1517,7 @@
                             container2.appendChild(msreminder);
                         }
                     } catch (error){
-                        console.error('An error occurred: '+error);
+                        
                     }
                     
 
@@ -1568,20 +1538,22 @@
                             if(subject.id === 1){
                                 inner = `📔 Solve <strong>${subject.name}</strong> everyday.<br>🔬 Please solve at least 4 questions on <strong>${todayTopic}</strong>.<br>✏ Spend the rest of time solving questions on your wish topics.`
                             }
-                            const reminder = document.createElement('div');
+                            let reminder = document.createElement('div');
                             reminder.style.padding = '10px';
                             reminder.style.margin = '5px 0';
                             reminder.style.background = '#ffeaa7';
                             reminder.style.borderRadius = '5px';
                             if (todayTopic){
                                 reminder.innerHTML = inner;
+                                container.appendChild(reminder);
                             }
                             else{
                                 if(subject.plannedHours <= subject.completedHours){
                                     reminder.innerHTML = `🌟 Woow! you've finnished planned sessions for <strong>${subject.name}</strong> .<br>🔬 It's time for your random reviews.`;
+                                    container.appendChild(reminder);
                                 }
                             }
-                            container.appendChild(reminder);
+                            
                             
 
                             
@@ -1591,8 +1563,22 @@
                     
                         
                 });
+                let date = new Date()
+                const date_month = date.getMonth();
+                if(container.children.length === 0 && [2,6,11].includes(date_month)){
+                    reminder = document.createElement('div');
+                    reminder.style.padding = '10px';
+                    reminder.style.margin = '5px 0';
+                    reminder.style.background = '#ffeaa7';
+                    reminder.style.borderRadius = '5px';
+                    reminder.innerHTML = `<strong>Exam Plan</strong>
+                                            <p>Now you must be focusing much on your areas of weakness and depending on your Exam timetable.</p>
+                                            <p>Stop following this app's topics planned. But still keeping entering data of topics you'll choose.</p>`
+                  
+                   container.appendChild(reminder);
+                }
                 
-                if (container.children.length === 0 && new Date().getDay() <= 6 && new Date().getDay() >=1) {
+                if (!([2,6,11].includes(date_month)) && container.children.length === 0 && date.getDay() <= 6 && date.getDay() >=1) {
                     container.innerHTML = `<p>Great job! You\'re on track on today's subjects . Do the same tomorrow 🎉</p>`;
                 }else{
                     createReminder('Study Tracker Reminders','Study these subjects today: '+todaySubjectReminders.join(', '),new Date().toISOString())
@@ -1606,27 +1592,16 @@
                 studyTopics = todaystopic;
                 subjectnames = subjectNames;
             }catch (error){
-                console.warn(error)
-            }
-        }
-        function lastMonday() {
-            let lastMonday;
-            let todayDate = new Date()
-            
-            while (true){
-                n = 1
-                if(todayDate.getDay() === 1){
-                    lastMonday = todayDate
-                    console.log('loopingbackward')
-                    break;
-                }
-                        
-                todayDate.setDate(todayDate.getDate() - n)
                 
             }
-             return lastMonday;
         }
-       
+        
+        function lastMonday() {
+            let d = new Date(new Date(today).getTime()-(60*60*1000*16));
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+            return new Date(d.setDate(diff));
+        }
        
         // Update review section
         function updateReview() {
@@ -1634,7 +1609,7 @@
             const feedbackContainer = document.getElementById('weeklyFeedback');
             const historyContainer = document.getElementById('studyHistory');
 
-            if (labstudyData.sessions.length === 0) {
+            if (userStudyData.sessions.length === 0) {
                 feedbackContainer.innerHTML = '<p>Start logging your study sessions to see feedback and improvements!</p>';
                 historyContainer.innerHTML = '<p>No study sessions recorded yet.</p>';
                 return;
@@ -1642,7 +1617,7 @@
 
             // Calculate weekly stats
             const oneWeekAgo = ThisWeekMonday;
-            const rSessions = labstudyData.sessions.filter(session => 
+            const rSessions = userStudyData.sessions.filter(session => 
                 session.subjectId !== 1 
             );
             const recentSessions = rSessions.filter(session => 
@@ -1666,13 +1641,13 @@
 
             // Study history
             historyContainer.innerHTML = '';
-            const recentSessionsSorted = [...labstudyData.sessions].reverse();
-
+            const recentSessionsSorted = [...userStudyData.sessions].reverse();
+            i = 0
             recentSessionsSorted.forEach(session => {
-                const subject = labstudyData.subjects.find(s => s.id === session.subjectId);
+                const subject = userStudyData.subjects.find(s => s.id === session.subjectId);
                 const sessionDiv = document.createElement('div');
                 sessionDiv.className = 'study-card';
-                //console.log(subject.name)
+                
                 hour = ['Hours: ',session.hours]
                 if(session.subjectId === 1){
                     hour = ['Solved Questions: ',session.numberOfQuestSolved]
@@ -1683,10 +1658,13 @@
                         <p>Date: ${session.date}</p>
                         <p>${hour[0]}${hour[1]}</p>
                         <p>Quiz Admin rate: ${session.rate}</p>
-                        ${session.notes ? `<p>Notes: ${session.notes}</p>` : ''}
+                        <p id=${'Note'+i}></p>
                     `;
                 
                 historyContainer.appendChild(sessionDiv);
+                document.getElementById('Note'+i).textContent = `Note: ${session.notes ? session.notes: ' '}`;
+               
+                i += 1
             });
         }
 
@@ -1701,58 +1679,69 @@
 
 
 
+        window.addEventListener('load', async function () {
+            try {
+                await initDB();
 
+                // Load User Data
+                await loadData('labstudyTrackerData', 'onload');
+
+                await syncRemindersOnLoad()
+                // Load Saved URL
+                const cachedUrl = await loadData("URL");
+                if (cachedUrl) {
+                    requestURL = cachedUrl;
+                   
+                }
+
+                // requst limit
+                const stopRequests = await loadData("STOP");
+                if(stopRequests){
+                    if(Date.now() - stopRequests < 24*60*60*1000) requesting = 'STOP';
+                }
+
+                // Calculations for Pace/Progress
+                day = 1000 * 60 * 60 * 24;
+                if (userStudyData.userInfo && userStudyData.userInfo.length > 0) {
+                    const user_plan = userStudyData.userInfo[0];
+                    daysPassed = Math.abs(parseInt((new Date(today).getTime() - user_plan.fMEdate[0]) / day) - 1);
+                    
+                    const dateDate = user_plan.fMEdate;
+                    now = Date.now();
+                    const daysToGo = Math.abs(parseInt((new Date(today).getTime() - dateDate[2]) / day));
+                    
+                    if (!(dateDate[1] < now && dateDate[2] > now)) {
+                        showMessage('Account deactivated. Please renew subscription.', 'error', 5);
+                        showLocalNotification({ id: 'r' + Date.now(), title: 'Study Tracker', body: 'Account deactivated.' });
+                    } else if (daysToGo <= 5) {
+                        showMessage(`Only ${daysToGo} days remaining. Sync online to backup data.`, 'warning', 5);
+                    }
+
+                    const weekPassed = parseInt(daysPassed / 7);
+                    if (weekPassed > 0) {
+                        daysPassed -= weekPassed * 2;
+                    }
+                    hoursExpected = user_plan.hours_session * user_plan.number_subjects_day * daysPassed;
+                }
+
+                // Initialize Services
+                await requestNotificationPermission();
+                await registerServiceWorker();
+                syncRemindersOnLoad();
+                
+                
+
+            } catch (e) {
+                
+                // Fallback for static data if fetch fails
+                if (quotesAndSayings.length === 0) quotesAndSayings = [["Knowledge is power."]];
+            }
+        });
 
 
         
 
-        // Initialize the app
-        window.addEventListener('load', async function () {
-			await initDB(); // app starts
-			//switchTab('track')
-			//await saveData('labstudyTrackerData',[])
-			await loadData('labstudyTrackerData','onload');
-			console.log(labstudyData)
-            
-            day = 1000*60*60*24;
-            try{
-				const user_plan = labstudyData.userInfo[0];
-				daysPassed = Math.abs(parseInt((new Date(today).getTime()-user_plan.fMEdate[0])/day)-1);
-                //console.log(daysPassed,user_plan.fMEdate[0])
-                const dateDate = user_plan.fMEdate;
-                now = Date.now();
-                const daysToGo = Math.abs(parseInt((new Date(today).getTime()-dateDate[2])/day));
-                let rem;
-                if(!(dateDate[1] < now && dateDate[2] > now)){
-                    console.log('inside',now);
-                    showMessage('Account deactived. Pay to activate before two months','error',5)
-                    rem = {id:'r'+ Date.now(),title: 'Study Tracker Reminder',body: 'Account deactived. Pay to activate before two months.'};
-                    showLocalNotification(rem);
-                }
-                else if(daysToGo <= 5){
-                    showMessage(`You've remain with ${daysToGo} days. Please get online to avoid data loss.`,'error',5);
-                    rem = {id:'r'+ Date.now(),title: 'Study Tracker Reminder',body: `You've remain with ${daysToGo} days. Please get online to avoid data loss.`};
-                    showLocalNotification(rem)
-                }
-                
-				const weekPassed = parseInt(daysPassed/7)
-				if(weekPassed > 0){
-					daysPassed -= weekPassed*2
-                
-            }
-            hoursExpected = user_plan.hours_session* user_plan.number_subjects_day * daysPassed
-            //console.log()
-            }catch (e){console.warn(e)}
-            try{
-            requestNotificationPermission();
-            registerServiceWorker();
-            syncRemindersOnLoad();
-            createReminder('r'+ Date.now(),'Study Tracker Reminder','Solve Maths everyday.',new Date().toISOString(),'Dairy')
-            console.log('Reminder system ready');
-        }catch(e){       
-            console.error('Init failed', e);
-        }
-		});
+        
         window.addEventListener('online',function (){
             sessionSave();
             weekendAnalysis();
@@ -1782,7 +1771,7 @@
 loginForm.addEventListener('submit', async function(e) { 
     e.preventDefault();
     const username = usernameInput.value;
-    const password = passwordInput.value;
+    let password = passwordInput.value;
     
    
    
@@ -1792,33 +1781,34 @@ loginForm.addEventListener('submit', async function(e) {
         showMessage('Please fill in all fields', 'error');
         return;
     }
+    password = btoa(password)
     
     // Check credentials call GAS
     try {
-        const message = await callGasApi('login', {
+        const message = await HTTPSrequest('login', {
             email_username: username,
-            password: btoa(password)
+            password: password
         },'NOT');
-		console.log('called')
+		
        
         if (message && message[0] === true) { 
             showMessage('Login successful! Redirecting to your timetable...', 'success');
             
             
-            setTimeout(() => {
+            setTimeout(async () => {
                
                 
                 // 4. DATA ASSIGNMENT
-                labstudyData = { 
+                userStudyData = { 
                     userInfo: message[1],
                     subjects: message[2],
                     missedsubjects: {},
                     sessions: [],
                     studied: []
                 }
-                
+                 await saveData('labstudyTrackerData',userStudyData);
 				updateDisplay();
-                showMessage(`Welcome ${labstudyData.userInfo[0].username}! You are now logged in.`, 'success',3);
+                showMessage(`Welcome ${userStudyData.userInfo[0].username}! You are now logged in.`, 'success',3);
                 
                 
                  // ... (UI state changes) ...
@@ -1827,17 +1817,16 @@ loginForm.addEventListener('submit', async function(e) {
                 // Reset form
                 loginForm.reset();
             }, 2000);
-            await saveData('labstudyTrackerData',labstudyData);
+           
             
         } else {
-            console.log(labstudyData,message)
+           
             showMessage(message[1], 'error');
             passwordInput.value = '';
             passwordInput.focus();
         }
     } catch (error) {
-        // Handle network/fetch errors
-        console.warn("Login API Call Error:", error);
+        
         showMessage('Could not connect to the server. Check your internet connection.', 'error');
     };
     
@@ -1874,7 +1863,7 @@ loginForm.addEventListener('submit', async function(e) {
                 
                 // Check credentials call GAS
                 try {
-                    const message = await callGasApi('forgot_password', {
+                    const message = await HTTPSrequest('forgot_password', {
                         username: username,
                         phonenumber: phonenumber,
                         email: email
@@ -1894,12 +1883,11 @@ loginForm.addEventListener('submit', async function(e) {
                         }, 2000);
                         
                     } else {
-                        console.log(message)
+                        
                         showMessage(message[1], 'error');
                     }
                 } catch (error) {
-                    // Handle network/fetch errors
-                    console.warn("Login API Call Error:", error);
+                    
                     showMessage('Could not connect to the server. Check your internet connection.', 'error');
                 }
             });
@@ -1924,7 +1912,7 @@ stBt.addEventListener('click', async () => {
         loading = document.getElementById('loading-ai');
         loading.classList.add('rotate')
         loading.style.display = 'block'
-        console.log('locked')
+        
 		await quizMaker('submit');
         loading.classList.remove('rotate');
         loading.style.display = 'none';
@@ -1945,20 +1933,20 @@ stBt.addEventListener('click', async () => {
     async function registerServiceWorker() {
         if ('serviceWorker' in navigator){
             const reg = await navigator.serviceWorker.register('serviceworker.js', {scope: './'});
-            console.log('SW registred', reg);
+           
             // try to register periodic sync (optional)
             if('periodicSync' in reg){
                 try{
                     await reg.periodicSync.register('reminder-sync',{minInterval: 15 * 60 * 1000});
-                     console.log('Periodic sync registered (may not be supported)');
+                    
                 }catch(e){
-                    console.warn('PeriodicSync failed', e)
+                    
                 }
             }
             return reg;
         }
         else{
-            console.error('Service workers not supported');
+            
         }
     }
 
@@ -2001,6 +1989,7 @@ stBt.addEventListener('click', async () => {
     // 6. syncRemindersOnLoad(): call on app start to schedule upcoming reminders
     async function syncRemindersOnLoad() {
         const all = await loadData('reminders');
+        console.log(all)
         all.forEach(rem =>{
             scheduleInPage(rem);
         })
@@ -2017,4 +2006,3 @@ stBt.addEventListener('click', async () => {
     }
 
   
-
