@@ -1686,7 +1686,7 @@ function keyTrust() {
                 // Load User Data
                 await loadData('labstudyTrackerData', 'onload');
 
-                await syncRemindersOnLoad()
+                
                 // Load Saved URL
                 const cachedUrl = await loadData("URL");
                 if (cachedUrl) {
@@ -2006,3 +2006,4 @@ stBt.addEventListener('click', async () => {
     }
 
   
+
