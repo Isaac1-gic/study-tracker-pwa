@@ -1,52 +1,53 @@
 // serviceworker.js
 
 // --- CONFIGURATION ---
-const CACHE_NAME = 'study-tracker-v1';
-const CACHE_EXTERNAL_NAME = 'external-assets-cache-v1'; 
+const CACHE_NAME = 'study-tracker-v2'; // Bumped version to force update
+const CACHE_EXTERNAL_NAME = 'external-assets-cache-v1';
 const STUDY_TAG = 'Dairy-Study-Remainder';
 
-
+// List of files to cache for offline access.
+// Ensure these paths match your actual file structure exactly.
 const OFFLINE_URLS = [
     '/',
     '/index.html',
     '/js/app.js',
-    '/data.js', 
     '/style.css',
     '/manifest.json',
     '/icon-192.png',
     '/icon-512.png',
-    '/all.min.css' 
+    '/all.min.css',
+    '/html2pdf.bundle.min.js',
+    // External Assets (Fonts, CSS)
+    'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap',
+    'https://cdn.tailwindcss.com',
+    'https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap'
 ];
 
 // --- 1. INSTALLATION: Cache the App Shell ---
 self.addEventListener('install', function(event) {
-    console.log('[Service Worker] Install Event: Caching assets.');
+    console.log('[Service Worker] Install Event: Starting...');
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(function(cache) {
-                console.log('[Service Worker] Pre-caching app shell.');
-                
-                
+                console.log('[Service Worker] Caching App Shell');
+                // We use map/promise.all to cache what we can, logging failures without stopping everything
                 return Promise.all(
                     OFFLINE_URLS.map(url => {
-                        return fetch(url).then(response => {
-                            if (!response.ok) {
-                                throw new Error(`Request for ${url} failed with status ${response.status}`);
-                            }
+                        return fetch(url, { mode: 'no-cors' }).then(response => {
                             return cache.put(url, response);
                         }).catch(error => {
-                            console.error(`[Service Worker] Failed to cache ${url}:`, error);
+                            console.warn(`[Service Worker] Failed to cache ${url}:`, error);
                         });
                     })
                 );
             })
-            .then(() => self.skipWaiting()) // Activate immediately
+            .then(() => self.skipWaiting())
     );
 });
 
 // --- 2. ACTIVATION: Clean up old caches ---
 self.addEventListener('activate', function(event) {
-    console.log('[Service Worker] Activate Event: Clearing old caches.');
+    console.log('[Service Worker] Activated. Cleaning old caches.');
     const cacheWhitelist = [CACHE_NAME, CACHE_EXTERNAL_NAME];
 
     event.waitUntil(
@@ -54,29 +55,28 @@ self.addEventListener('activate', function(event) {
             return Promise.all(
                 cacheNames.map(function(cacheName) {
                     if (cacheWhitelist.indexOf(cacheName) === -1) {
-                        console.log('[Service Worker] Deleting old cache:', cacheName);
                         return caches.delete(cacheName);
                     }
                 })
             );
-        }).then(() => self.clients.claim()) 
+        }).then(() => self.clients.claim())
     );
 });
 
-// --- 3. FETCH: Cache First Strategy with External Handling ---
+// --- 3. FETCH: Cache First Strategy ---
 self.addEventListener('fetch', function(event) {
-    // Only intercept HTTP/S requests (ignore chrome-extension://, etc.)
-    if (!event.request.url.startsWith('https')) return;
+    if (!event.request.url.startsWith('http')) return;
 
     const requestUrl = new URL(event.request.url);
 
-    
-    if (requestUrl.hostname === 'cdn.tailwindcss.com' || requestUrl.hostname === 'fonts.googleapis.com' || requestUrl.hostname === 'fonts.gstatic.com') {
+    // Special handling for External Assets (Tailwind, Fonts)
+    if (requestUrl.hostname === 'cdn.tailwindcss.com' || 
+        requestUrl.hostname === 'fonts.googleapis.com' || 
+        requestUrl.hostname === 'fonts.gstatic.com') {
+        
         event.respondWith(
             caches.match(event.request).then(cachedResponse => {
                 if (cachedResponse) return cachedResponse;
-
-                // Fetch with no-cors for opaque caching
                 return fetch(event.request, { mode: 'no-cors' })
                     .then(response => {
                         return caches.open(CACHE_EXTERNAL_NAME).then(cache => {
@@ -86,88 +86,96 @@ self.addEventListener('fetch', function(event) {
                     });
             })
         );
-        return; 
+        return;
     }
 
-    
+    // Standard Cache-First for App Shell
     event.respondWith(
         caches.match(event.request).then(function(response) {
-            
             if (response) {
                 return response;
             }
-
-            
             return fetch(event.request).then(function(networkResponse) {
-                
                 if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
                     return networkResponse;
                 }
-
-                
                 const responseToCache = networkResponse.clone();
                 caches.open(CACHE_NAME).then(function(cache) {
                     cache.put(event.request, responseToCache);
                 });
-
                 return networkResponse;
-            }).catch(function() {
-                
+            }).catch(error => {
+                // Optional: Return a custom offline page here if needed
+                // console.log('[Service Worker] Fetch failed (Offline):', event.request.url);
             });
         })
     );
 });
 
-
+// --- 4. MESSAGING: Handle 'SHOW_NOTIFICATION' from Client ---
 self.addEventListener('message', event => {
-    const { type, payload } = event.data || {};
-    if (type === 'SHOW_NOTIFICATION') {
-        showLocalNotification(payload);
+    if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+        showLocalNotification(event.data.payload);
     }
 });
 
 function showLocalNotification(rem) {
-    const title = rem.title || 'Study Reminder';
-    console.log(rem)
+    const title = rem.title || 'Study Tracker';
+    
+    // FIX: Ensure tag is valid. Use ID, or fallback to a generic tag.
+    // The browser requires a tag if 'renotify' is true.
+    const notificationTag = rem.id || 'study-tracker-general';
+
     const options = {
-        body: rem.body || 'Solve MAths everday',
-        tag: rem.id,
+        body: rem.body || 'You have a study reminder.',
+        tag: notificationTag,
         renotify: true,
-        data: { id: rem.id, timeISO: rem.timeISO }, 
-        icon: '/icon-192.png',
-        badge: '/icon-520.png'
+        data: { 
+            id: rem.id, 
+            timeISO: rem.timeISO,
+            url: '/index.html' // URL to open on click
+        },
+        icon: '/icon-192.png', 
+        badge: '/icon-512.png'
     };
+
     self.registration.showNotification(title, options);
 }
 
-// --- 5. NOTIFICATION CLICK HANDLER ---
+// --- 5. NOTIFICATION CLICK: Focus App ---
 self.addEventListener('notificationclick', event => {
     event.notification.close();
-    
+    const targetURL = event.notification.data.url || '/index.html';
+
     event.waitUntil(
-        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
-            // If the app is open, focus it
-            if (clients && clients.length) {
-                const client = clients[0];
-                client.focus();
-                client.postMessage({ type: 'NOTIFICATION_CLICK', payload: event.notification.data });
-            } else {
-                // If app is closed, open it
-                self.clients.openWindow('/');
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+            for (const client of clientList) {
+                if (client.url.includes(targetURL) && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            if (clients.openWindow) {
+                return clients.openWindow(targetURL);
             }
         })
     );
 });
 
-// --- 6. PERIODIC SYNC (Background Logic) ---
+// --- 6. PERIODIC SYNC: Background Logic ---
 self.addEventListener('periodicsync', event => {
-    if (event.tag === 'reminder-sync') {
+    if (event.tag === STUDY_TAG) {
         event.waitUntil(runBackgroundReminderLogic());
     }
 });
 
-
 async function runBackgroundReminderLogic() {
-   
+    // Logic to check IndexedDB and fire notification would go here
+    // For now, we fire a generic reminder to prove it works
+    const now = new Date();
+    return showLocalNotification({
+        id: 'periodic-' + Date.now(),
+        title: 'Daily Study Plan',
+        body: 'Don\'t forget to check your timetable for today!',
+        timeISO: now.toISOString()
+    });
 }
-
