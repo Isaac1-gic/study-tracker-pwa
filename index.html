@@ -4,9 +4,9 @@
         <title>Study Tracker</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width initial-scale=1.0">
-       
+        <link rel="stylesheet" href="style.css">
         <link rel="manifest" href="manifest.json">
-        
+        <link rel="stylesheet" href="all.min.css">
         
         
         <script>
@@ -16,18 +16,17 @@
                     // Register the service worker, setting the scope to the current directory './'
                     navigator.serviceWorker.register('serviceworker.js', {scope: './'})
                         .then(function(registration) {
-                            console.log('Service Worker registered successfully with scope:', registration.scope);
+                            
                         })
                         .catch(function(error) {
-                            console.error('Service Worker registration failed:', error);
+                            
                         });
                 } else {
-                    console.warn('Service Workers are not supported by this browser.');
+                    
                 }
             };
         </script>
-       <link rel="stylesheet" href="all.min.css">
-		<link rel="stylesheet" href="style.css">
+       
     </head>
     <body>
         <div>
@@ -45,7 +44,17 @@
             <div id="none" class="tab-content">
                 
             </div>
-
+            <!--Home-->
+            <div class="tab-content active">
+                <header>
+                    <h1>📚 MSCE G Studies Tracker</h1>
+                    <p>Track your progress and improve your study habits</p>
+                    
+                    <p>50% Offline</p>
+                </header>
+                <div class="loading center">
+                </div>
+            </div>
 
                 <!--Login page-->
                 <div id="login" class="login-container">
@@ -59,7 +68,7 @@
                         <form id="loginForm" method="post">
                             <div class="form-group">
                                 <label for="username">Username or Email</label>
-                                <input type="text" id="username" min="8" placeholder="Enter your username or email" required>
+                                <input type="text" id="username" min="8" placeholder="Enter your username or email" required autocomplete="additional-name">
                             </div>
 
                             <div class="form-group">
@@ -95,12 +104,12 @@
                         <form id="reLoginForm" method="post">
                             <div class="form-group">
                                 <label for="username">Email</label>
-                                <input type="email" id="reEmail" min="10" placeholder="Enter your email" required>
+                                <input type="email" id="reEmail" min="10" placeholder="Enter your email" required autocomplete="address-line1">
                             </div>
 
                             <div class="form-group">
                                 <label for="password">Username</label>
-                                <input type="text" id="reUserName" min="8" placeholder="Enter your full name" required>
+                                <input type="text" id="reUserName" min="8" placeholder="Enter your name" required autocomplete="on">
                             </div>
                             <div class="form-group">
                                 <label for="username">Phone Number</label>
@@ -118,40 +127,36 @@
          <!-- Track Study Tab -->
          
         <div id="track" class="tab-content">
-			<header>
-                <h1>📚 Study Tracker Pro</h1>
-                <p>Track your progress and improve your study habits - 90% Offline</p>
-            </header>
             <header>
 				<h2>Log Your Study Session</h2>
             </header>
             <form id="form">
             <div class="form-group">
-                <label>Subject</label>
+                <label for="subjects">Subject</label>
                 <select id="studySubject" onfocus="document.getElementById('MissedTopic').style.display = 'block'; document.getElementById('myowntopic').style.display = 'block'" required >
+                   
                     <!-- Subjects will be populated here -->
                 </select>
                 
                 <div id='MissedTopic'>
-                <label>Missed Topic</label>
-                <h4>Choose one to be back on track</h4>
+                <label for="Missed Topic">Missed Topic</label>
                 <select id="missedT" onfocus="updateMissedStudyTopicDropdown()" >
                     <!-- Missed topics will be populated here -->
                 </select>
                 </div>
             </div>
             <div id="1remove" class="form-group">
-                <label>Date</label>
+                <label for="date">Date</label>
                 <input type="date" id="studyDate" required onclick="document.getElementById('studyDate').max = today">
             </div>
             <div class="form-group">
-                <label id="hourslabel">Hours Studied</label>
+                <label for="hourslabel" id="hourslabel">Hours Studied</label>
                 <input type="number" id="studyHours" min='1' max='3' placeholder="2" required>
             </div>
             <div class="form-group">
-                <label>Notes (Recommended)</label>
+                <label for="Notes">Notes (Recommended)</label>
                 <select id="myowntopic" onfocus="updateStudyTopicDropdown()"></select>
-                <textarea id="studyNotes" required placeholder="What have you study?"></textarea>
+                <textarea id="studyNotes" required autocorrect="on" autocomplete="on" placeholder="What have you study?"></textarea>
             </div>
             <button>Save Study Session</button>
             </form>
@@ -224,18 +229,18 @@
                     <br>
             </div>
             <div>
-                <dt>Developer:</dt> <dd><a href="#">Isaac G Chitsakamire</a></dd>
+                <dt>Developer:</dt> <dd><a href="https://www.facebook.com/profile.php?id=61556819821971">Isaac G Chitsakamire</a></dd>
                 <br>
                 <dt>Acknowledgements:</dt> 
                     <dd>We extend our sincere gratitude to all the poeple who took thier time helping me collecting topics and those who were testing this app.</dd>
                 <br>
                 <dt>Support & Feedback:</dt> 
-                    <dd>For technical issues, feature requests, or bug reports, please submit an issue to <a href="">developer</a>. 
+                    <dd>For technical issues, feature requests, or bug reports, please submit an issue to <a href="https://www.facebook.com/profile.php?id=61556819821971">developer</a>. 
                     Your feedback is invaluable for improving the app.</dd>
                 <br>
                 
             </div>
-            <footer>@<a href="#">MGY</a>2026...............<a href="#">IGC</a></footer>
+            <footer>@<a href="https://www.facebook.com/groups/6201294699916402/">MGY</a>2026...............<a href="https://www.facebook.com/profile.php?id=61556819821971">IGC</a></footer>
         </div>
 
         <!-- Group -->
@@ -356,7 +361,24 @@
         <div id="report" class="tab-content">
             <h2 style="font-size: larger; color: red; text-align: center;font-family: 'Times New Roman', Times, serif;">Week Review & Analysis</h2>
     
-            <div ></div>
+            <div class="reminder">
+                <div>
+                <header id="title"></header><br>
+                <p id="intro"></P><br>
+                <p id="body"></P><br>
+                <p id="concl"></P><br>
+                </div>
+                <div id="youtube">
+                </div>
+                <div>
+                    <label for="Studies Breakdown">Studies Breakdown</label>
+                    <img id="lineChartImage" class="chart" src="" alt="Study Breakdown Pie Chart" >
+                    <!-- chart will appear here -->
+                    <br>   
+                    <label for="Subject Study Breakdown">Subject Study Breakdown</label>
+                    <img id="pieChartImage" class="chart" src="" alt="Study Breakdown Pie Chart" >
+                </div>
+            </div>
             
     
         </div>
@@ -384,8 +406,8 @@
                                   <tr id="Thursday"></tr>
                                   <tr id="Friday"></tr>
                                   <tr><th colspan="7">NOTE: You can follow your study style or our Suggestions below</th></tr>
-                                  <tr><td>Saturday</td><td colspan="6"><ul>-Write some exams pastpapers[<ol>=>Try to make environment like MANED exam room.</ol><ol>=>Finnish writing the paper 15min before allowed Time.</ol><ol>=>Find some to mark you and correct You or use AI but don`t depend on it.</ol><ol>=>Note: You`ll be doing this alone, so you'll be killing yourself by cheating or missing.</ol>]</ul><ul>-Review this week class exercises</ul><ul>-Your style</ul></td></tr>
-                                  <tr><td>Sunday</td><td colspan="6"><ul>-Write one composition(letter,speech,report,short story)[<ol>=>Try to make environment like MANED exam room.</ol><ol>=>Finnish writing the composition within 45min.</ol><ol>=>Tomorrow Submit to your English teacher to mark you and make sure you recieve oral feedback.</ol><ol>=>Note: You`ll be doing this alone, so you'll be killing yourself by cheating or missing.</ol>]</ul><ul>-Review last week most challenging topic.</ul><ul>-Your style</ul></td></tr>  
+                                  <tr><td>Sat</td><td colspan="6">-Write some exams pastpapers[<br>=>Try to make environment like MANED exam room.<br>=>Finnish writing the paper 15min before allowed Time.<br>=>Find some to mark you and correct You or use AI but don`t depend on it.<br>=>Note: You`ll be doing this alone, so you'll be killing yourself by cheating or missing.]<br>-Review this week class exercises<br>-Your style</td></tr>
+                                  <tr><td>Sun</td><td colspan="6">-Write one composition(letter,speech,report,short story)[<br>=>Try to make environment like MANED exam room.<br>=>Finnish writing the composition within 45min.<br>=>Tomorrow Submit to your English teacher to mark you and make sure you recieve oral feedback.<br>=>Note: You`ll be doing this alone, so you'll be killing yourself by cheating or missing.]<br>-Review last week most challenging topic.<br>-Your style</td></tr>  
                                 </table>
                       
                 </div> 
