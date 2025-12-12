@@ -1,11 +1,11 @@
 // serviceworker.js
 
 // --- CONFIGURATION ---
-const CACHE_NAME = 'study-tracker-v1'; // Increment this version when you update app files!
-const CACHE_EXTERNAL_NAME = 'external-assets-cache-v1'; // For third-party assets
+const CACHE_NAME = 'study-tracker-v1';
+const CACHE_EXTERNAL_NAME = 'external-assets-cache-v1'; 
 const STUDY_TAG = 'Dairy-Study-Remainder';
 
-// List of files to cache for offline access (App Shell)
+
 const OFFLINE_URLS = [
     '/',
     '/index.html',
@@ -26,8 +26,7 @@ self.addEventListener('install', function(event) {
             .then(function(cache) {
                 console.log('[Service Worker] Pre-caching app shell.');
                 
-                // We map over the URLs to handle them individually. 
-                // This helps identify which specific file fails if one does.
+                
                 return Promise.all(
                     OFFLINE_URLS.map(url => {
                         return fetch(url).then(response => {
@@ -60,18 +59,18 @@ self.addEventListener('activate', function(event) {
                     }
                 })
             );
-        }).then(() => self.clients.claim()) // Take control of all clients immediately
+        }).then(() => self.clients.claim()) 
     );
 });
 
 // --- 3. FETCH: Cache First Strategy with External Handling ---
 self.addEventListener('fetch', function(event) {
     // Only intercept HTTP/S requests (ignore chrome-extension://, etc.)
-    if (!event.request.url.startsWith('http')) return;
+    if (!event.request.url.startsWith('https')) return;
 
     const requestUrl = new URL(event.request.url);
 
-    // SPECIAL CASE: Tailwind CDN or other external assets requiring no-cors
+    
     if (requestUrl.hostname === 'cdn.tailwindcss.com' || requestUrl.hostname === 'fonts.googleapis.com' || requestUrl.hostname === 'fonts.gstatic.com') {
         event.respondWith(
             caches.match(event.request).then(cachedResponse => {
@@ -87,25 +86,25 @@ self.addEventListener('fetch', function(event) {
                     });
             })
         );
-        return; // Exit function for this special case
+        return; 
     }
 
-    // STANDARD STRATEGY: Cache First, then Network
+    
     event.respondWith(
         caches.match(event.request).then(function(response) {
-            // 1. Return cached response if found
+            
             if (response) {
                 return response;
             }
 
-            // 2. Fetch from network
+            
             return fetch(event.request).then(function(networkResponse) {
-                // Check if we received a valid response
+                
                 if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
                     return networkResponse;
                 }
 
-                // 3. Cache the new file for next time
+                
                 const responseToCache = networkResponse.clone();
                 caches.open(CACHE_NAME).then(function(cache) {
                     cache.put(event.request, responseToCache);
@@ -113,15 +112,13 @@ self.addEventListener('fetch', function(event) {
 
                 return networkResponse;
             }).catch(function() {
-                // Network failed and not in cache? 
-                // Optional: Return a custom offline page here if navigation request
-                // if (event.request.mode === 'navigate') { return caches.match('/offline.html'); }
+                
             });
         })
     );
 });
 
-// --- 4. MESSAGING: Handle local notifications from App ---
+
 self.addEventListener('message', event => {
     const { type, payload } = event.data || {};
     if (type === 'SHOW_NOTIFICATION') {
@@ -131,13 +128,14 @@ self.addEventListener('message', event => {
 
 function showLocalNotification(rem) {
     const title = rem.title || 'Study Reminder';
+    console.log(rem)
     const options = {
-        body: rem.body || '',
-        tag: rem.id,
+        body: rem.body || 'Solve MAths everday',
+        tag: rem.tag,
         renotify: true,
-        data: { id: rem.id, timeISO: rem.timeISO }, // Store data for click handler
-        icon: '/icon-512.png',
-        badge: '/icon-192.png'
+        data: { id: rem.id, timeISO: rem.timeISO }, 
+        icon: '/icon-192.png',
+        badge: '/icon-520.png'
     };
     self.registration.showNotification(title, options);
 }
@@ -168,15 +166,45 @@ self.addEventListener('periodicsync', event => {
     }
 });
 
-// Placeholder for background logic
+
 async function runBackgroundReminderLogic() {
-    // In a real scenario, you'd read IndexedDB here to check for missed reminders.
-    // For now, this just confirms the sync fired.
-    console.log('[Service Worker] Periodic Sync fired.');
-    
-    /* Example logic:
-    const db = await openDB(); 
-    const reminders = await getReminders(db);
-    reminders.forEach(rem => { if(shouldFire(rem)) showLocalNotification(rem); });
-    */
+   
 }
+
+ window.addEventListener('load', async function () {
+            try {
+                await initDB();
+
+                // Load User Data
+                await loadData('labstudyTrackerData', 'onload');
+
+                
+                
+
+               
+                day = 1000 * 60 * 60 * 24;
+                if (userStudyData.userInfo && userStudyData.userInfo.length > 0) {
+                    const user_plan = userStudyData.userInfo[0];
+                    daysPassed = Math.abs(parseInt((new Date(today).getTime() - user_plan.fMEdate[0]) / day) - 1);
+                    
+                    const dateDate = user_plan.fMEdate;
+                    now = Date.now();
+                    const daysToGo = Math.abs(parseInt((new Date(today).getTime() - dateDate[2]) / day));
+                    
+                    if (!(dateDate[1] < now && dateDate[2] > now)) {
+                        showMessage('Account deactivated. Please renew subscription.', 'error', 5);
+                        showLocalNotification({ id: 'r' + Date.now(), title: 'Study Tracker', body: 'Account deactivated.' });
+                        await saveData('labstudyTrackerData',{})
+                    } else if (daysToGo <= 5) {
+                        showMessage(`Only ${daysToGo} days remaining. Sync online to backup data.`, 'warning', 5);
+                    }
+
+                    
+                }
+
+                
+
+            } catch (e) {
+               
+            }
+        });
