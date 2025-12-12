@@ -131,7 +131,7 @@ function showLocalNotification(rem) {
     console.log(rem)
     const options = {
         body: rem.body || 'Solve MAths everday',
-        tag: rem.tag,
+        tag: rem.id,
         renotify: true,
         data: { id: rem.id, timeISO: rem.timeISO }, 
         icon: '/icon-192.png',
@@ -170,3 +170,4 @@ self.addEventListener('periodicsync', event => {
 async function runBackgroundReminderLogic() {
    
 }
+
