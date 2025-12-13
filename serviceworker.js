@@ -14,7 +14,7 @@ const OFFLINE_URLS = [
     '/style.css',
     '/manifest.json',
     '/icon-192.png',
-    '/icon-512.png',
+    '/icon1-512.png',
     '/all.min.css',
     '/data.js',
     // External Assets (Fonts, CSS)
@@ -179,4 +179,5 @@ async function runBackgroundReminderLogic() {
         timeISO: now.toISOString()
     });
 }
+
 
