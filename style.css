@@ -264,7 +264,7 @@
                 border-radius: 50%;
                 overflow: hidden;
                 background-position: center;
-                background-image: url("icon-512.png");
+                background-image: url("icon1-512.png");
                 
             
             }
@@ -820,5 +820,6 @@
 				#mode-display-compact { display:inline-block; }
 			  }
    
+
 
 
