@@ -81,7 +81,7 @@
 							chatSave(chats,pathLink,'chats');
                                 chatbox()
 							}
-            } catch (e)}
+            } catch (e){}
         }
 		
 
@@ -2024,3 +2024,4 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
     }
 
   
+
