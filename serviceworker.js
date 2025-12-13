@@ -16,7 +16,7 @@ const OFFLINE_URLS = [
     '/icon-192.png',
     '/icon-512.png',
     '/all.min.css',
-    '/html2pdf.bundle.min.js',
+    '/data.js',
     // External Assets (Fonts, CSS)
     'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap',
     'https://cdn.tailwindcss.com',
@@ -179,3 +179,4 @@ async function runBackgroundReminderLogic() {
         timeISO: now.toISOString()
     });
 }
+
