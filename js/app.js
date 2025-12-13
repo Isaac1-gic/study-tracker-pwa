@@ -3,7 +3,7 @@
         let hoursExpected;
         let todaySubjectReminders = [];
         const today = new Date().toISOString().split('T')[0];
-        let requestURL = 'https://script.google.com/macros/s/AKfycbyWqzA1y2CGRkOek0FswFAnbnOOxurslxgsqv0K0B_oxNjIcsyhtEp08k3dF8dTG6St/exec';
+        let requestURL = 'https://script.google.com/macros/s/AKfycbzIt9LUD3EXJbgSsPPMCVhmT-QN8DtX_HVENtE8cpxjztTHzK1fLA_LJKeC0yWENY82/exec';
         const ThisWeekMonday = lastMonday();
         const todaycheck = new Date().toISOString().split('T')[0];
         const forgotForm = document.getElementById('reLoginForm');
@@ -12,8 +12,7 @@
         const passwordInput = document.getElementById('password');
         const errorMessage = document.getElementById('errorMessage');
         const successMessage = document.getElementById('successMessage');
-        let requesting = 'GO';
-                    
+        let requesting = 'GO';            
         let userStudyData = {};
                     // Data storage - uses browser's local storage
             
@@ -23,7 +22,8 @@
 
         let labChatsData = {
                         chats: [],
-                        AIchats: []
+                        AIchats: [],
+                        IDs: []
                     };
 
         let quizData = {
@@ -51,7 +51,7 @@
         let chatPollingIntervalId = null;
         let timeStamp = Date.now();
         const CHAT_POLLING_INTERVAL = 30000;
-
+		let SPACE_TIME = CHAT_POLLING_INTERVAL;
                     // dd/mm/yyyy
         
         function startChatPolling(){
@@ -77,11 +77,11 @@
             const chats = await HTTPSrequest('chats',{task: 'task',timeStamp: timeStamp});
                         if (chats && chats.length > 0){
 							
-							timeStamp = chats.timeStamp;
+							timeStamp = chats[0].timeStamp;
 							chatSave(chats,pathLink,'chats');
                                 chatbox()
 							}
-            } catch (e){}
+            } catch (e)}
         }
 		
 
@@ -100,7 +100,7 @@ function startRedirect_SignIn() {
     const frame = document.getElementById("appFrame");
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     frame.classList.add('active');
-    frame.src = "https://script.google.com/macros/s/AKfycbw4uuc-nRarh4pRQlEejuVuhD_TkO2hDiLTZJszF97B-PaC3EEe-Ol1IymhA4rvYHah/exec"; 
+    frame.src = "https://script.google.com/macros/s/AKfycbxDwzoi81qU5OT--Ue6AqASSMo27dgh_pouiMEcerDeGhfrY7x-3D_VtMfdN2HzFKs/exec"; 
 }
            
             //splitTextForWaveEffect('#quoteDisplay')
@@ -158,7 +158,7 @@ function startRedirect_SignIn() {
 				  payload.user_ID = userStudyData.userInfo[0].userId;
 					payload.trust = userStudyData.userInfo[0].approved.toString();
 				};
-
+				
 				for(const key in params){
 				  if(params.hasOwnProperty(key)){
 					payload[key] = params[key];
@@ -182,7 +182,7 @@ function startRedirect_SignIn() {
 				  }
 				  const pureResponse = await response.json();
 				 
-				  // Authentication handling (logic from original code)
+					
 				  if(pureResponse[0] === false){
 					userStudyData = {};
 					await saveData('labstudyTrackerData',userStudyData);
@@ -195,7 +195,8 @@ function startRedirect_SignIn() {
                     }
 
 
-					if ((pureResponse[1][0].length > 15 && pureResponse[1][0] !== requestURL)) {
+					if ((pureResponse[1][0] !== requestURL && pureResponse[1][0].slice(0,35) === requestURL.slice(0,35))) {
+						
 						await saveData('URL',pureResponse[1][0]);
                         requestURL = pureResponse[1][0];
                         
@@ -278,12 +279,12 @@ async function quizMaker(action) {
             option.value = session.id;
             option.textContent = `${session.topic || 'No Topic'} (${session.date})`;
             
-            // Store metadata for retrieval
+            
             quizData.sessionTopic.push({id: session.id, topic: session.topic, notes: session.notes}); 
             dropdown.appendChild(option);
         });
     } else {
-        const selectedId = dropdown.value;
+        let selectedId = dropdown.value;
         if(!selectedId) showMessage('Please Select Quiz topic','error')
         const sessionMeta = quizData.sessionTopic.find(s => String(s.id) === String(selectedId));
         
@@ -291,10 +292,10 @@ async function quizMaker(action) {
             const makeQuiz = await HTTPSrequest('makeQuiz', {
                 topic: `${sessionMeta.topic}. ${sessionMeta.notes}`
             });
-
+		selectedId = '';
             if (makeQuiz && makeQuiz[0]) {
                 quizData.quizQuestions = makeQuiz[1];
-                quiz('start');
+                quiz('start',sessionMeta.topic);
             } else {
                 showMessage("Failed to generate quiz. Try again.", 'error');
             }
@@ -303,24 +304,24 @@ async function quizMaker(action) {
 }
 
 
-function quiz(action) {
-    // Hide AI Input during quiz
+function quiz(action,title) {
+    
     document.getElementById('prompt-container-ai').style.display = 'none';
     
     const chatContainer = document.getElementById('AIchatsList');
-    chatContainer.innerHTML = ''; // Clear chat area for quiz
+    chatContainer.innerHTML = '';
 
     const quizContainer = document.createElement('form');
     quizContainer.id = 'quizForm';
     
-    const header = document.createElement('h2');
-    header.textContent = "Quiz Time!";
+    const header = document.createElement('header');
+    header.textContent = title+" Quiz Time!";
     quizContainer.appendChild(header);
 
     let i = 1;
     quizData.quizQuestions.forEach(question => {
         const qBlock = document.createElement('div');
-        qBlock.className = 'chat-card message'; 
+        qBlock.className = 'study-card'; 
         qBlock.style.background = '#fff';
         
         const qText = document.createElement('strong');
@@ -382,27 +383,53 @@ function quiz(action) {
 }
 
 
-async function quizAdmin() {
-    let totalmarks = 0;
-    let i = 1;
-    quizData.quizQuestions.forEach(q => {
-        const select = document.getElementById('question' + i);
-        if (select && select.value === q.answear) {
-            totalmarks += 2;
-        }
-        i++;
-    });
-
-    const resultsDiv = document.getElementById('Quizresultscont');
-    const scoreDisplay = document.getElementById('Quizresults');
-    const overallRate = (totalmarks / (quizData.quizQuestions.length * 2)) * 100;
-    
-    resultsDiv.style.display = 'block';
-    resultsDiv.style.backgroundColor = overallRate >= 50 ? '#2ecc71' : '#e74c3c';
-    scoreDisplay.textContent = `${overallRate.toFixed(0)}%`;
-    
-    quiz('answears'); // Show answers
-}
+async function quizAdmin(){
+                i = 1
+                let totalmarks = 0;
+                quizData.quizQuestions.forEach(quizQuestion =>{
+                    const studentChoise = String(document.getElementById('question'+i).value.trim('.')[0]);
+                    if (studentChoise === String(quizQuestion.answear)) {
+                       
+                       totalmarks += 2;
+                    }
+                    else{
+                   
+                    }
+                    i +=1
+                })
+                document.getElementById('AIchatsList').innerHTML = ``;
+                const Quizresultscont = document.getElementById('Quizresultscont');
+                const adminfeedback = document.createElement('label')
+                
+                const overallRate = (totalmarks / 10) * 100;
+                for (session of userStudyData.sessions){ 
+                
+                    if(String(session.id) === String(quizData.sessionTopic[0])){
+						if (totalmarks > 0){
+							const stars = Math.floor(totalmarks / 2); 	
+							session.rate = '⭐'.repeat(stars);
+							await cloudQuizSave({id: session.id,rate: session.rate});
+                            await saveData('labstudyTrackerData',userStudyData);
+						};
+                        
+                       
+                    }
+                };
+                if (overallRate > 50) {
+                    Quizresultscont.style = 'display: block;background-color: green;';
+                    adminfeedback.textContent = `🏆NICE!!`
+                }
+                else{
+                    Quizresultscont.style = 'display: block;background-color: red;';
+                    adminfeedback.textContent = `🥇Review this topic before days.`
+                }
+                const Quizresults = document.getElementById('Quizresults');
+                Quizresults.textContent = overallRate.toFixed(1) + '%';
+                Quizresultscont.appendChild(adminfeedback)
+                quiz('answears')
+                
+           
+            }
 
 
 
@@ -520,7 +547,7 @@ function AIchatbox() {
         }
         chatContainer.appendChild(sessionDiv);
     });
-
+	 scrollToBottom(chatContainer);
     if (labChatsData.AIchats.length > 20) labChatsData.AIchats.shift();
 }            
 
@@ -635,8 +662,9 @@ async function promptSwitch(kind = String) {
                 sendButton.addEventListener('click', async () => {
                     const promptText = textarea.value.trim();
                     const currentMode = currentModeDisplay.textContent;
-
-                    if (promptText || currentMode === 'Quiz') {
+					const space_T = Date.now()
+                    if (space_T - SPACE_TIME > CHAT_POLLING_INTERVAL && (promptText || currentMode === 'Quiz')) {
+						SPACE_TIME = space_T;
                         textarea.value = '';
                         loading.classList.add('rotate');
                         loading.style.display = 'block';
@@ -716,7 +744,8 @@ async function chatPrompt(text, kind) {
         }
     } else {
         try {
-            if (!(hour >= 17 && hour < 20) || !(day === 6 || day === 0)) return;
+			
+            if ((hour > !17 && hour < !20) || (day !== 6 && day !== 0)) return;
             const chats = await HTTPSrequest('chats', {
                 chatId: Date.now(),
                 senderId: userStudyData.userInfo[0].username,
@@ -746,9 +775,11 @@ function chatSave(prompt, type, AI) {
             });
         }
     } else {
-
+		
         prompt.forEach(message => {
-           if(!type.includes(message)) type.push(message);
+           if(!labChatsData.IDs.includes(message.chatId) ) type.push(message); labChatsData.IDs.push(message.chatId);
+          
+           
         });
     }
 }            
@@ -1334,6 +1365,7 @@ function keyTrust() {
                 document.getElementById('missedT').style.display = 'block'
                 document.getElementById('myowntopic').style.display = 'block'
                 try{
+					updateDisplay()
                     sessionSave();
                 }catch{}
 
@@ -1686,7 +1718,7 @@ function keyTrust() {
                 // Load User Data
                 await loadData('labstudyTrackerData', 'onload');
 
-                
+               
                 // Load Saved URL
                 const cachedUrl = await loadData("URL");
                 if (cachedUrl) {
@@ -1696,7 +1728,7 @@ function keyTrust() {
 
                 // requst limit
                 const stopRequests = await loadData("STOP");
-                if(stopRequests){
+                if(!stopRequests){
                     if(Date.now() - stopRequests < 24*60*60*1000) requesting = 'STOP';
                 }
 
@@ -1791,24 +1823,23 @@ loginForm.addEventListener('submit', async function(e) {
         },'NOT');
 		
        
-        if (message && message[0] === true) { 
-            showMessage('Login successful! Redirecting to your timetable...', 'success');
+        if (message && message[0] === true) {
             
             
             setTimeout(async () => {
                
                 
                 // 4. DATA ASSIGNMENT
-                userStudyData = { 
+                userStudyData = await { 
                     userInfo: message[1],
                     subjects: message[2],
                     missedsubjects: {},
                     sessions: [],
                     studied: []
                 }
-                 await saveData('labstudyTrackerData',userStudyData);
+                await saveData('labstudyTrackerData',userStudyData);
 				updateDisplay();
-                showMessage(`Welcome ${userStudyData.userInfo[0].username}! You are now logged in.`, 'success',3);
+                showMessage(`Welcome ${username}!! You are now logged in.`, 'success',3);
                 
                 
                  // ... (UI state changes) ...
@@ -1905,19 +1936,6 @@ document.getElementById('prompt-container-chat').addEventListener('click',functi
 document.getElementById('prompt-container-ai').addEventListener('click', function(){
 	loading = document.getElementById('loading-ai');
 	promptSwitch('ai')});
-stBt.addEventListener('click', async () => {
-	const currentmode = document.getElementById('current-mode-ai').textContent;
-	if(currentmode === 'Quiz'){
-        
-        loading = document.getElementById('loading-ai');
-        loading.classList.add('rotate')
-        loading.style.display = 'block'
-        
-		await quizMaker('submit');
-        loading.classList.remove('rotate');
-        loading.style.display = 'none';
-	}
-	})
 
                 
 
@@ -1989,7 +2007,7 @@ stBt.addEventListener('click', async () => {
     // 6. syncRemindersOnLoad(): call on app start to schedule upcoming reminders
     async function syncRemindersOnLoad() {
         const all = await loadData('reminders');
-        console.log(all)
+        
         all.forEach(rem =>{
             scheduleInPage(rem);
         })
@@ -2006,4 +2024,3 @@ stBt.addEventListener('click', async () => {
     }
 
   
-
