@@ -1613,7 +1613,7 @@ function keyTrust() {
                 if (!([2,6,11].includes(date_month)) && container.children.length === 0 && date.getDay() <= 6 && date.getDay() >=1) {
                     container.innerHTML = `<p>Great job! You\'re on track on today's subjects . Do the same tomorrow 🎉</p>`;
                 }else{
-                    createReminder('Study Tracker Reminders','Study these subjects today: '+todaySubjectReminders.join(', '),new Date(new Date().getTime() + (1000*60)).toISOString())
+                    createReminder('Study Tracker Reminders','Study these subjects today: '+todaySubjectReminders.join(', ')+'. Solve Maths everday like your cup of water.',new Date(new Date().getTime() + (1000*60)).toISOString())
                 }
                 if (container2.children.length > 0){
                     document.getElementById("missedTopicReminders").style.display ="block"
