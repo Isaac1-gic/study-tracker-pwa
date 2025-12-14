@@ -1956,7 +1956,7 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
     // 2. registerServiceWorker(): register SW
     async function registerServiceWorker() {
         if ('serviceWorker' in navigator){
-            const reg = await navigator.serviceWorker.register('serviceworker.js', {scope: '/'});
+            const reg = await navigator.serviceWorker.register('serviceworker.js', {scope: './'});
            
             // try to register periodic sync (optional)
             if('periodicSync' in reg){
@@ -2033,4 +2033,5 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
     }
 
   
+
 
