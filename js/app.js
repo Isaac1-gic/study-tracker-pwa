@@ -1756,16 +1756,22 @@ function keyTrust() {
                     hoursExpected = user_plan.hours_session * user_plan.number_subjects_day * daysPassed;
                 }
 
-                // Initialize Services
-                await requestNotificationPermission();
+               
                 await registerServiceWorker();
+                await navigator.serviceWorker.ready;
+                if (!navigator.serviceWorker.controller) {
+					location.reload();
+					return; 
+				}
+                
+                await requestNotificationPermission();
                 syncRemindersOnLoad();
                 
                 
 
             } catch (e) {
                 
-                // Fallback for static data if fetch fails
+                
                 if (quotesAndSayings.length === 0) quotesAndSayings = [["Knowledge is power."]];
             }
         });
@@ -1941,16 +1947,16 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
 
     // 1. requestNotificationPermission(): ask for permission
     async function requestNotificationPermission() {
-        if (!("Notification" in window)) throw new error("Notifications not supported");
+        if (!("Notification" in window)) throw new Error("Notifications not supported");
             const result = await Notification.requestPermission();
-        if (!(result === 'granted')) throw new error("Notification permission denied");
+        if (!(result === 'granted')) throw new Error("Notification permission denied");
             return true;
     }
 
     // 2. registerServiceWorker(): register SW
     async function registerServiceWorker() {
         if ('serviceWorker' in navigator){
-            const reg = await navigator.serviceWorker.register('serviceworker.js', {scope: './'});
+            const reg = await navigator.serviceWorker.register('serviceworker.js', {scope: '/'});
            
             // try to register periodic sync (optional)
             if('periodicSync' in reg){
@@ -1970,8 +1976,11 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
 
     // 5. showLocalNotification(reminder): message SW to show notification
     async function showLocalNotification(reminder) {
-        const sw = await navigator.serviceWorker.ready;
-        sw.active.postMessage({type: 'SHOW_NOTIFICATION', payload: reminder});
+        navigator.serviceWorker.controller.postMessage({
+		  type: 'SHOW_NOTIFICATION',
+		  payload: reminder
+		});
+
     }
 
     async function saveReminder(reminders = []) {
@@ -2024,4 +2033,3 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
     }
 
   
-
