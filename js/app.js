@@ -2016,7 +2016,7 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
     // 6. syncRemindersOnLoad(): call on app start to schedule upcoming reminders
     async function syncRemindersOnLoad() {
         const all = await loadData('reminders');
-        
+        console.log(all)
         all.forEach(rem =>{
             scheduleInPage(rem);
         })
@@ -2033,3 +2033,4 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
     }
 
   
+
