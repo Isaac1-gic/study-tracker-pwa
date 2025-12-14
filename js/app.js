@@ -1613,7 +1613,7 @@ function keyTrust() {
                 if (!([2,6,11].includes(date_month)) && container.children.length === 0 && date.getDay() <= 6 && date.getDay() >=1) {
                     container.innerHTML = `<p>Great job! You\'re on track on today's subjects . Do the same tomorrow 🎉</p>`;
                 }else{
-                    createReminder('Study Tracker Reminders','Study these subjects today: '+todaySubjectReminders.join(', '),new Date().toISOString())
+                    createReminder('Study Tracker Reminders','Study these subjects today: '+todaySubjectReminders.join(', '),new Date(new Date().getTime() + (1000*60)).toISOString())
                 }
                 if (container2.children.length > 0){
                     document.getElementById("missedTopicReminders").style.display ="block"
@@ -1998,11 +1998,16 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
         const fireAt = new Date(reminder.timeISO).getTime();
         const now = Date.now();
         const ms = fireAt - now;
-        if (ms <= 0) return; // already passed or immediate handling should be done elsewhere
+        console.log('will',ms);
+        if (ms <= 0) {
+			console.log('miss',ms); return
+		}; // already passed or immediate handling should be done elsewhere
         // store timer id to cancel if needed
+        console.log('will',ms);
         reminder._timerId = setTimeout(() => {
             // show notification through SW
             showLocalNotification(reminder);
+            console.warn('SEE NOTE')
             if (reminder.repeat === 'daily') {
             // reschedule for next day
             const next = new Date(fireAt + 24*60*60*1000);
@@ -2033,5 +2038,3 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
     }
 
   
-
-
