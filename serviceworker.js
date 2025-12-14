@@ -1,7 +1,7 @@
 // serviceworker.js
 
 // --- CONFIGURATION ---
-const CACHE_NAME = 'study-tracker-v2'; // Bumped version to force update
+const CACHE_NAME = 'study-tracker-v3';
 const CACHE_EXTERNAL_NAME = 'external-assets-cache-v1';
 const STUDY_TAG = 'Dairy-Study-Remainder';
 
@@ -15,8 +15,8 @@ const OFFLINE_URLS = [
     '/manifest.json',
     '/icon-192.png',
     '/icon1-512.png',
-    '/all.min.css',
     '/data.js',
+    '/all.min.css',
     // External Assets (Fonts, CSS)
     'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap',
     'https://cdn.tailwindcss.com',
@@ -133,10 +133,10 @@ function showLocalNotification(rem) {
         data: { 
             id: rem.id, 
             timeISO: rem.timeISO,
-            url: '/index.html' // URL to open on click
+            url: 'index.html' // URL to open on click
         },
-        icon: '/icon-192.png', 
-        badge: '/icon-512.png'
+        icon: 'icon-192.png', 
+        badge: 'icon-512.png'
     };
 
     self.registration.showNotification(title, options);
@@ -145,7 +145,7 @@ function showLocalNotification(rem) {
 // --- 5. NOTIFICATION CLICK: Focus App ---
 self.addEventListener('notificationclick', event => {
     event.notification.close();
-    const targetURL = event.notification.data.url || '/index.html';
+    const targetURL = event.notification.data.url || 'index.html';
 
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
@@ -179,5 +179,3 @@ async function runBackgroundReminderLogic() {
         timeISO: now.toISOString()
     });
 }
-
-
