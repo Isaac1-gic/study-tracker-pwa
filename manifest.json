@@ -1,14 +1,25 @@
 {
-  "name": "Study Tracker",
-  "short_name": "Tracker",
-  "description": "Keep all your study sessions data with the Study Tracker.",
-  "id": "/",
-  "start_url": "index.html",
-  "scope": "./",
+  "name": "MSCE G Studies Tracker",
+  "short_name": "G Tracker",
+  "description": "Keep all your study sessions data with the MSCE G Studies Tracker.",
+  "id": "/study-tracker-pwa/",
+  "start_url": "/study-tracker-pwa/index.html",
+  "scope": "/study-tracker-pwa/",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "any",
   "background_color": "#2c3e50",
   "theme_color": "#67f00b",
+  "background_sync": {"enabled": true},
+
+  "lang": "en",
+  "dir": "ltr",
+
+  "categories": [
+    "education",
+    "productivity"
+  ],
+
   "icons": [
     {
       "src": "icon-192.png",
@@ -35,30 +46,21 @@
       "purpose": "maskable"
     }
   ],
+
   "screenshots": [
     {
       "src": "1.jpg",
       "sizes": "480x960",
       "type": "image/jpeg",
-      "platform": "wide",
+      "form_factor": "narrow",
       "label": "Home screen"
     },
     {
       "src": "2.jpg",
       "sizes": "480x960",
       "type": "image/jpeg",
-      "platform": "wide",
-      "label": "Study remainders"
-    },
-    {
-      "src": "5.jpg",
-      "sizes": "480x960",
-      "type": "image/jpeg",
-      "platform": "wide",
-      "label": "Study history and Review"
+      "form_factor": "narrow",
+      "label": "Study reminders"
     }
   ]
 }
-
-
-
