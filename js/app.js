@@ -18,7 +18,12 @@
             
 
                     
-                    
+function SUM(x1,x2,x3){
+    ans = x1 + x2 + x3
+    return ans
+}    
+
+console.log(SUM(1,2,3))
 
         let labChatsData = {
                         chats: [],
@@ -52,8 +57,42 @@
         let timeStamp = Date.now();
         const CHAT_POLLING_INTERVAL = 30000;
 		let SPACE_TIME = CHAT_POLLING_INTERVAL;
-                    // dd/mm/yyyy
+        let deferredInstallPrompt = null;
+		let installAsked = false;
+
         
+        
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();                 
+    deferredInstallPrompt = e;        
+    maybeShowInstall();                 
+});
+
+function isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
+}
+
+function maybeShowInstall() {
+    if (isStandalone()) return;
+    if (!deferredInstallPrompt) return;   
+    if (installAsked) return;                    
+
+    installAsked = true;
+    document.getElementById('install-banner').style.display = 'block';
+}
+
+
+async function installApp() {
+    if (!deferredInstallPrompt) return;
+
+    deferredInstallPrompt.prompt(); 
+    await deferredInstallPrompt.userChoice; 
+
+    deferredInstallPrompt = null;
+    document.getElementById('install-banner').style.display = 'none';
+}
+
         function startChatPolling(){
             const hour = new Date().getHours();
             const day = new Date().getDay();
@@ -103,11 +142,8 @@ function startRedirect_SignIn() {
     frame.src = "https://script.google.com/macros/s/AKfycbxDwzoi81qU5OT--Ue6AqASSMo27dgh_pouiMEcerDeGhfrY7x-3D_VtMfdN2HzFKs/exec"; 
 }
            
-            //splitTextForWaveEffect('#quoteDisplay')
-            /**
-			 * Splits the text content of an element into individual spans for animation.
-			 * @param {string} selector - The CSS selector for the element to split (e.g., '#quoteDisplay').
-			 */
+            
+            
 			function splitTextForWaveEffect(selector) {
 				
 				const index = Math.random();
@@ -124,12 +160,11 @@ function startRedirect_SignIn() {
 
 				for (let i = 0; i < text.length; i++) {
 					const char = text[i];
-					// Wrap each character (except spaces) in a span
 					if (char !== ' ') {
-						// Apply a custom delay property (data-delay) for staggering the wave
+						
 						newHTML += `<span class="wavy-letter" style="animation-delay: ${i * 0.05}s;">${char}</span>`;
 					} else {
-						newHTML += ' '; // Preserve spaces outside the span
+						newHTML += ' ';
 					}
 				}
 				element.innerHTML = newHTML;
@@ -150,10 +185,10 @@ function startRedirect_SignIn() {
                 }
 
 				let payload = {
-				  action: action // Required for the GAS switch statement
+				  action: action
 				};
 
-				// 2. Append User ID and Trust (if elementId is not 'NOT')
+				
 				if(!(elementId === 'NOT')){
 				  payload.user_ID = userStudyData.userInfo[0].userId;
 					payload.trust = userStudyData.userInfo[0].approved.toString();
@@ -166,7 +201,7 @@ function startRedirect_SignIn() {
 				}
 
 					try{
-					  // --- CRITICAL CHANGE: Using POST method with JSON body ---
+					  
 					  const response = await fetch(requestURL,{
 					    method: 'POST', 
 					    headers: {
@@ -289,6 +324,7 @@ async function quizMaker(action) {
         const sessionMeta = quizData.sessionTopic.find(s => String(s.id) === String(selectedId));
         
         if (sessionMeta) {
+            quizData.sessionTopic = [sessionMeta.id,sessionMeta.topic,sessionMeta.notes]
             const makeQuiz = await HTTPSrequest('makeQuiz', {
                 topic: `${sessionMeta.topic}. ${sessionMeta.notes}`
             });
@@ -314,9 +350,11 @@ function quiz(action,title) {
     const quizContainer = document.createElement('form');
     quizContainer.id = 'quizForm';
     
-    const header = document.createElement('header');
-    header.textContent = title+" Quiz Time!";
-    quizContainer.appendChild(header);
+    if(action !== 'answears'){
+		const header = document.createElement('header');
+		header.textContent = title+" Quiz Time!";
+		quizContainer.appendChild(header);
+	}
 
     let i = 1;
     quizData.quizQuestions.forEach(question => {
@@ -490,6 +528,9 @@ function sanitizeHTML(str) {
                                
                                 await saveData('labstudyTrackerData',userStudyData);
                                 await saveData('QuizRates',[])
+                                setTimeout(() =>{
+                                    showMessage('Data sync done','success');
+                                },20000)
                             }
                                     
                                     }
@@ -499,10 +540,18 @@ function sanitizeHTML(str) {
                             number_Of_Clo_s[2].forEach(session =>{
                                 userStudyData.sessions.unshift(session);
                             })
-                            await saveData('labstudyTrackerData',userStudyData)
+                            await saveData('labstudyTrackerData',userStudyData);
+                            setTimeout(() =>{
+                                    showMessage('Data sync done','success');
+                                },20000); 
                         }
+
+
                     }
-                }catch (e){}
+                }catch (e){
+                    const reg = navigator.serviceWorker.ready;
+                    await reg.sync.register('study-sync')
+                }
             }
 
 function AIchatbox() {
@@ -554,7 +603,6 @@ function AIchatbox() {
             
 
 async function promptSwitch(kind = String) {
-                
                 const textarea = document.getElementById('textprompt-'+kind);
                 
                 const sendButton = document.getElementById('send-button-'+kind);
@@ -562,6 +610,7 @@ async function promptSwitch(kind = String) {
                 const modeButton = document.getElementById('mode-button');
                 const modeDropdown = document.getElementById('mode-dropdown');
                 const currentModeDisplay = document.getElementById('current-mode-'+kind);
+                const HEADER_REMOVE = document.getElementById('headerR-'+kind);
                 loading = document.getElementById('loading-'+kind);
                 
                  // Toggle dropdown
@@ -679,19 +728,19 @@ async function promptSwitch(kind = String) {
                             loading.classList.remove('rotate');
                             loading.style.display = 'none';
                             textarea.value = '';
-                            textarea.style.height = 'auto'; // Reset height
+                            textarea.style.height = 'auto';
+                            HEADER_REMOVE.style.display = 'none';
                         }
                        
-                        textarea.value = '';
-                        resizeTextarea(); // Reset height and disable button
+                        resizeTextarea(); 
                     }
                 });
 
-                // Allow 'Shift + Enter' for new lines, but 'Enter' alone to send
+                
                 textarea.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault(); // Prevent default new line insertion
-                        sendButton.click(); // Trigger the send button
+                        e.preventDefault(); 
+                        sendButton.click(); 
                     }
                 });
 
@@ -708,7 +757,6 @@ function showMessage(message, type, time) {
         errorMessage.style.display = 'block';
         successMessage.style.display = 'none';
     } else {
-        // Safe Text Injection
         const quoteP = document.getElementById('quoteDisplay');
         if (quoteP) {
             quoteP.textContent = message;
@@ -745,7 +793,8 @@ async function chatPrompt(text, kind) {
     } else {
         try {
 			
-            if ((hour > !17 && hour < !20) || (day !== 6 && day !== 0)) return;
+            if ((hour >= 17 && hour < 20) || (day === 6 || day === 0)){
+			}else{return;}
             const chats = await HTTPSrequest('chats', {
                 chatId: Date.now(),
                 senderId: userStudyData.userInfo[0].username,
@@ -1125,14 +1174,14 @@ function Timetable() {
             }
         });
     }
-    // Handle weekend logic separately if needed
+    
 }
     
 
            
 		
 
-			// ========== INIT (call once on start) ==========
+			
 			function initDB() {
 			  return new Promise((resolve, reject) => {
 				const openReq = indexedDB.open('StudyTrackerDB', 2);
@@ -1149,7 +1198,7 @@ function Timetable() {
 			  });
 			}
 
-			// ========== LOAD (returns value or null) ==========
+			
 			function loadData(KEY, onloadFlag) {
 			  return new Promise((resolve, reject) => {
 				if (!db) return reject(new Error('DB not initialized'));
@@ -1159,8 +1208,8 @@ function Timetable() {
 				req.onsuccess = e => {
 				  const val = (e.target.result === undefined) ? null : e.target.result;
 				  if (onloadFlag === 'onload') {
-					// your old behavior: assign and update display
-					userStudyData = val;           // keep same global name you used
+					
+					userStudyData = val; 
 					
 					try { updateDisplay();
 							switchTab('track') } catch (err) {}
@@ -1171,7 +1220,7 @@ function Timetable() {
 			  });
 			}
 
-			// ========== SAVE (resolves when saved) ==========
+			
 			function saveData(KEY, dataToSave) {
 			  return new Promise((resolve, reject) => {
 				if (!db) return reject(new Error('DB not initialized'));
@@ -1713,8 +1762,10 @@ function keyTrust() {
 
         window.addEventListener('load', async function () {
             try {
-                await initDB();
+				
 
+                await initDB();
+				
                 // Load User Data
                 await loadData('labstudyTrackerData', 'onload');
 
@@ -1756,7 +1807,9 @@ function keyTrust() {
                     hoursExpected = user_plan.hours_session * user_plan.number_subjects_day * daysPassed;
                 }
 
-               
+				if (!isStandalone()) {
+					maybeShowInstall();
+				}
                 await registerServiceWorker();
                 await navigator.serviceWorker.ready;
                 if (!navigator.serviceWorker.controller) {
@@ -1984,7 +2037,11 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
     }
 
     async function saveReminder(reminders = []) {
-        const todayReminders = [];
+        const todayReminders = await loadData('reminders');
+        const fireAt = new Date(todayReminders[0].timeISO).getTime();
+        const now = Date.now();
+        const ms = now - fireAt >= 4*60*60*1000;
+        if(!ms) return;
         if(reminders.length >= 1){
             reminders.forEach(rem =>{
                 todayReminders.unshift(rem);
