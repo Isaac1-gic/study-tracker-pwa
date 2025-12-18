@@ -1,181 +1,365 @@
-// serviceworker.js
 
-// --- CONFIGURATION ---
-const CACHE_NAME = 'study-tracker-v3';
+
+const CACHE_NAME = 'study-tracker-v2';
 const CACHE_EXTERNAL_NAME = 'external-assets-cache-v1';
 const STUDY_TAG = 'Dairy-Study-Remainder';
 
-// List of files to cache for offline access.
-// Ensure these paths match your actual file structure exactly.
+
 const OFFLINE_URLS = [
-    '/',
-    '/index.html',
-    '/js/app.js',
-    '/style.css',
-    '/manifest.json',
-    '/icon-192.png',
-    '/icon1-512.png',
-    '/data.js',
-    '/all.min.css',
-    // External Assets (Fonts, CSS)
-    'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap',
-    'https://cdn.tailwindcss.com',
-    'https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap'
+  '/',
+  '/index.html',
+  '/js/app.js',
+  '/style.css',
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon1-512.png',
+  '/data.js',
+  '/all.min.css'
 ];
 
-// --- 1. INSTALLATION: Cache the App Shell ---
-self.addEventListener('install', function(event) {
-    console.log('[Service Worker] Install Event: Starting...');
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(function(cache) {
-                console.log('[Service Worker] Caching App Shell');
-                // We use map/promise.all to cache what we can, logging failures without stopping everything
-                return Promise.all(
-                    OFFLINE_URLS.map(url => {
-                        return fetch(url, { mode: 'no-cors' }).then(response => {
-                            return cache.put(url, response);
-                        }).catch(error => {
-                            console.warn(`[Service Worker] Failed to cache ${url}:`, error);
-                        });
-                    })
-                );
-            })
-            .then(() => self.skipWaiting())
+const EXTERNAL_HOSTS = [
+  'cdn.tailwindcss.com',
+  'fonts.googleapis.com',
+  'fonts.gstatic.com'
+];
+
+
+
+self.addEventListener('install', event => {
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+
+    await Promise.all(
+      OFFLINE_URLS.map(path =>
+        fetch(path)
+          .then(res => {
+            if (res.ok) return cache.put(path, res.clone());
+          })
+          .catch(() => {}) 
+      )
     );
+
+    self.skipWaiting();
+  })());
 });
 
-// --- 2. ACTIVATION: Clean up old caches ---
-self.addEventListener('activate', function(event) {
-    console.log('[Service Worker] Activated. Cleaning old caches.');
-    const cacheWhitelist = [CACHE_NAME, CACHE_EXTERNAL_NAME];
 
-    event.waitUntil(
-        caches.keys().then(function(cacheNames) {
-            return Promise.all(
-                cacheNames.map(function(cacheName) {
-                    if (cacheWhitelist.indexOf(cacheName) === -1) {
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        }).then(() => self.clients.claim())
+
+self.addEventListener('activate', event => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(
+      keys.map(k =>
+        (k !== CACHE_NAME && k !== CACHE_EXTERNAL_NAME)
+          ? caches.delete(k)
+          : null
+      )
     );
+    self.clients.claim();
+  })());
 });
 
-// --- 3. FETCH: Cache First Strategy ---
-self.addEventListener('fetch', function(event) {
-    if (!event.request.url.startsWith('http')) return;
 
-    const requestUrl = new URL(event.request.url);
 
-    // Special handling for External Assets (Tailwind, Fonts)
-    if (requestUrl.hostname === 'cdn.tailwindcss.com' || 
-        requestUrl.hostname === 'fonts.googleapis.com' || 
-        requestUrl.hostname === 'fonts.gstatic.com') {
-        
-        event.respondWith(
-            caches.match(event.request).then(cachedResponse => {
-                if (cachedResponse) return cachedResponse;
-                return fetch(event.request, { mode: 'no-cors' })
-                    .then(response => {
-                        return caches.open(CACHE_EXTERNAL_NAME).then(cache => {
-                            cache.put(event.request, response.clone());
-                            return response;
-                        });
-                    });
-            })
-        );
-        return;
-    }
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
 
-    // Standard Cache-First for App Shell
+  const url = new URL(event.request.url);
+
+  
+  if (url.origin === location.origin && OFFLINE_URLS.includes(url.pathname)) {
     event.respondWith(
-        caches.match(event.request).then(function(response) {
-            if (response) {
-                return response;
-            }
-            return fetch(event.request).then(function(networkResponse) {
-                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-                    return networkResponse;
-                }
-                const responseToCache = networkResponse.clone();
-                caches.open(CACHE_NAME).then(function(cache) {
-                    cache.put(event.request, responseToCache);
-                });
-                return networkResponse;
-            }).catch(error => {
-                // Optional: Return a custom offline page here if needed
-                // console.log('[Service Worker] Fetch failed (Offline):', event.request.url);
-            });
-        })
+      caches.match(url.pathname).then(cached =>
+        cached || fetch(event.request)
+      )
     );
+    return;
+  }
+
+  
+  if (EXTERNAL_HOSTS.includes(url.hostname)) {
+    event.respondWith(
+      caches.open(CACHE_EXTERNAL_NAME).then(async cache => {
+        const cached = await cache.match(event.request);
+        if (cached) return cached;
+
+        const res = await fetch(event.request, { mode: 'no-cors' });
+        cache.put(event.request, res.clone());
+        return res;
+      })
+    );
+    return;
+  }
+
+  
+  event.respondWith(fetch(event.request));
 });
 
-// --- 4. MESSAGING: Handle 'SHOW_NOTIFICATION' from Client ---
+
+
+self.addEventListener('sync', event => {
+  if (event.tag === 'study-sync') {
+    event.waitUntil(runBackgroundSync());
+  }
+});
+
+
+async function runBackgroundSync() {
+  userStudyData = {}
+        db = null;
+        requestURL = 'https://script.google.com/macros/s/AKfycbzIt9LUD3EXJbgSsPPMCVhmT-QN8DtX_HVENtE8cpxjztTHzK1fLA_LJKeC0yWENY82/exec';
+        let requesting = 'GO';
+
+        await asyncinitDB();
+        await asyncloadData('labstudyTrackerData','onload');
+
+        async function asyncsessionSave (){
+                try{
+                    const number_Of_Off_s = userStudyData.sessions.length;
+                    if (number_Of_Off_s > 0){
+                    
+                        const number_Of_Clo_s = await asyncHTTPSrequest('sessionsSave',{
+                            number_Of_Off_s: number_Of_Off_s,
+                            tacks: 'number_Of_Clo_s'});
+                            
+                       
+                        if(number_Of_Clo_s[1] < number_Of_Off_s && number_Of_Clo_s.length === 2){
+                            let i = 1;
+                            let sessionsArry = [];
+                            let subject_TIDsArray = [];
+                            userStudyData.subjects.forEach(subject =>{
+                                if(subject.id !== 1){
+                                    subject_TIDsArray.push({
+                                        id: subject.id,
+                                        completedHours: subject.completedHours,
+                                    })
+                                }else{
+                                    subject_TIDsArray.push({
+                                        id: subject.id,
+                                        quesNumSolved: subject.quesNumSolved,
+                                    });
+                                };
+                            });
+                            for(const session of userStudyData.sessions){
+                                if (i > number_Of_Clo_s[1]){
+                                    sessionsArry.push(session);
+                                }
+                                i += 1;
+                            };
+                            if (sessionsArry.length > 0){
+                            const sessionsToSave = JSON.stringify(sessionsArry);
+                            const quizSessionUpdate = JSON.stringify(await asynccloudQuizSave());
+                            const topicsToUpdate = JSON.stringify([subject_TIDsArray,asyncprocessesStudiedSessions()])
+                            const is_saved = await asyncHTTPSrequest('sessionsSave',{
+                                        tacks: sessionsToSave,
+                                        tacks2: topicsToUpdate,
+                                        tacks3: quizSessionUpdate
+                                        });
+                            
+                            if(is_saved[1] === 'Session batch saved successfully.'){
+                                userStudyData.studied = [];
+                               
+                                await asyncsaveData('labstudyTrackerData',userStudyData);
+                                await asyncsaveData('QuizRates',[])
+                            }
+                                    
+                                    }
+                        }
+                        else if (number_Of_Clo_s.length > 2){
+                            //userStudyData.sessions.length = 0
+                            number_Of_Clo_s[2].forEach(session =>{
+                                userStudyData.sessions.unshift(session);
+                            })
+                            await asyncsaveData('labstudyTrackerData',userStudyData)
+                        }
+                    }
+                }catch (e){
+                    
+                };
+
+                async function asynccloudQuizSave() {
+                    const quizRateArray = await asyncloadData('QuizRates') ?? [];
+                    
+                    return quizRateArray;
+                };
+
+                function asyncprocessesStudiedSessions(){
+                    try{
+                        const studiedDict = {}
+                        userStudyData.studied.forEach(Element =>{
+                            if (!studiedDict[Element[0]]){
+                                studiedDict[Element[0]] = [];
+                                studiedDict[Element[0]].push(Element[1]);
+                            }else{
+                                studiedDict[Element[0]].push(Element[1]) 
+                            }
+                        })
+                        
+                        return studiedDict;
+                        }catch (error){
+                            
+                        }
+                };
+
+                async function asyncHTTPSrequest(action, params = {}, elementId){
+                
+                    if(requesting !== 'GO') {
+                        
+                        
+                        return null;
+                    
+                    }
+
+                    let payload = {
+                    action: action 
+                    };
+
+                    
+                    if(!(elementId === 'NOT')){
+                    payload.user_ID = userStudyData.userInfo[0].userId;
+                        payload.trust = userStudyData.userInfo[0].approved.toString();
+                    };
+                    
+                    for(const key in params){
+                    if(params.hasOwnProperty(key)){
+                        payload[key] = params[key];
+                    }
+                    }
+
+                        try{
+                          
+                          const response = await fetch(requestURL,{
+                            method: 'POST', 
+                            headers: {
+                                'Content-Type': 'text/plain;charset=utf-8'
+                            },
+                            
+                            body: JSON.stringify(payload) 
+                          }); 
+                        
+
+                    if(!response.ok){
+                        return null;
+                    }
+                    const pureResponse = await response.json();
+                    
+                        
+                    if(pureResponse[0] === false){
+                        userStudyData = {};
+                        await asyncsaveData('labstudyTrackerData',userStudyData);
+                        
+                    }
+                    
+                        if (pureResponse[1][1] === 'STOP'){
+                            requesting = 'STOP';
+                            await asyncsaveData('STOP',Date.now())
+                        }
+
+
+                        if ((pureResponse[1][0] !== requestURL && pureResponse[1][0].slice(0,35) === requestURL.slice(0,35))) {
+                            
+                            await asyncsaveData('URL',pureResponse[1][0]);
+                            requestURL = pureResponse[1][0];
+                            
+                            
+                        }
+
+                        return pureResponse[0];
+                    }catch (error) {
+                        return null;
+                    }
+                        
+                    
+                }
+            };
+
+            function asyncinitDB() {
+			  return new Promise((resolve, reject) => {
+				const openReq = indexedDB.open('StudyTrackerDB', 2);
+				openReq.onupgradeneeded = e => {
+				  db = e.target.result;
+				  if (!db.objectStoreNames.contains('Data')) db.createObjectStore('Data');
+				};
+				openReq.onsuccess = e => {
+				  db = e.target.result;
+				 
+				  resolve(db);
+				};
+				openReq.onerror = e => reject(e);
+			  });
+			}
+
+			
+			function asyncloadData(KEY, onloadFlag) {
+			  return new Promise((resolve, reject) => {
+				if (!db) return reject(new Error('DB not initialized'));
+				const tx = db.transaction('Data', 'readonly');
+				const store = tx.objectStore('Data');
+				const req = store.get(KEY);
+				req.onsuccess = e => {
+				  const val = (e.target.result === undefined) ? null : e.target.result;
+				  if (onloadFlag === 'onload') {
+					
+					userStudyData = val; 
+					
+				  }
+				  resolve(val);
+				};
+				req.onerror = e => reject(e.target.error || e);
+			  });
+			}
+
+			
+			function asyncsaveData(KEY, dataToSave) {
+			  return new Promise((resolve, reject) => {
+				if (!db) return reject(new Error('DB not initialized'));
+				const tx = db.transaction('Data', 'readwrite');
+				const store = tx.objectStore('Data');
+				const req = store.put(dataToSave, KEY);
+				req.onsuccess = () => resolve();
+				req.onerror = e => reject(e.target.error || e);
+			  });
+			}
+}
+
+
+
 self.addEventListener('message', event => {
-    if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
-        showLocalNotification(event.data.payload);
-    }
+  if (event.data?.type === 'SHOW_NOTIFICATION') {
+    showLocalNotification(event.data.payload);
+  }
 });
 
-function showLocalNotification(rem) {
-    const title = rem.title || 'Study Tracker';
-    
-    // FIX: Ensure tag is valid. Use ID, or fallback to a generic tag.
-    // The browser requires a tag if 'renotify' is true.
-    const notificationTag = rem.id || 'study-tracker-general';
-
-    const options = {
-        body: rem.body || 'You have a study reminder.',
-        tag: notificationTag,
-        renotify: true,
-        data: { 
-            id: rem.id, 
-            timeISO: rem.timeISO,
-            url: 'index.html' // URL to open on click
-        },
-        icon: 'icon-192.png', 
-        badge: 'icon-512.png'
-    };
-
-    self.registration.showNotification(title, options);
+function showLocalNotification(data) {
+  self.registration.showNotification(
+    data.title || 'Study Tracker',
+    {
+      body: data.body || 'Reminder',
+      tag: data.id || 'study',
+      renotify: true,
+      icon: '/icon-192.png',
+      badge: '/icon1-512.png',
+      data: { url: '/index.html' }
+    }
+  );
 }
 
-// --- 5. NOTIFICATION CLICK: Focus App ---
 self.addEventListener('notificationclick', event => {
-    event.notification.close();
-    const targetURL = event.notification.data.url || 'index.html';
-
-    event.waitUntil(
-        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
-            for (const client of clientList) {
-                if (client.url.includes(targetURL) && 'focus' in client) {
-                    return client.focus();
-                }
-            }
-            if (clients.openWindow) {
-                return clients.openWindow(targetURL);
-            }
-        })
-    );
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow(event.notification.data.url)
+  );
 });
 
-// --- 6. PERIODIC SYNC: Background Logic ---
+
 self.addEventListener('periodicsync', event => {
-    if (event.tag === STUDY_TAG) {
-        event.waitUntil(runBackgroundReminderLogic());
-    }
+  if (event.tag === STUDY_TAG) {
+    event.waitUntil(
+      showLocalNotification({
+        title: 'Daily Study Plan',
+        body: 'Check your timetable'
+      })
+    );
+  }
 });
 
-async function runBackgroundReminderLogic() {
-    // Logic to check IndexedDB and fire notification would go here
-    // For now, we fire a generic reminder to prove it works
-    const now = new Date();
-    return showLocalNotification({
-        id: 'periodic-' + Date.now(),
-        title: 'Daily Study Plan',
-        body: 'Don\'t forget to check your timetable for today!',
-        timeISO: now.toISOString()
-    });
-}
