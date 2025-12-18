@@ -225,11 +225,15 @@
                     <dd>As an PWA tool, Data security and privacy are paramount. 
                     All user data (Subjects, Sessions, Emails) is stored exclusively within developer linked Google Sheets. 
                     The application does not share sensitive information. 
-                    Review our <a href="#">Privacy Policy</a> for full details.</dd>
+                    Review our <a href="https://isaac1-gic.github.io/Privacy-Policy-and-Terms-Conditions/">Privacy Policy</a> for full details.</dd>
                     <br>
             </div>
             <div>
                 <dt>Developer:</dt> <dd><a href="https://www.facebook.com/profile.php?id=61556819821971">Isaac G Chitsakamire</a></dd>
+                <dt>Contacts:</dt> <dd>
+					<dd><a href="#">isaacchitsakamire@gmail.com</a></dd>
+					<dd><a href="https://www.facebook.com/profile.php?id=61556819821971">FaceBook</a></dd>
+					<dd><a href="https://www.instagram.com/igc_mgy">Instagram</a></dd>
                 <br>
                 <dt>Acknowledgements:</dt> 
                     <dd>We extend our sincere gratitude to all the poeple who took thier time helping me collecting topics and those who were testing this app.</dd>
@@ -245,10 +249,12 @@
 
         <!-- Group -->
         <div id="group" class="tab-content " >
+			<div id="headerR-chat">
 			<header>
                 <h1>School Chats🏫</h1>
-         </header>
+			</header>
             <p style="color: rgb(247, 43, 7); text-align: center;font-family: 'Times New Roman', Times, serif;" id='warn1'>Chat with friends to refresh brain but don`t waste your time</p>
+            </div>
             <div id="chatsList" class="chat-container">
                 <!-- chats will appear here -->
             </div>
@@ -290,10 +296,15 @@
 
         <!-- AI help -->
         <div id="gic" class="tab-content">
-			<header>
-                <h1>GIC AI✨</h1>
-         </header>
-            <p id='warn2' style="color: rgb(247, 43, 7); text-align: center;font-family: 'Times New Roman', Times, serif;">My goal is to help you to succes. PlEASE TRY MULTIPLE TIMES YOURSELF FIRST BEFORE ME.</p>
+			<div id="headerR-ai">
+				<header>
+					<h1>GIC AI✨</h1>
+				</header>
+				<p id='warn2' style="color: rgb(247, 43, 7); text-align: center;font-family: 'Times New Roman', Times, serif;">
+					My goal is to help you to succes. PlEASE TRY MULTIPLE TIMES YOURSELF FIRST BEFORE ME.
+				</p>
+            </div>
+            
             <div id="Quizresultscont" class="stat-card" style="display: none;">
                     <div class="stat-number" id="Quizresults">0%</div>
                     <div>GIC AI feedback: </div>
@@ -458,6 +469,13 @@
             <a class="nav-tab" onclick="switchTab('profile')">Profile</a>
             <a class="nav-tab" onclick="switchTab('about')">About</a>
         </nav>
+        
+        <div id="install-banner" class="chat-body"
+			 style="display: none; position:fixed;bottom:0;width:100%;background:skyblue;color:gold;padding:12px;text-align:center;z-index:9999; border-radius: 10px 10px 10px 10px;bottom: 10%">
+			<span>Install G Tracker for full offline access</span>
+			<button onclick="installApp()">Install</button>
+		</div>
+
   
   
 
