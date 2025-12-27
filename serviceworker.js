@@ -1,17 +1,17 @@
-const CACHE_NAME = 'study-tracker-v3';
-const CACHE_EXTERNAL_NAME = 'external-assets-cache-v2';
-const STUDY_TAG = 'Dairy-Study-Remainder';
+const CACHE_NAME = 'study-tracker-v4';
+const CACHE_EXTERNAL_NAME = 'external-assets-cache-v3';
+const STUDY_TAG = 'Daily-Study-Reminder';
 
 const OFFLINE_URLS = [
-  '/',
-  '/index.html',
-  '/js/app.js',
-  '/style.css',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon1-512.png',
-  '/data.js',
-  '/all.min.css'
+  './',
+  'index.html',
+  'js/app.js',
+  'style.css',
+  'manifest.json',
+  'icon-192.png',
+  'icon1-512.png',
+  'data.js',
+  'all.min.css'
 ];
 
 const EXTERNAL_HOSTS = [
@@ -63,7 +63,7 @@ self.addEventListener('fetch', event => {
       }).catch(() => {
        
         if (event.request.mode === 'navigate') {
-          return caches.match('/index.html') || caches.match('/');
+          return caches.match('index.html') || caches.match('./');
         }
       });
     })
@@ -203,16 +203,16 @@ async function runBackgroundSync() {
                     }
 
                         try{
-                          
-                          const response = await fetch(requestURL,{
-                            method: 'POST', 
-                            headers: {
+                         
+                          const response = await fetch(requestURL,{
+                            method: 'POST', 
+                            headers: {
                                 'Content-Type': 'text/plain;charset=utf-8'
-                            },
-                            
-                            body: JSON.stringify(payload) 
-                          }); 
-                        
+                            },
+                            
+                            body: JSON.stringify(payload) 
+                          }); 
+
 
                     if(!response.ok){
                         return null;
@@ -250,52 +250,52 @@ async function runBackgroundSync() {
             };
 
             function asyncinitDB() {
-			  return new Promise((resolve, reject) => {
-				const openReq = indexedDB.open('StudyTrackerDB', 2);
-				openReq.onupgradeneeded = e => {
-				  db = e.target.result;
-				  if (!db.objectStoreNames.contains('Data')) db.createObjectStore('Data');
-				};
-				openReq.onsuccess = e => {
-				  db = e.target.result;
-				 
-				  resolve(db);
-				};
-				openReq.onerror = e => reject(e);
-			  });
-			}
+              return new Promise((resolve, reject) => {
+                const openReq = indexedDB.open('StudyTrackerDB', 2);
+                openReq.onupgradeneeded = e => {
+                  db = e.target.result;
+                  if (!db.objectStoreNames.contains('Data')) db.createObjectStore('Data');
+                };
+                openReq.onsuccess = e => {
+                  db = e.target.result;
+                 
+                  resolve(db);
+                };
+                openReq.onerror = e => reject(e);
+              });
+            }
 
-			
-			function asyncloadData(KEY, onloadFlag) {
-			  return new Promise((resolve, reject) => {
-				if (!db) return reject(new Error('DB not initialized'));
-				const tx = db.transaction('Data', 'readonly');
-				const store = tx.objectStore('Data');
-				const req = store.get(KEY);
-				req.onsuccess = e => {
-				  const val = (e.target.result === undefined) ? null : e.target.result;
-				  if (onloadFlag === 'onload') {
-					
-					userStudyData = val; 
-					
-				  }
-				  resolve(val);
-				};
-				req.onerror = e => reject(e.target.error || e);
-			  });
-			}
+            
+            function asyncloadData(KEY, onloadFlag) {
+              return new Promise((resolve, reject) => {
+                if (!db) return reject(new Error('DB not initialized'));
+                const tx = db.transaction('Data', 'readonly');
+                const store = tx.objectStore('Data');
+                const req = store.get(KEY);
+                req.onsuccess = e => {
+                  const val = (e.target.result === undefined) ? null : e.target.result;
+                  if (onloadFlag === 'onload') {
+                    
+                    userStudyData = val; 
+                    
+                  }
+                  resolve(val);
+                };
+                req.onerror = e => reject(e.target.error || e);
+              });
+            }
 
-			
-			function asyncsaveData(KEY, dataToSave) {
-			  return new Promise((resolve, reject) => {
-				if (!db) return reject(new Error('DB not initialized'));
-				const tx = db.transaction('Data', 'readwrite');
-				const store = tx.objectStore('Data');
-				const req = store.put(dataToSave, KEY);
-				req.onsuccess = () => resolve();
-				req.onerror = e => reject(e.target.error || e);
-			  });
-			}
+            
+            function asyncsaveData(KEY, dataToSave) {
+              return new Promise((resolve, reject) => {
+                if (!db) return reject(new Error('DB not initialized'));
+                const tx = db.transaction('Data', 'readwrite');
+                const store = tx.objectStore('Data');
+                const req = store.put(dataToSave, KEY);
+                req.onsuccess = () => resolve();
+                req.onerror = e => reject(e.target.error || e);
+              });
+            }
 }
 
 
@@ -315,7 +315,7 @@ function showLocalNotification(data) {
       renotify: true,
       icon: 'icon1-512.png' || 'icon-192.png',
       badge: 'icon-192.png' || 'icon1-512.png',
-      data: { url: '/' }
+      data: { url: './' }
     }
   );
 }
@@ -338,4 +338,3 @@ self.addEventListener('periodicsync', event => {
     );
   }
 });
-
