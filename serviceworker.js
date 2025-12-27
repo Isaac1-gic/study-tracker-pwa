@@ -1,5 +1,5 @@
-const CACHE_NAME = 'study-tracker-v2';
-const CACHE_EXTERNAL_NAME = 'external-assets-cache-v1';
+const CACHE_NAME = 'study-tracker-v3';
+const CACHE_EXTERNAL_NAME = 'external-assets-cache-v2';
 const STUDY_TAG = 'Dairy-Study-Remainder';
 
 const OFFLINE_URLS = [
@@ -313,9 +313,9 @@ function showLocalNotification(data) {
       body: data.body || 'Reminder',
       tag: data.id || 'study',
       renotify: true,
-      icon: '/icon1-512.png',
-      badge: '/icon-192.png',
-      data: { url: 'index.html' }
+      icon: 'icon1-512.png' || 'icon-192.png',
+      badge: 'icon-192.png' || 'icon1-512.png',
+      data: { url: '/' }
     }
   );
 }
