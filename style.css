@@ -130,12 +130,17 @@
             }
 
             .chat-card {
+				overflow: hidden;
                 margin-right: auto;
                 margin-left: 0;
                 box-shadow: 0 12px 28px rgba(0,0,0,0.45), 0 3px 6px rgba(0,0,0,0.25);
                 background: linear-gradient(135deg, green 0%, gold 50%);
                 padding: 2%;
-                text-align: left;     
+                text-align: left;  
+                max-width: 90%;  
+                overflow-wrap: break-word;
+                word-break: break-word;
+                max-width: 90%; 
             }
 
             .mychat-card {
@@ -145,6 +150,11 @@
                 padding: 2%;
                 text-align: left;
                 box-shadow: 0 12px 28px rgba(0,0,0,0.45), 0 3px 6px rgba(0,0,0,0.25);
+                overflow-wrap: break-word;
+                word-break: break-word;
+                max-width: 90%;
+                hyphens: auto;
+				overflow: hidden;
             }
 
             .chat-card:hover {
@@ -265,7 +275,7 @@
                 overflow: hidden;
                 background-position: center;
                 background-image: url("icon1-512.png");
-                
+                object-fit: cover;
             
             }
 
@@ -287,6 +297,13 @@
 				}
             }
 
+            .table-container {
+                width: 100%;
+				overflow-x: auto; 
+				display: flex;
+				flex-direction: column;
+				scroll-behavior: smooth; 
+            }
             th {text-align: center; background-color: #5a7d9a; color: white;padding: 12px 15px; border: 1px solid #ddd;}
             tr:nth-child(even) {background-color: #f8f9fa;}
             ul {padding-left: 20px; margin: 10px 0;}
@@ -560,7 +577,7 @@
                 margin-bottom: 20px;
                 display: none;
                 text-align: center;
-                font-size: 0.85rem;  /* smaller text */   
+                font-size: 0.85rem;   
                 border-collapse: collapse;
                 width: 100%;     
                 border: none;
@@ -667,15 +684,13 @@
             /* Step 2: make table behave fluidly */
             .table-container table {
             width: 100%;           /* match container width */
-            border-collapse: collapse;
-            min-width: 600px;      /* ensures columns don’t squish too much */
+            border-collapse: collapse;      /* ensures columns don’t squish too much */
             }
 
             /* Step 3: optional — make it readable on phones */
             @media (max-width: 600px) {
             .table-container th, #table-container td {
-                font-size: 0.85rem;  /* smaller text */
-                padding: 6px;        /* smaller padding */
+                font-size: 0.85rem;      /* smaller padding */
             }
             }
 
@@ -683,8 +698,7 @@
 			  * { box-sizing: border-box; }
 			  html,body { height:100%; margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: #f5f5ea; }
 			  .chat-container {
-				height: 75vh; 
-				max-height: 80vh; /* Optional: Sets a practical upper limit */
+				height: 100vh;
 
 				/* The core properties for scrolling remain the same */
 				overflow-y: auto; 
@@ -820,6 +834,3 @@
 				#mode-display-compact { display:inline-block; }
 			  }
    
-
-
-
