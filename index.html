@@ -4,6 +4,7 @@
         <title>MSCE G Studies Tracker</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width initial-scale=1.0">
+        <meta http-equiv="Content-Security-Policy">
         <link rel="stylesheet" href="style.css">
         <link rel="manifest" href="manifest.json">
         <link rel="stylesheet" href="all.min.css">
@@ -31,7 +32,7 @@
     <body>
         <div>
            	<div id="menu-container">
-            	<p class="menu-btn" onclick="toggleMenu()">☰</p>
+            	<p class="menu-btn" id="togM">☰</p>
         	</div>
          	
 		      
@@ -59,8 +60,8 @@
                 <!--Login page-->
                 <div id="login" class="login-container">
                     <div class="header">
-                        <h1>Academic MSCE G Studies Tracker</h1>
-                        <p>Login to access MSCE G Studies Tracker</p>
+                        <h1>MSCE G Studies Tracker</h1>
+                        <p>Login to access G Tracker</p>
                     </div>
 
                     <div class="login-form">
@@ -78,9 +79,9 @@
 
                             <button type="submit" class="login-btn">Login</button>
                         </form>
-                        <div class="divider"><span onclick="document.getElementById('login').classList.remove('active');document.getElementById('reLogin').classList.add('active')">Forgot password</span></div>
-                        <button class="login-btn" onclick="document.getElementById('login').classList.remove('active');startRedirect_SignIn()">Create Account</button>
-                        
+                        <div class="divider"><span id="forP">Forgot password</span></div>
+                        <button class="login-btn" id="creaA">Create Account</button>
+                        <footer><a href="https://www.youtube.com/watch?v=0KvYXaCPuX0">Get started </a><a href="#"> Registration</a></footer>
                     </div>
                 </div>
                 
@@ -93,8 +94,7 @@
                 <!--forgot password-->
                 <div id="reLogin" class="login-container">
                     <div class="header">
-                        <h1> Academic MSCE G Studies Tracker</h1>
-                        <p>Login to access MSCE G Studies Tracker</p>
+                        <h1>MSCE G Studies Tracker</h1>
                     </div>
 
                     <div class="login-form">
@@ -133,21 +133,21 @@
             <form id="form">
             <div class="form-group">
                 <label for="subjects">Subject</label>
-                <select id="studySubject" onfocus="document.getElementById('MissedTopic').style.display = 'block'; document.getElementById('myowntopic').style.display = 'block'" required >
+                <select id="studySubject" required >
                    
                     <!-- Subjects will be populated here -->
                 </select>
                 
                 <div id='MissedTopic'>
                 <label for="Missed Topic">Missed Topic</label>
-                <select id="missedT" onfocus="updateMissedStudyTopicDropdown()" >
+                <select id="missedT">
                     <!-- Missed topics will be populated here -->
                 </select>
                 </div>
             </div>
             <div id="1remove" class="form-group">
                 <label for="date">Date</label>
-                <input type="date" id="studyDate" required onclick="document.getElementById('studyDate').max = today">
+                <input type="date" id="studyDate" required>
             </div>
             <div class="form-group">
                 <label for="hourslabel" id="hourslabel">Hours Studied</label>
@@ -155,7 +155,7 @@
             </div>
             <div class="form-group">
                 <label for="Notes">Notes (Recommended)</label>
-                <select id="myowntopic" onfocus="updateStudyTopicDropdown()"></select>
+                <select id="myowntopic"></select>
                 <textarea id="studyNotes" required autocorrect="on" autocomplete="on" placeholder="What have you study?"></textarea>
             </div>
             <button>Save Study Session</button>
@@ -235,6 +235,11 @@
 					<dd><a href="https://www.facebook.com/profile.php?id=61556819821971">FaceBook</a></dd>
 					<dd><a href="https://www.instagram.com/igc_mgy">Instagram</a></dd>
                 <br>
+                <dt>YouTube videos:</dt>
+                <dd>
+                    <a href="https://www.youtube.com/watch?v=0KvYXaCPuX0">Get started</a>
+                </dd>
+                <dd><a href="#">Registration</a></dd>
                 <dt>Acknowledgements:</dt> 
                     <dd>We extend our sincere gratitude to all the poeple who took thier time helping me collecting topics and those who were testing this app.</dd>
                 <br>
@@ -372,7 +377,7 @@
         <div id="report" class="tab-content">
             <h2 style="font-size: larger; color: red; text-align: center;font-family: 'Times New Roman', Times, serif;">Week Review & Analysis</h2>
     
-            <div class="reminder">
+            <div class="reminder" id="InactiveHide" >
                 <div>
                 <header id="title"></header><br>
                 <p id="intro"></P><br>
@@ -408,7 +413,7 @@
                         <div class="header"> 
                         <p>Timetable</p>
                         </div>
-                                
+                        <div id="table" class="table-container">     
                               <table id="Ttable" class="table-container">
                                   <tr><th>DAY</th><th colspan="6">ALLOCATE TIME YOURSELF</th></tr>
                                   <tr id="Monday"></tr>
@@ -420,6 +425,7 @@
                                   <tr><td>Sat</td><td colspan="6">-Write some exams pastpapers[<br>=>Try to make environment like MANED exam room.<br>=>Finnish writing the paper 15min before allowed Time.<br>=>Find some to mark you and correct You or use AI but don`t depend on it.<br>=>Note: You`ll be doing this alone, so you'll be killing yourself by cheating or missing.]<br>-Review this week class exercises<br>-Your style</td></tr>
                                   <tr><td>Sun</td><td colspan="6">-Write one composition(letter,speech,report,short story)[<br>=>Try to make environment like MANED exam room.<br>=>Finnish writing the composition within 45min.<br>=>Tomorrow Submit to your English teacher to mark you and make sure you recieve oral feedback.<br>=>Note: You`ll be doing this alone, so you'll be killing yourself by cheating or missing.]<br>-Review last week most challenging topic.<br>-Your style</td></tr>  
                                 </table>
+                        </div>
                       
                 </div> 
                 
@@ -451,29 +457,25 @@
         </div>
 
         
-		 <!--
-                <div class="profile-container rotate" id="profile-container">
-				<div class="profile-text">MGY</div>
-				</div>
-                <!-- Menu Container -->
+		 
       
 
         <!-- Slide-in Menu -->
         <nav class="menu" id="menu">
-            <a class="nav-tab active" onclick="switchTab('track')">Home</a>                         
-            <a class="nav-tab" onclick="switchTab('progress');">Progress</a>            
-            <a class="nav-tab" onclick="switchTab('review')">Review</a>
-            <a class="nav-tab" onclick="switchTab('report')">Week Overview Report</a>
-            <a class="nav-tab" onclick="switchTab('group')">Chat space</a>
-            <a class="nav-tab" onclick="switchTab('gic')">GIC AI</a>
-            <a class="nav-tab" onclick="switchTab('profile')">Profile</a>
-            <a class="nav-tab" onclick="switchTab('about')">About</a>
+            <a class="nav-tab active" id="swiH">Home</a>                         
+            <a class="nav-tab" id="swiP">Progress</a>            
+            <a class="nav-tab" id="swiR">Review</a>
+            <a class="nav-tab" id="swiW">Week Overview Report</a>
+            <a class="nav-tab" id="swiC">Chat space</a>
+            <a class="nav-tab" id="swiG">GIC AI</a>
+            <a class="nav-tab" id="swiU">Profile</a>
+            <a class="nav-tab" id="swiA">About</a>
         </nav>
         
         <div id="install-banner" class="chat-body"
 			 style="display: none; position:fixed;bottom:0;width:100%;background:skyblue;color:gold;padding:12px;text-align:center;z-index:9999; border-radius: 10px 10px 10px 10px;bottom: 10%">
 			<span>Install G Tracker for full offline access</span>
-			<button onclick="installApp()">Install</button>
+			<button id="insT">Install</button>
 		</div>
 
   
