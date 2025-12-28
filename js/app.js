@@ -2147,7 +2147,7 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
             const now = Date.now();
             if(!todayReminders.length === 0){
                 fireAt = new Date(todayReminders[0].timeISO).getTime();
-            else{
+            }else{
                 fireAt = now - 24*60*60*1000;
             }
             
