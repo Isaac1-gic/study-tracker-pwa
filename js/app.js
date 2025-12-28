@@ -2141,14 +2141,17 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
     }
 
     async function saveReminder(reminders = []) {
-        const todayReminders = await loadData('reminders');
-        const fireAt = new Date(todayReminders[0].timeISO).getTime();
-        const now = Date.now();
-        const ms = now - fireAt >= 4*60*60*1000;
-        if(!ms) return;
-        if(reminders[0].id){
-            await saveData('reminders',reminders)
-        }
+        try{
+            const todayReminders = await loadData('reminders') || [];
+            const fireAt = new Date(todayReminders[0].timeISO || 1763802160057).getTime();
+            const now = Date.now();
+            const ms = now - fireAt >= 4*60*60*1000;
+            if(!ms) return;
+            if(reminders[0].id){
+                await saveData('reminders',reminders)
+            }
+            console.log('corrected')
+        }catch (e){}
     }
 
     
