@@ -2168,10 +2168,12 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
 
    
     async function syncRemindersOnLoad() {
-        const all = await loadData('reminders');
-        all.forEach(rem =>{
-            scheduleInPage(rem);
-        })
+        try{
+            const all = await loadData('reminders');
+            all.forEach(rem =>{
+                scheduleInPage(rem);
+            })
+        }cache(e){}
     }
 
     async function createReminder(title, body, timeISO, repeat=null) {
