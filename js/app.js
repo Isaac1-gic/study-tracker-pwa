@@ -2143,8 +2143,14 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
     async function saveReminder(reminders = []) {
         //try{
             const todayReminders = await loadData('reminders') || [];
-            const fireAt = new Date(todayReminders[0]['timeISO'] || Date.now()-24*60*60*1000).getTime();
+            let fireAt;
             const now = Date.now();
+            if(!todayReminders.length === 0){
+                fireAt = new Date(todayReminders[0].timeISO).getTime();
+            else{
+                fireAt = now - 24*60*60*1000;
+            }
+            
             const ms = now - fireAt >= 4*60*60*1000;
             if(!ms) return;
             if(reminders[0].id){
