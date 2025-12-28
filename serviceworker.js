@@ -1,4 +1,4 @@
-const CACHE_NAME = 'study-tracker-v5';
+const CACHE_NAME = 'study-tracker-v6';
 const CACHE_EXTERNAL_NAME = 'external-assets-cache-v1';
 const STUDY_TAG = 'Daily-Study-Reminder';
 
