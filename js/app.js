@@ -2173,7 +2173,7 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
             all.forEach(rem =>{
                 scheduleInPage(rem);
             })
-        }cache(e){}
+        }catch(e){}
     }
 
     async function createReminder(title, body, timeISO, repeat=null) {
