@@ -72,7 +72,7 @@ document.getElementById('insT').addEventListener('click',()=>{
         let hoursExpected;
         let todaySubjectReminders = [];
         const today = new Date().toISOString().split('T')[0];
-        let requestURL = 'https://script.google.com/macros/s/AKfycbxhrE2TWBWLzuQAy5E03yG9zltrQEltOjmv5MT9tKiyYZQXogXXXZ2eHgC8WBFvzEb_/exec';
+        let requestURL = 'https://script.google.com/macros/s/AKfycbz-Xwc2iHkllLOfnZWwcmCSlRIFKNCzUwL5Jo7B7Q_p7F0VIZ7tTJtxT7kvUiVZWeNf/exec';
         const ThisWeekMonday = lastMonday();
         const todaycheck = new Date().toISOString().split('T')[0];
         const forgotForm = document.getElementById('reLoginForm');
@@ -285,7 +285,7 @@ function startRedirect_SignIn() {
 					await saveData('labstudyTrackerData',userStudyData);
 					
 				  }
-                  
+                  console.log(pureResponse)
                     if (pureResponse[1][1] === 'STOP'){
                         requesting = 'STOP';
                         await saveData('STOP',Date.now())
@@ -957,17 +957,17 @@ function chatbox() {
                     if (savedReport) {
 						
 						WeekReport = savedReport; 
-						thisWeekReport = WeekReport[1]
+						thisWeekReport = savedReport[1];
                     }
-                    console.log(WeekReport)
+                    
                 week = 24*60*60*1000*7
                 todayTime = Date.now()
                 const dayIndex = new Date(new Date()).getDay();
                 oneWeek = Math.abs(ThisWeekMonday.getTime()-((week/7)*2));
                 const lastReportTime = thisWeekReport.date;
-               
-                if(Math.abs(todayTime - lastReportTime) >= week){
-                    aiRequest = ['I am '+userStudyData.userInfo[0]['username']+' ,my goal is to pass MSCE exams <20 points.This is not easy here in Malawi.Please help me to do that any way.Constract academic research report based on my this week studies below.No fake report that will just interest me. I want real one that will make me success, even one that seems to hate me.'];
+               console.log(lastReportTime,WeekReport)
+                if(todayTime - lastReportTime >= week){
+                    aiRequest = ['I am MSCE student ,my goal is to pass MSCE exams <20 points.This is not easy here in Malawi.Please help me to do that any way.Constract academic weekly report based on my week studies below.No fake report that will just interest me. I want real one that will make me success, even one that seems to hate me.'];
                     let total_Hours = 0
                     userStudyData.sessions.forEach(session =>{
                         if(new Date(session.date).getTime() >= oneWeek){
@@ -1001,14 +1001,14 @@ function chatbox() {
                             prompt: aiRequest,
                               
                             }); 
-                            console.log(WReport)
+                            
                             if(WReport[0]){
 								thisWeekReport = WReport[1];
-								WeekReport = wReport;
+								WeekReport = WReport;
 								thisWeekReport.date = Date.now();
 								
-								await saveData('report',WeekReport);
-								
+								await saveData('report',WReport);
+								console.log(WReport)
 							}
                         }catch (error){
                             
@@ -1502,58 +1502,81 @@ function keyTrust() {
 
 
         function updateMissedStudyTopicDropdown() {
-            const dropdown = document.getElementById('missedT');
-            const subjectId = parseInt(document.getElementById('studySubject').value);
-            dropdown.innerHTML = '';
-                missedSubjectTopicsdic = userStudyData.missedsubjects[subjectId]
-                
-                subjectTopicsdic = Object.entries(missedSubjectTopicsdic);
-                if (subjectTopicsdic.length > 0){
-                    document.getElementById('myowntopic').value = ''
-                    document.getElementById('myowntopic').style.display = 'none'
-                    const placeholder = document.createElement('option');
-                    placeholder.textContent = 'Select missed topic...'
-                    placeholder.value = '';
-                    placeholder.disabled = true;
-                    placeholder.selected = true;
-                    dropdown.add(placeholder)
-                    subjectTopicsdic.reverse().forEach(unit =>{
-                    missedDate = new Date(unit[0].slice(0,3)+' '+unit[0].slice(3,5)+' '+unit[0].slice(5)).toDateString();                    
-                    const option = document.createElement('option');
-                    option.value = unit[0];
-                    option.textContent = unit[1]+': '+missedDate;
-                    dropdown.appendChild(option);
-                 });
-                }
-                else{
-                    document.getElementById('MissedTopic').style.display = 'none'
-                    document.getElementById('myowntopic').style.display = 'block'
+            try{
+                const dropdown = document.getElementById('missedT');
+                const subjectId = parseInt(document.getElementById('studySubject').value);
+                dropdown.innerHTML = '';
+                    missedSubjectTopicsdic = userStudyData.missedsubjects[subjectId]
+                    if(!missedSubjectTopicsdic){
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.disabled = true;
+                        option.selected = true;
+                        option.textContent = 'Select subject first';
+                        dropdown.appendChild(option); 
+                    }
+                    subjectTopicsdic = Object.entries(missedSubjectTopicsdic);
+                    if (subjectTopicsdic.length > 0){
+                        document.getElementById('myowntopic').value = ''
+                        document.getElementById('myowntopic').style.display = 'none'
+                        const placeholder = document.createElement('option');
+                        placeholder.textContent = 'Select missed topic...'
+                        placeholder.value = '';
+                        placeholder.disabled = true;
+                        placeholder.selected = true;
+                        dropdown.add(placeholder)
+                        subjectTopicsdic.reverse().forEach(unit =>{
+                        missedDate = new Date(unit[0].slice(0,3)+' '+unit[0].slice(3,5)+' '+unit[0].slice(5)).toDateString();                    
+                        const option = document.createElement('option');
+                        option.value = unit[0];
+                        option.textContent = unit[1]+': '+missedDate;
+                        dropdown.appendChild(option);
+                    });
+                    }
+                    else{
+                        document.getElementById('MissedTopic').style.display = 'none'
+                        document.getElementById('myowntopic').style.display = 'block'
+                    }
+                }catch(e){
+                    
                 }
                 
         }
         function updateStudyTopicDropdown() {
-            const dropdown = document.getElementById('myowntopic');
-            const subjectId = parseInt(document.getElementById('studySubject').value);
-            dropdown.innerHTML = '';
-                subjectsel = 0
-                userStudyData.subjects.some(subject =>{if (subject.id === subjectId){subjectsel = subject.name; return true}});
-                subjectTopicsdic = topics[subjectsel][0];
-                subjectTopicsdic = Object.entries(subjectTopicsdic);
-                const placeholder = document.createElement('option');
-                    placeholder.textContent = 'Select topic you study on your wish'
-                    placeholder.value = '';
-                    placeholder.disabled = true;
-                    placeholder.selected = true;
-                    dropdown.add(placeholder)
-                subjectTopicsdic.reverse().forEach(unit =>{
-                    unit = unit[1];
-                    const option = document.createElement('option');
-                    option.value = unit;
-                    option.textContent = unit;
-                    dropdown.appendChild(option);
-            });
-            document.getElementById('missedT').value = ''
-            document.getElementById('MissedTopic').style.display = 'none'
+            try{
+                const dropdown = document.getElementById('myowntopic');
+                const subjectId = parseInt(document.getElementById('studySubject').value);
+                dropdown.innerHTML = '';
+                    subjectsel = 0
+                    userStudyData.subjects.some(subject =>{if (subject.id === subjectId){subjectsel = subject.name; return true}});
+                    subjectTopicsdic = topics[subjectsel];
+                    if(!subjectTopicsdic){
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.disabled = true;
+                        option.selected = true;
+                        option.textContent = 'Select subject first';
+                        dropdown.appendChild(option);
+                    }
+                    subjectTopicsdic = Object.entries(subjectTopicsdic[0]);
+                    const placeholder = document.createElement('option');
+                        placeholder.textContent = 'Select topic you study on your wish'
+                        placeholder.value = '';
+                        placeholder.disabled = true;
+                        placeholder.selected = true;
+                        dropdown.add(placeholder)
+                    subjectTopicsdic.reverse().forEach(unit =>{
+                        unit = unit[1];
+                        const option = document.createElement('option');
+                        option.value = unit;
+                        option.textContent = unit;
+                        dropdown.appendChild(option);
+                });
+                document.getElementById('missedT').value = ''
+                document.getElementById('MissedTopic').style.display = 'none'
+            }catch(e){
+                
+            }
         }
         // Update study subject dropdown
         function updateStudySubjectDropdown() {
@@ -1859,7 +1882,8 @@ function keyTrust() {
                 if (cachedUrl) {
                     requestURL = cachedUrl;
                    
-                }
+                } 
+                
 
                 // requst limit
                 const stopRequests = await loadData("STOP");
@@ -1953,9 +1977,11 @@ loginForm.addEventListener('submit', async function(e) {
         return;
     }
     password = btoa(password)
-    
+    passwordInput.value = '';
+    usernameInput.value = '';
     // Check credentials call GAS
     try {
+        showMessage('Wait','success')
         const message = await HTTPSrequest('login', {
             email_username: username,
             password: password
