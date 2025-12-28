@@ -1,13 +1,4 @@
 
-
-document.getElementById('startDate').addEventListener('click',()=>{
-    datecheck();
-})
-
-document.getElementById('startDate').addEventListener('click',()=>{
-    datecheck();
-})
-
 topics = {
             Mathematics: [{1: "FACTORIZATION",7: "QUADRATIC EQUATIONS",10: "IRRATIONAL NUMBERS",19: "CIRCLE GEOMETRY- CHORD PROPERTIES",25: "ALGEBRAIC FRACTIONS",31: "SETS",41: "MAPPING AND FUNCTIONS",49: "CIRCLE GEOMETRY - ANGLE PROPERTIES",55: "TRANSFORMATIONS",63: "CHANGE SUBJECT OF FORMULA",71: "EXPONENTIAL AND LOGARITHMIC EQUATIONS",78: "TRIGONOMETRY I",84: "SIMILARITY",92: "COORDINATE GEOMETRY",101: "VARIATIONS",114: "GRAPHS OF QUADRATIC FUNCTIONS",125: "INEQUALITIES",134: "STATISTICS I",141: "MATRICES",151: "CIRCLE GEOMETRY III - TANGENTS TO CIRCLE",162: "CIRCLE GEOMETRY III: CONSTRUCTION",171: "STATISTICS II",174: "SIMULTANEOUS LINEAR AND QUADRATIC EQUATIONS",180: "PROGRESSIONS",189: "TRAVEL GRAPHS",201: "TRIGONOMETRY II",209: "POLYNOMIALS",217: "PROBABILITY",228: "VECTORS",238: "LINEAR PROGRAMMING",251: "MENSURATION I: SURFACE AREA AND VOLUME OF SOLIDS",258: "MENSURATION II: THREE-DIMENSIONAL GEOMETRY",267: "GRAPHS OF CUBIC FUNCTIONS"},272],
             Chemistry: [{1: "Experimental techniques",29: "Nitrogen, Sulphur and Phosphorus",66: "Chemical bonding and properties of matter",90: "Stoichiometry",146: "Chemical Reactions",166: "Alkanols",183: "Alkanals and Alkanones",197: "Alkanole Acids",211: "Alkanoates",220: "Identification of unknown organic compounds",231: "Rates of reactions",264: "Acids and Bases",296: "Reduction and Oxidation reactions",332: "Electrolysis",360: "Isomerism",378: "Polymerisation",390: "Water", 178: "Greenhouse gases and ozone layer", 194: "Waste management"},397],
