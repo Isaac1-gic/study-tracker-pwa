@@ -313,9 +313,9 @@ function showLocalNotification(data) {
       body: data.body || 'Reminder',
       tag: data.id || 'study',
       renotify: true,
-      icon: img,
-      badge: img,
-      image: img,
+      icon: data.img,
+      badge: data.img,
+      image: data.img,
       data: { url: './' }
     }
   );
