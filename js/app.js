@@ -327,12 +327,11 @@ function startRedirect_SignIn() {
 					
 					
 					imgElement.alt = chartDataUrl; 
-					showMessage('Chart unavailable. ' + chartDataUrl, 'warning');
+					showMessage('Chart unavailable. ', 'error');
 					imgElement.style.display = 'none';
 					return;
 				}
 				
-				// Check if the response is valid (should be the Base64 Data URL string)
 				if (typeof chartDataUrl === 'string' && chartDataUrl.startsWith('data:image/png;base64,')) {
 					// Set the Base64 Data URL as the image source
 					imgElement.src = chartDataUrl;
@@ -2192,13 +2191,31 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
         }
     }
 
-    async function createReminder(title, body, timeISO, repeat=null,img) {
+    async function createReminder(title, body, timeISO, repeat=null) {
         const id = 'r-'+ Date.now();
-        const rem = {id,title,body,timeISO,repeat,img};
-        
+		const report = await loadData('report');
+		const charts = report[2];
+		const random = Math.floor(Math.random()*2);
+		img = charts[random];
+		const imgArray = ['icon-192.png','icon1-512.png','icon1-512.png'];
+		let iArray = [1,2];
+		let rem;
+		for (let i=0;i<3;i++){
+			const response = await fetch(imgArray[i]);
+			const Blod = await response.blob();
+			const fileReader = new FileReader()
+			fileReader.onloadend = () =>{
+				console.warn(i,iArray);
+				iArray[i] = fileReader.result;
+				rem = {id,title,body,timeISO,repeat,img : img,icon: iArray[0],badge: iArray[1]};
+				
+			};
+			fileReader.readAsDataURL(Blod)
+		}
         saveReminder([rem]);
-        syncRemindersOnLoad()
-        return rem;
+		syncRemindersOnLoad()
+		return rem;
+        
     }
     
     
