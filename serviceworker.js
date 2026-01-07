@@ -313,8 +313,8 @@ function showLocalNotification(data) {
       body: data.body || 'Reminder',
       tag: data.id || 'study',
       renotify: true,
-      icon: data.img,
-      badge: data.img,
+      icon: data.icon,
+      badge: data.badge,
       image: data.img,
       data: { url: './' }
     }
