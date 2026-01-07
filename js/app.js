@@ -338,10 +338,6 @@ function startRedirect_SignIn() {
 					imgElement.style.display = 'block';
 					
                     i += 1
-				} else {
-					
-					imgElement.alt = 'Failed to load chart due to data format error.';
-					imgElement.style.display = 'none';
 				}
 			})
 			}
@@ -615,7 +611,7 @@ function sanitizeHTML(str) {
 
                     }
                 }catch (e){
-                    const reg = navigator.serviceWorker.ready;
+                    const reg = await navigator.serviceWorker.ready;
                     await reg.sync.register('study-sync')
                 }
             }
@@ -826,6 +822,10 @@ function showMessage(message, type, time) {
         const quoteP = document.getElementById('quoteDisplay');
         if (quoteP) {
             quoteP.textContent = message;
+            if (type === 'warn') {
+				successMessage.style.background = 'yellow';
+				successMessage.style.color = 'red';
+			}
             successMessage.style.display = 'block';
             errorMessage.style.display = 'none';
         }
@@ -970,8 +970,8 @@ function chatbox() {
                 oneWeek = Math.abs(ThisWeekMonday.getTime()-((week/7)*2));
                 const lastReportTime = thisWeekReport.date;
                console.log(lastReportTime,WeekReport)
-                if(todayTime - lastReportTime >= week){
-                    aiRequest = ['I am MSCE student ,my goal is to pass MSCE exams <20 points.This is not easy here in Malawi.Please help me to do that any way.Constract academic weekly report based on my week studies below.No fake report that will just interest me. I want real one that will make me success, even one that seems to hate me.'];
+                if((dayIndex >= 5 || dayIndex === 0) && todayTime - lastReportTime >= week){
+                    aiRequest = ['I am MSCE student.Belowe are what I have studied this week.Missed sessions are not only for this week just look on it`s date. These are planned hours on each session '+userStudyData.userInfo[0].hours_session+' hours.'];
                     let total_Hours = 0
                     userStudyData.sessions.forEach(session =>{
                         if(new Date(session.date).getTime() >= oneWeek){
@@ -1009,10 +1009,15 @@ function chatbox() {
                             if(WReport[0]){
 								thisWeekReport = WReport[1];
 								WeekReport = WReport;
-								thisWeekReport.date = Date.now();
-								
-								await saveData('report',WReport);
-								console.log(WReport)
+								const response = await fetch(`https://img.youtube.com/vi/${thisWeekReport.yTubeQuery[0]}/hqdefault.jpg`);
+								const Blod = await response.blob();
+								const fileReader = new FileReader()
+								fileReader.onloadend = async() =>{
+									WReport[2].push(fileReader.result);
+									thisWeekReport.date = Date.now();
+									await saveData('report',WReport);
+								};
+								fileReader.readAsDataURL(Blod);
 							}
                         }catch (error){
                             
@@ -1035,10 +1040,11 @@ function chatbox() {
                         const youtubeCont = document.getElementById('youtube');
                         youtubeCont.innerHTML = '';
                         youtubeCont.innerHTML = `<a href="https://www.youtube.com/watch?v=${thisWeekReport.yTubeQuery[0]}" target="_blank" rel="noopener noreferrer">
-                                                <img src="https://img.youtube.com/vi/${thisWeekReport.yTubeQuery[0]}/hqdefault.jpg" alt="YouTube Video" width='100%'>
+                                                <img src="${WeekReport[2][2] || "https://img.youtube.com/vi/"+thisWeekReport.yTubeQuery[0]+"/hqdefault.jpg"}" alt="YouTube Video" width='100%'>
                                                 </a><p>${thisWeekReport.yTubeQuery[1]}</p><br>`
                                                 
                         document.getElementById('InactiveHide').style.display = 'block';
+                        
                     }catch {
                         showMessage("Failed to make report. Please try again.",'error');
                     }
@@ -1182,6 +1188,7 @@ function upDateProfile() {
                     event.target.classList.add('active');
                     document.getElementById("menu").classList.toggle("active");
                     if(tabName === 'group'){
+						showMessage('Chat with friends to refresh brain but don`t waste your time','warn',5)
                         startChatPolling();
                     }
                     else{
@@ -1191,6 +1198,9 @@ function upDateProfile() {
                     if(tabName === 'progress'){
                         updateProgress();
                     }
+                    else if (tabName === 'gic'){
+						showMessage('My goal is to help you to succes. PlEASE TRY MULTIPLE TIMES YOURSELF FIRST BEFORE ME.','warn',5);
+					}
                     else if (tabName === 'review'){               
                         updateReview();
                     }
@@ -1420,7 +1430,6 @@ function keyTrust() {
                     userStudyData.studied.push([subjectId,key]) 
                     delete subjectTopicsdict[key];
                 }
-                //showMessage('Study session saved successfully!','sucess',2);
 
                
             }
@@ -1457,7 +1466,6 @@ function keyTrust() {
                         //userStudyData['studied'] = []
                         userStudyData.studied.push([subjectId,missedTopic])
                         delete subject.tid[missedTopic];
-                        //showMessage('compensated  successfully!','sucess',2);
                 
             }
              // Update subject completed hours
@@ -1758,7 +1766,7 @@ function keyTrust() {
                 if (!([2,6,11].includes(date_month)) && container.children.length === 0 && date.getDay() <= 6 && date.getDay() >=1) {
                     container.innerHTML = `<p>Great job! You\'re on track on today's subjects . Do the same tomorrow 🎉</p>`;
                 }else{
-                    createReminder('Study Tracker Reminders','Study these subjects today: '+todaySubjectReminders.join(', ')+'. Solve Maths everday like your cup of water.',new Date(new Date().getTime() + (1000*60)).toISOString(),'icon1-512.png')
+                    createReminder('Study Tracker Reminders','Study these subjects today: '+todaySubjectReminders.join(', ')+'. Solve Maths everday like your cup of water.',new Date(new Date().getTime() + (1000*60)).toISOString())
                 }
                 if (container2.children.length > 0){
                     document.getElementById("missedTopicReminders").style.display ="block"
@@ -2169,7 +2177,7 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
         const fireAt = new Date(reminder.timeISO).getTime();
         const now = Date.now();
         const ms = fireAt - now;
-        if (ms <= 0) return;
+        if (ms < 0) return 'missed';
         reminder._timerId = setTimeout(() => {
             showLocalNotification(reminder);
             
@@ -2195,8 +2203,8 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
         const id = 'r-'+ Date.now();
 		const report = await loadData('report');
 		const charts = report[2];
-		const random = Math.floor(Math.random()*2);
-		img = charts[random];
+		const random = Math.floor(Math.random()*3);
+		img = charts[random] || '';
 		const imgArray = ['icon-192.png','icon1-512.png','icon1-512.png'];
 		let iArray = [1,2];
 		let rem;
