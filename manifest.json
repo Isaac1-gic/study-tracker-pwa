@@ -7,7 +7,7 @@
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui", "browser"],
-  "orientation": "any",
+  "orientation": "portrait",
   "background_color": "#2c3e50",
   "theme_color": "#67f00b",
   "background_sync": {"enabled": true},
@@ -64,3 +64,4 @@
     }
   ]
 }
+
