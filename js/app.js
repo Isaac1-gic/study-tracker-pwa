@@ -826,8 +826,8 @@ function showMessage(message, type, time) {
 				successMessage.style.background = 'yellow';
 				successMessage.style.color = 'red';
 			}else{
-				successMessage.style.background: skyblue;
-                successMessage.style.color: white;
+				successMessage.style.background = skyblue;
+                successMessage.style.color = white;
 			}
             successMessage.style.display = 'block';
             errorMessage.style.display = 'none';
