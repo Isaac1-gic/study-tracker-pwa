@@ -825,6 +825,9 @@ function showMessage(message, type, time) {
             if (type === 'warn') {
 				successMessage.style.background = 'yellow';
 				successMessage.style.color = 'red';
+			}else{
+				successMessage.style.background: skyblue;
+                successMessage.style.color: white;
 			}
             successMessage.style.display = 'block';
             errorMessage.style.display = 'none';
@@ -1391,11 +1394,12 @@ function keyTrust() {
                 topic = studyTopics[subjectId];
                 if(topic){
                     
-                    note = '. I\`ve  wrapped up my study session on: '+topic+' plus: '+topicnotes+' . '+notes
+                    note = ". I've wrapped up studying some of: "+topic+" and "+topicnotes+". "+notes;
+
                 }
                 else{
                     topic = topicnotes;
-                    note = 'Today I\`ve studied: '+topic+'. '+notes;
+                    note = "Today I've studied part of this topic: "+topic+". "+notes;
                 } 
                 if(subjectId === '1'){
                     userStudyData.sessions.push({
@@ -1444,7 +1448,7 @@ function keyTrust() {
                         topic: topic,
                         numberOfQuestSolved: parseFloat(hours),
                         rate: 0,
-                        notes: '. I\'ve covered: '+topic+' to be back on track for missing it earlier on: '+missedDate+". "+notes             
+                        notes: '. I\'ve covered some of: '+topic+' to be back on track for missing it earlier on: '+missedDate+". "+notes             
                         });  
                 }else{                    
                     userStudyData.sessions.push({
@@ -1454,7 +1458,7 @@ function keyTrust() {
                         topic: topic,
                         hours: parseFloat(hours),
                         rate: 0,
-                        notes: '. I\'ve covered: '+topic+' to be back on track for missing it earlier on: '+missedDate+". "+notes             
+                        notes: '. I\'ve covered some of : '+topic+' to be back on track for missing it earlier on: '+missedDate+". "+notes             
                     });
                 }
                         
@@ -2202,7 +2206,7 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
     async function createReminder(title, body, timeISO, repeat=null) {
         const id = 'r-'+ Date.now();
 		const report = await loadData('report');
-		const charts = report[2];
+		const charts = report[2] || [];
 		const random = Math.floor(Math.random()*3);
 		img = charts[random] || '';
 		const imgArray = ['icon-192.png','icon1-512.png','icon1-512.png'];
