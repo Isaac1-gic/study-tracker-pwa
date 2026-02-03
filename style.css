@@ -565,7 +565,7 @@
                 color: #e74c3c;
             }    
             .error-message {
-                bottom: 60%;
+                bottom: 40%;
                 background: #e74c3c;
                 color: white;
                 align-items: center;
@@ -589,7 +589,7 @@
 
             .success-message {
 				left: 5%;
-                bottom: 60%;
+                bottom: 40%;
                 background: skyblue;
                 color: white;
                 align-items: center;
