@@ -1,5 +1,5 @@
-const CACHE_NAME = 'study-tracker-v13';
-const CACHE_EXTERNAL_NAME = 'external-assets-cache-v13';
+const CACHE_NAME = 'study-tracker-v14';
+const CACHE_EXTERNAL_NAME = 'external-assets-cache-v14';
 const STUDY_TAG = 'Daily-Study-Reminder';
 
 const OFFLINE_URLS = [
@@ -322,12 +322,12 @@ function showLocalNotification(data) {
 }
 
 
-```self.addEventListener('notificationclick', event => {
+`self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
     clients.openWindow(event.notification.data.url)
   );
-});```
+});`
 
 
 self.addEventListener('periodicsync', event => {
