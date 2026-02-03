@@ -565,43 +565,61 @@
                 color: #e74c3c;
             }    
             .error-message {
-                position: fixed;
-                bottom: 50%;
+                bottom: 60%;
                 background: #e74c3c;
                 color: white;
                 align-items: center;
-                margin-bottom: 20px;
-                display: none;
-                text-align: center;
-                font-size: 0.85rem;   
-                border-collapse: collapse;
-                width: 100%;     
-                border: none;
-                padding: 15px;
-                border-radius: 10px;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            }
-
-            .success-message {
-				 position: fixed;
-                bottom: 50%;
-                background: skyblue;
-                color: white;
-                align-items: center;
-                margin-bottom: 20px;
                 display: none;
                 text-align: center;
                 font-size: 0.85rem;  /* smaller text */   
                 border-collapse: collapse;
-                width: 100%;     
+                position: fixed;   
                 border: none;
                 padding: 15px;
                 border-radius: 10px;
                 font-weight: 600;
                 cursor: pointer;
                 transition: all 0.3s ease;
+                margin:15% auto;
+                padding:15px;
+                left: 5%;
+                width: 90%;
+                height: fit-content;
+            }
+
+            .success-message {
+				left: 5%;
+                bottom: 60%;
+                background: skyblue;
+                color: white;
+                align-items: center;
+                display: none;
+                text-align: center;
+                font-size: 0.85rem;  /* smaller text */   
+                border-collapse: collapse;
+                position: fixed;   
+                border: none;
+                padding: 15px;
+                border-radius: 10px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                margin:15% auto;
+                padding:15px;
+                width: 90%;
+                height: fit-content;
+            }
+
+            .msg {
+                text-emphasis-position: 10px;
+                display: none;
+                position: fixed;
+                z-index: 100;
+                top: 0;
+                left: 0;
+                width: 100%;  
+                height: 100%;
+                background: rgba(0,0,0,0.5);
             }
 
             .footer {
