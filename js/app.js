@@ -835,7 +835,7 @@ function startChatPolling(){
     const day = new Date().getDay();
     if (!((hour >= 17 && hour < 20) || (day === 6 || day === 0)))return
 	const chatPath = ref(database,'groupChats')
-	await onChildAdded(chatPath, (snapshot) =>{
+	onChildAdded(chatPath, (snapshot) =>{
 		const message = snapshot.val();
 		chatSave(message,pathLink,'chats');
 		chatbox()
