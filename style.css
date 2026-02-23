@@ -7,7 +7,7 @@
             }
 
             body {
-              
+				font-weight: bold;
                 min-height: 100vh;
                 padding: 5px;
                 background: #e4e7daf5;
@@ -55,7 +55,7 @@
             }
 
             .nav-tab.active {
-                background: #3498db;
+                background: rgba(0,0,0,0.5);
                 font-weight: bold;
             }
 
@@ -392,7 +392,7 @@
             left: -250px; /* hidden off-screen */
             width: 250px;
             height: 100%;
-            background-color: #444;
+            background-color: rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
             padding-top: 60px;
@@ -402,7 +402,9 @@
             .menu a {
             padding: 15px;
             text-decoration: none;
-            color: white;
+            font-weight: bold;
+            color: #3498db;
+            z-index: 100;
             border-bottom: 1px solid #555;
             }
 
