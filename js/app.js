@@ -845,7 +845,7 @@ function startChatPolling(){
 function stopChatPolling(){
    
 	const chatPath = ref(database,'groupChats')
-	await off(chatPath)
+	off(chatPath)
 }
 
 async function getChats(){
