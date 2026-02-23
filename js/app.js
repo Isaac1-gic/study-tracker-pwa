@@ -117,7 +117,7 @@ document.getElementById('insT').addEventListener('click',()=>{
         let subjectnames = {};
         let pathLink = labChatsData.chats;
         let timeStamp = Date.now();
-		let SPACE_TIME = CHAT_POLLING_INTERVAL;
+		let SPACE_TIME = 5000;
         let deferredInstallPrompt = null;
 		let installAsked = false;
 	let NextMsg = 0
@@ -850,7 +850,7 @@ function stopChatPolling(){
 
 async function getChats(){
     try{
-    const chats //= await HTTPSrequest('chats',{task: 'task',timeStamp: timeStamp});
+    let chats //= await HTTPSrequest('chats',{task: 'task',timeStamp: timeStamp});
     
                 if (chats && chats.length > 0){
 					
@@ -2748,9 +2748,8 @@ quotesAndSayings = [
 ];
 
 
-try{
-	
-  // Import the functions needed from the SDKs
+
+// Import the functions needed from the SDKs
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
   import { 
@@ -2789,6 +2788,3 @@ try{
   window.off = off;
 
   console.log("Firebase initialized and ready!");
-}catch (e){
-	console.error("Firebase initialization error ",e)
-}
