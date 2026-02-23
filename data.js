@@ -1,0 +1,515 @@
+const app = `<div id="menu-container">
+            	<p class="menu-btn" id="togM">☰</p>
+        	</div>
+         	<!-- Slide-in Menu -->
+        <nav class="menu" id="menu">
+            <a class="nav-tab active" id="swiH">Home</a>                         
+            <a class="nav-tab" id="swiP">Progress</a>            
+            <a class="nav-tab" id="swiR">Review</a>
+            <a class="nav-tab" id="swiW">Week Overview Report</a>
+            <a class="nav-tab" id="swiC">Chat space</a>
+            <a class="nav-tab" id="swiG">GIC AI</a>
+            <a class="nav-tab" id="swiU">Profile</a>
+            <a class="nav-tab" id="swiA">About</a>
+        </nav>
+                <div class="msg" id="message">
+                    <div class="error-message" id="errorMessage">
+						<div id="error_messaget"></div>
+                        <button style="background: transparent; color: greenyellow;" onclick="document.getElementById('message').style.display='none'">OK</button>
+                    </div>
+                    <div class="success-message" id="successMessage">
+                        <p id="quoteDisplay" ></p>
+                        <button style=" background: transparent; color: greenyellow;" onclick="document.getElementById('message').style.display='none'">OK</button>
+                    </div>
+                    
+                </div>
+		    </div>
+            
+            <div id="none" class="tab-content">
+                
+            </div>
+            <!--Home-->
+            <div class="tab-content active">
+                <header>
+                    <h1>MSCE G Studies Tracker</h1>
+                    <p>Track your progress and improve your study habits</p>
+                    
+                    <p>Let's start Smart Studying</p>
+                </header>
+                <div>
+					<img src="icon1-512.png" alt="MGY" class="loading center">
+                </div>
+                <footer style="position: absolute; bottom: 10px;"><p>Watch video: </p><a href="https://www.youtube.com/watch?v=0KvYXaCPuX0"> Get started </a> and <a href="https://www.youtube.com/watch?v=ZadgSGmO_ck"> Registration</a></p></footer>
+            </div>
+
+                <!--Login page-->
+                <div id="login" class="login-container">
+                    <div class="header">
+                        <h1>MSCE G Studies Tracker</h1>
+                        <p>Login to access G Tracker</p>
+                    </div>
+
+                    <div class="login-form">
+
+                        <form id="loginForm" method="post">
+                            <div class="form-group">
+                                <label for="username">Username or Email</label>
+                                <input type="text" id="username" min="8" placeholder="Enter your username or email" required autocomplete="additional-name">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" id="password" min="5" placeholder="Enter your password" required>
+                            </div>
+
+                            <button type="submit" class="login-btn">Login</button>
+                        </form>
+                        <div class="divider"><span id="forP">Forgot password</span></div>
+                        <button class="login-btn" id="creaA">Create/Activate Account</button>
+                        <footer style="position: absolute; bottom: 10px;"><p>Watch video: </p><a href="https://www.youtube.com/watch?v=0KvYXaCPuX0"> Get started </a> and <a href="https://www.youtube.com/watch?v=ZadgSGmO_ck"> Registration</a></p></footer>
+                    </div>
+                </div>
+                
+                <!--SignIn-->
+                <div id="signIn" class="login-container">
+                
+                
+                    
+                </div>
+                
+                
+                <!--forgot password-->
+                <div id="reLogin" class="login-container">
+                    <div class="header">
+                        <h1>MSCE G Studies Tracker</h1>
+                    </div>
+
+                    <div class="login-form">
+                        <div class="error-message" id="2errorMessage"></div>
+                        <div class="success-message" id="successMessage"></div>
+
+                        <form id="reLoginForm" method="post">
+                            <div class="form-group">
+                                <label for="username">Email</label>
+                                <input type="email" id="reEmail" min="10" placeholder="Enter your email" required autocomplete="address-line1">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="password">Username</label>
+                                <input type="text" id="reUserName" min="8" placeholder="Enter your name" required autocomplete="on">
+                            </div>
+                            <div class="form-group">
+                                <label for="username">Phone Number</label>
+                                <input type="number" min="880000000" id="rePhoneNumber" placeholder="Enter your phone number" required>
+                            </div>
+
+                            <button type="submit" class="login-btn">Submit</button>
+                        </form>
+                        
+     
+                    </div>
+                </div>
+            
+            
+         <!-- Track Study Tab -->
+         
+        <div id="track" class="tab-content">
+            <header>
+				<h2>Log Your Study Session</h2>
+            </header>
+            <form id="form">
+            <div class="form-group">
+                <label for="subjects">Studied Subject</label>
+                <select id="studySubject" required >
+                   
+                    <!-- Subjects will be populated here -->
+                </select>
+                
+                <div id='MissedTopic'>
+                <label for="Missed Topic">Missed Topic</label>
+                <select id="missedT">
+                    <!-- Missed topics will be populated here -->
+                </select>
+                </div>
+            </div>
+            <div id="1remove" class="form-group">
+                <label for="date">Date</label>
+                <input type="date" id="studyDate" required>
+            </div>
+            <div class="form-group">
+                <label for="hourslabel" id="hourslabel">Hours Studied</label>
+                <input type="number" id="studyHours" min='1' max='3' placeholder="Enter number of hour you've spend studying." required>
+            </div>
+            <div class="form-group">
+                <label for="Topics">Studied Topic</label>
+                <select id="myowntopic"></select>
+                <label for="Notes">Notes</label>
+                <textarea id="studyNotes" required autocorrect="on" autocomplete="on" placeholder="What can you say about this session?"></textarea>
+            </div>
+            <button>Save Session</button>
+            </form>
+            <div id="todayReminders" class="reminder">
+                <h3>📢 Today's Reminders</h3>
+                <div id="reminderList"></div>
+            </div>
+            <div id="missedTopicReminders" class="reminder" style="display: none;background-color: red;">
+                <h3>🎯 Missed Sessions</h3>
+                <div id="mTRlist"></div>
+            </div>
+        </div>
+        
+                <!-- Progress Tab -->
+        <div id="progress" class="tab-content">
+			<header>
+				<h2>Your Study Progress</h2>
+            </header>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalHours">0</div>
+                    <div>Total Hours</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="subjectsCount">0</div>
+                    <div>Subjects</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="completionRate">0%</div>
+                    <div id="CompletionRate">Completion Rate: </div>
+                </div>
+            </div>
+				
+			<header>
+				<h3>Subject Progress</h3>
+            </header>
+            <div id="progressList" class="study-grid">
+                <!-- Progress bars will appear here -->
+            </div>
+        </div>
+        
+        <!-- about App-->
+        <div id="about" class="tab-content">
+            <header>
+                <h1>About App</h1>
+            </header>
+            <div>
+                <dt>Full App Name:</dt><dd><a href="#">MSCE G Studies Tracker</a></dd>
+                <br>
+                <dt>Version:</dt><dd> 1.0 {Studying Register V:2.0}</dd>
+                <br>
+                <dt>Purpose:</dt>
+                    <dd>App is designed to improve Malawi education by  helping MSCE students efficiently track their studying progress and manage to prepare well for their MANED exams. 
+                    It ensures that all academic progress is accurately logged and easily accessible. 
+                    It also reduce panic when MSCE final exams is around the corner. 
+                    This app is expected to improve MSCE results if it has been used correctly from first day.</dd>
+                <br>
+                <dt>Key Features:</dt>
+                    <dd>* Secure User Management.</dd>
+                    <dd>* Smart studying with target.</dd>
+                    <dd>* Study reminders</dd>
+                    <dd>* School chat</dd>
+                    <dd>* Subject & Session Tracking with time logging.</dd>
+                    <dd>* Data Synchronization.</dd>
+                    <dd>* Automated Report Generation (Weekly reports, charts).</dd>
+                    <dd>* AI Integration for chat assistance, quizzes, and question-answering.</dd>
+                <br>
+                <dt>Terms & Policies:</dt> 
+                    <dd>As an PWA tool, Data security and privacy are paramount. 
+                    All user data (Subjects, Sessions, Emails) is stored exclusively within developer linked Google Sheets. 
+                    The application does not share sensitive information. 
+                    Review our <a href="https://isaac1-gic.github.io/Privacy-Policy-and-Terms-Conditions/">Privacy Policy</a> for full details.</dd>
+                    <br>
+            </div>
+            <div>
+                <dt>Developer:</dt> <dd><a href="https://www.facebook.com/profile.php?id=61556819821971">Isaac G Chitsakamire</a></dd>
+                <dt>Contacts:</dt> <dd>
+					<dd><a href="#">isaacchitsakamire@gmail.com</a></dd>
+					<dd><a href="https://www.facebook.com/profile.php?id=61556819821971">FaceBook</a></dd>
+					<dd><a href="https://www.instagram.com/igc_mgy">Instagram</a></dd>
+                <br>
+                <dt>YouTube videos:</dt>
+                <dd>
+                    <a href="https://www.youtube.com/watch?v=0KvYXaCPuX0">Get started</a>
+                </dd>
+                <dd><a href="https://www.youtube.com/watch?v=ZadgSGmO_ck">Registration</a></dd>
+                <dt>Acknowledgements:</dt> 
+                    <dd>We extend our sincere gratitude to all the poeple who took thier time helping me collecting topics and those who were testing this app.</dd>
+                <br>
+                <dt>Support & Feedback:</dt> 
+                    <dd>For technical issues, feature requests, or bug reports, please submit an issue to <a href="https://www.facebook.com/profile.php?id=61556819821971">developer</a>. 
+                    Your feedback is invaluable for improving the app.</dd>
+                <br>
+                
+            </div>
+            <footer>@<a href="https://www.facebook.com/groups/6201294699916402/">MGY</a>2026...............<a href="https://www.facebook.com/profile.php?id=61556819821971">IGC</a></footer>
+        </div>
+
+        <!-- Group -->
+        <div id="group" class="tab-content " >
+			<div id="headerR-chat">
+			<header>
+                <h1>School Chat🏫</h1>
+			</header>
+            
+            </div>
+            <div id="chatsList" class="chat-container">
+                <!-- chats will appear here -->
+            </div>
+            
+            
+           
+            <div id="prompt-container-chat" class="chat-body">
+			  <div class="fixed-card">
+				<div class="card" role="group" aria-label="chat input card">
+
+				
+
+				  <!-- Textarea (Main Input Area) -->
+				  <div class="input-wrap">
+					<textarea
+					  id="textprompt-chat"
+					  class="textprompt"
+					  placeholder="Write your message"
+					  rows="1"
+					  aria-label="Chat input"></textarea>
+				  </div>
+
+				  <!-- Right side actions -->
+				  <div class="actions-right">
+					<div style="display: none;"><span id="current-mode-chat">Chat</span></div>
+                    <div id="loading-chat" class="loading-Net" style="display: none;"></div>
+					<button id="send-button-chat" class="send-button" disabled title="Send">
+					  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="transform:rotate(90deg)">
+						<path d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.599 60.599 0 0 0 18.442-8.31.75.75 0 0 0 0-1.374 60.599 60.599 0 0 0-18.442-8.31Z"/>
+					  </svg>
+					</button>
+				  </div>
+
+				</div>
+			  </div>
+			</div>                          
+           
+        </div>
+
+        <!-- AI help -->
+        <div id="gic" class="tab-content">
+			<div id="headerR-ai">
+				<header>
+					<h1>GIC AI</h1>
+				</header>
+				
+            </div>
+            
+            <div id="Quizresultscont" class="stat-card" style="display: none;">
+                    <div class="stat-number" id="Quizresults">0%</div>
+                    <div>GIC AI feedback: </div>
+            </div>
+            <div id="AIchatsList" class="chat-container">
+				
+                <!-- chats will appear here -->
+            </div>
+
+            
+
+            
+
+            <div id="prompt-container-ai" class="chat-body">
+			  <div class="fixed-card">
+				<div class="card" role="group" aria-label="chat input card">
+
+				  <!-- Left side actions -->
+				  <div class="actions-left" style="position:relative;">
+					<div style="position:relative;">
+					  <button id="mode-button" title="Select mode">
+						<!-- same inline svg as your original -->
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true">
+						  <path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path>
+						</svg>
+					  </button>
+
+					  <div id="mode-dropdown" aria-hidden="true">
+						<div class="title">Select Mode</div>
+						<div style="padding:6px 4px; cursor:pointer;" data-mode="Question">Question</div>
+						<div style="padding:6px 4px; cursor:pointer;" data-mode="Quiz">Quiz</div>
+					  </div>
+					</div>
+				  </div>
+
+				  <!-- Textarea (Main Input Area) -->
+				  <div class="input-wrap">
+					<textarea
+					  id="textprompt-ai"
+					  class="textprompt"
+					  placeholder="Ask GIC AI any school question"
+					  rows="1"
+					  aria-label="Chat input"></textarea>
+					  <select  style="display: none;" id="promptST" ></select>
+				  </div>
+
+				  <!-- Right side actions -->
+				  <div class="actions-right">
+					<div id="mode-display-compact"><span id="current-mode-ai">Question</span></div>
+                    <div id="loading-ai" class="loading-Net" style="display: none;"></div>
+					<button id="send-button-ai" class="send-button" disabled title="Send">
+					  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="transform:rotate(90deg)">
+						<path d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.599 60.599 0 0 0 18.442-8.31.75.75 0 0 0 0-1.374 60.599 60.599 0 0 0-18.442-8.31Z"/>
+					  </svg>
+					</button>
+				  </div>
+
+				</div>
+			  </div>
+			</div>           
+                       
+        </div>
+
+        <!-- Week Report -->
+        <div id="report" class="tab-content">
+            <h2 style="font-size: larger; color: red; text-align: center;font-family: 'Times New Roman', Times, serif;">Week Review & Analysis</h2>
+    
+            <div class="reminder" id="InactiveHide" style="display: none;">
+                <div>
+                <header id="title"></header><br>
+                <p id="intro"></P><br>
+                <p id="reportbody"></P><br>
+                <p id="concl"></P><br>
+                </div>
+                <div id="youtube"></div>
+                <div>
+                    <label for="Studies Breakdown">Studies Breakdown</label>
+                    <img id="lineChartImage" class="chart" src="" alt="Study Breakdown Pie Chart" >
+                    <!-- chart will appear here -->
+                    <br>   
+                    <label for="Subject Study Breakdown">Subject Study Breakdown</label>
+                    <img id="pieChartImage" class="chart" src="" alt="Study Breakdown Pie Chart" >
+                </div>
+            </div>
+            
+    
+        </div>
+        <!-- profile Tab-->
+         <div id="profile" class="tab-content">
+                <header>Profile</header>
+                <div id="userDetails" class="reminder">
+                    
+                </div>
+               <div>
+               
+               </div>
+                 <!--Timetable Created-->
+                 <div id="timetable">   
+            
+                        <div class="header"> 
+                        <p>Timetable</p>
+                        </div>
+                        <div id="table" class="table-container">     
+                              <table id="Ttable" class="table-container">
+  <tr><th>DAY</th><th colspan="6">ALLOCATE TIME YOURSELF</th></tr>
+  <tr id="Monday"></tr>
+  <tr id="Tuesday"></tr>
+  <tr id="Wednesday"></tr>
+  <tr id="Thursday"></tr>
+  <tr id="Friday"></tr>
+  <tr><td colspan="7">NOTE: You can follow your study style or our Suggestions below</td></tr>
+  <tr>
+    <td>Sat</td>
+    <td colspan="6" style="text-align: left;">
+      <dd>
+        <dt>- Practice past exam papers</dt>
+        <dd>=> Simulate a real MANEB exam room environment.</dd>
+        <dd>=> Finish the paper 15 minutes before the official time limit.</dd>
+        <dd>=> Have someone mark your work and provide corrections, or use AI as a secondary tool.</dd>
+        <dd style="color: yellow">=> <strong>Stay honest: Cheating or skipping this only hurts your own progress.</strong></dd>
+      </dd>
+      <dd>- Review all class exercises from this week.</dd>
+      <dd>- Incorporate your own study style.</dd>
+    </td>
+  </tr>
+  <tr>
+    <td>Sun</td>
+    <td colspan="6" style="text-align: left;">
+      <dd>
+        <dt>- Write one composition (letter, speech, report, or short story)</dt>
+        <dd>=> Simulate a real MANEB exam room environment.</dd>
+        <dd>=> Complete the writing within 45 minutes.</dd>
+        <dd>=> Submit to your English teacher for marking and request oral feedback.</dd>
+        <dd style="color: yellow">=> <strong>Stay honest: Cheating or skipping this only hurts your own progress.</strong></dd>
+      </dd>
+      <dd>- Review the most challenging topic from last week.</dd>
+      <dd>- Incorporate your own study style.</dd>
+    </td>
+  </tr>
+</table>                 
+                        </div>
+                      
+                </div> 
+                
+                    
+                      
+            </div>
+            
+         <!-- SignIn -->
+		<div id="SignIN">
+				<a href="#" style="display: none;" id="backToLogin" onclick="document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+																	document.getElementById('login').classList.add('active');
+																	document.getElementById('backToLogin').style.display = 'none';">👈back</a>
+				<iframe id="appFrame" class="tab-content" allowfullscreen ></iframe> 
+         </div>
+         
+         <!-- Review Tab -->
+        <div id="review" class="tab-content">
+			<header>
+                   <h2>Weekly Review & Feedback</h2>
+            </header>
+            <div id="weeklyFeedback" class="reminder">
+                <p>Your weekly feedback will appear here after you start tracking your study sessions.</p>
+            </div>
+           
+            <div id='History'>
+            <header>
+				<h3>Study History</h3>
+			</header>
+            <div id="studyHistory">
+                <!-- Study sessions will appear here -->
+            </div>
+           </div>
+        </div>
+
+        
+		 
+                <!--Share Post-->
+                <div id="locker-interface" class="tab-content">
+                    <div class="msg"  style="display: block;">
+                        
+                        <div class="stats-grid" style="top: 20%; position: absolute; left: 5%; right: 5%;">
+                            <div id="App_Locked">
+                                <div class="stat-card" style="background:transparent; color: white; font-weight: bold;">
+                                    <h3>🔒 App Locked</h3>
+                                    <p>Share to <b id="shares-left">10</b> more friends/groups to Unlock app for week or just activate your account now! Click <a href="#login">Here</a></p>
+                                </div>
+                                <div style="background:#eee; height:20px; width:100%; border-radius:10px; margin: 15px 0; overflow:hidden;">
+                                <div id="progress-bar" style="background:#007bff; height:100%; width:0%; transition: width 0.5s;"></div>
+                                </div>
+                            </div>
+                            <button id="whatsapp" name="share" class="stat-card stat-number" style="background:#25D366; ">
+                                WhatsApp
+                            </button>
+                           <button id="facebook" name="share" class="stat-card stat-number" style="background:#1877F2; ">
+                                Facebook
+                            </button>
+
+                            <button id="sms" name="share" class="stat-card stat-number" style="background:#333; ">
+                                SMS
+                            </button>
+                        </div>
+                    </div>
+                </div>
+        
+        
+        <div id="install-banner" class="chat-body"
+			 style="display: none; position:fixed;bottom:0;width:100%;background:skyblue;color:gold;padding:12px;text-align:center;z-index:9999; border-radius: 10px 10px 10px 10px;bottom: 10%">
+			<span>Install G Tracker for full offline access</span>
+			<button id="insT">Install</button>
+		</div>`
+		
+		
+document.getElementById('body').innerHTML = app;
