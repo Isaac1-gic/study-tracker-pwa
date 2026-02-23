@@ -116,13 +116,19 @@ document.getElementById('insT').addEventListener('click',()=>{
         let studyTopics = {};
         let subjectnames = {};
         let pathLink = labChatsData.chats;
-        let chatPollingIntervalId = null;
         let timeStamp = Date.now();
-        const CHAT_POLLING_INTERVAL = 30000;
 		let SPACE_TIME = CHAT_POLLING_INTERVAL;
         let deferredInstallPrompt = null;
 		let installAsked = false;
-
+	let NextMsg = 0
+    let App_Locked;    
+    const TARGET_SHARES = 10; 
+    const MIN_TIME_SECONDS = 30; // Time user must spend "sharing" to count
+    const PAGE_URL = "https://msce-g-tracker.netlify.app";
+    let linkedID = 'Jamkaxqxw5';
+    let sharesCount = parseInt(localStorage.getItem('myShareCount')) || 0;
+    let lastClickTime = parseInt(localStorage.getItem('lastClickTime')) || 0;
+    const lock = document.getElementById('locker-interface')
         
         
 window.addEventListener('beforeinstallprompt', (e) => {    
@@ -159,36 +165,8 @@ async function installApp() {
     document.getElementById('install-banner').style.display = 'none';
 }
 
-        function startChatPolling(){
-            const hour = new Date().getHours();
-            const day = new Date().getDay();
-            if ((hour >= 17 && hour < 20) || (day === 6 || day === 0)) {
-            if(chatPollingIntervalId){
-                clearInterval(chatPollingIntervalId);
-            };
-            getChats();
-            chatPollingIntervalId = setInterval(getChats,CHAT_POLLING_INTERVAL)
-            }     
-        }
-
-        function stopChatPolling(){
-            if(chatPollingIntervalId !== null){
-                clearInterval(chatPollingIntervalId);
-                chatPollingIntervalId =  null;
-            }
-        }
-        async function getChats(){
-            try{
-            const chats = await HTTPSrequest('chats',{task: 'task',timeStamp: timeStamp});
-            
-                        if (chats && chats.length > 0){
-							
-							timeStamp = chats[0].timeStamp;
-							chatSave(chats,pathLink,'chats');
-                                chatbox()
-							}
-            } catch (e){}
-        }
+        
+        
 		
 
 
@@ -207,7 +185,7 @@ function startRedirect_SignIn() {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     frame.classList.add('active');
     showMessage(`Please wait while loading form.`,'success')
-    frame.src = "https://script.google.com/macros/s/AKfycbzKoUMSUtG3kNmwKurdJdGCEJZxLsRlLLXPzqeCXQ579w61nAlXxD4NlN1zde9mCQgr/exec"; 
+    frame.src = "https://script.google.com/macros/s/AKfycby8ZckL482mclfpL8JbbCB8czNK_YkAg1pxSYQHScNx_50sMg8JlKZpEI79xgP4_itE/exec"; 
     document.getElementById("backToLogin").style.display = 'block';
 }
            
@@ -814,38 +792,96 @@ async function promptSwitch(kind = String) {
             }
 
 function showMessage(message, type, time) {
-    messageWindow = document.getElementById('message')
-    messageWindow.style.display = 'block';
-    if (type === 'error') {
-        document.getElementById('error_messaget').textContent = message;
-        errorMessage.style.display = 'block';
-        successMessage.style.display = 'none';
-    } else {
-        const quoteP = document.getElementById('quoteDisplay');
-        if (quoteP) {
-            quoteP.textContent = message;
-            if (type === 'warn') {
-				successMessage.style.background = 'yellow';
-				successMessage.style.color = 'red';
-			}else{
-				successMessage.style.background = 'skyblue';
-                successMessage.style.color = 'white';
+    let messageWindow = document.getElementById('message')
+    let duration = (time && time !== 'static') ? time * 1000 : 3000;
+    const now = Date.now()
+    setTimeout(() =>{
+		messageWindow.style.display = 'block';
+		if (type === 'error') {
+			document.getElementById('error_messaget').textContent = message;
+			errorMessage.style.display = 'block';
+			successMessage.style.display = 'none';
+		} else {
+			const quoteP = document.getElementById('quoteDisplay');
+			if (quoteP) {
+				quoteP.textContent = message;
+				if (type === 'warn') {
+					successMessage.style.background = 'yellow';
+					successMessage.style.color = 'red';
+				}else{
+					successMessage.style.background = 'skyblue';
+					successMessage.style.color = 'white';
+				}
+				successMessage.style.display = 'block';
+				errorMessage.style.display = 'none';
 			}
-            successMessage.style.display = 'block';
-            errorMessage.style.display = 'none';
-        }
-    }
+			
+		}
 
-    const duration = (time && time !== 'static') ? time * 1000 : 3000;
-    if (time !== 'static') {
-        setTimeout(() => {
-            successMessage.style.display = 'none';
-            errorMessage.style.display = 'none';
-            messageWindow.style.display = 'none';
-        }, duration);
+		NextMsg = now + duration + 1000
+		if (time !== 'static' && duration) {
+			setTimeout(() => {
+				successMessage.style.display = 'none';
+				errorMessage.style.display = 'none';
+				messageWindow.style.display = 'none';
+			}, duration);
+		}
+	},NextMsg > now ? NextMsg - now : 0);
+	
+}
+
+function startChatPolling(){
+    const hour = new Date().getHours();
+    const day = new Date().getDay();
+    if (!((hour >= 17 && hour < 20) || (day === 6 || day === 0)))return
+	const chatPath = ref(database,'groupChats')
+	await onChildAdded(chatPath, (snapshot) =>{
+		const message = snapshot.val();
+		chatSave(message,pathLink,'chats');
+		chatbox()
+	})  
+}
+
+function stopChatPolling(){
+   
+	const chatPath = ref(database,'groupChats')
+	await off(chatPath)
+}
+
+async function getChats(){
+    try{
+    const chats //= await HTTPSrequest('chats',{task: 'task',timeStamp: timeStamp});
+    
+                if (chats && chats.length > 0){
+					
+					timeStamp = chats[0].timeStamp;
+					chatSave(chats,pathLink,'chats');
+                        chatbox()
+					}
+    } catch (e){}
+}            
+
+function chatSave(prompt, type, AI) {
+    if (AI !== 'chats') {
+        const sender = AI ? 'GIC AI' : userStudyData.userInfo[0].username;
+        if(!type.includes(prompt)){
+                type.push({
+                chatId: Date.now(),
+                senderId: sender,
+                prompt: prompt 
+            });
+        }
+    } else {
+		
+        
+           if(!labChatsData.IDs.includes(prompt.chatId) ) {
+			    type.push(prompt); 
+				labChatsData.IDs.push(prompt.chatId);
+          }
+           
+       
     }
 }
-            
 
 async function chatPrompt(text, kind) {
     const hour = new Date().getHours();
@@ -865,19 +901,18 @@ async function chatPrompt(text, kind) {
     } else {
         try {
 			
-            if ((hour >= 17 && hour < 20) || (day === 6 || day === 0)){
-			}else{return;}
-            const chats = await HTTPSrequest('chats', {
+            if (!((hour >= 17 && hour < 20) || (day === 6 || day === 0))) return;
+            const messageData = {
                 chatId: Date.now(),
                 senderId: userStudyData.userInfo[0].username,
                 prompt: text,
-                timeStamp: timeStamp
-            }, kind);
+                timeStamp: typeof timeStamp !== 'undefined' ? timeStamp : Date.now()
+            };
 
-            if (chats && chats[0]) {
-                getChats(); 
-            }
+            const chatPath = ref(database,'groupChats')
+			await push(chatPath,messageData)
         } catch (error) {
+			console.error("Firebase error:", error);
             showMessage("Failed to send. Please try again.",'error');
         }
     }
@@ -885,25 +920,7 @@ async function chatPrompt(text, kind) {
        
             
 
-function chatSave(prompt, type, AI) {
-    if (AI !== 'chats') {
-        const sender = AI ? 'GIC AI' : userStudyData.userInfo[0].username;
-        if(!type.includes(prompt)){
-                type.push({
-                chatId: Date.now(),
-                senderId: sender,
-                prompt: prompt 
-            });
-        }
-    } else {
-		
-        prompt.forEach(message => {
-           if(!labChatsData.IDs.includes(message.chatId) ) type.push(message); labChatsData.IDs.push(message.chatId);
-          
-           
-        });
-    }
-}            
+            
             
             function scrollToBottom(divElement){
 				if(!scrolled){
@@ -971,7 +988,7 @@ function chatbox() {
     }
 }
 
-            async function weekendAnalysis(){
+            async function weekendAnalysis(flag){
 				let WeekReport;
                 const savedReport = await loadData('report');
                 
@@ -1043,7 +1060,7 @@ function chatbox() {
 
             }
                     
-                if(thisWeekReport.yTubeQuery.length > 1){       
+                if(thisWeekReport.yTubeQuery.length > 1 && flag){       
 
                     try{
                         
@@ -1051,7 +1068,7 @@ function chatbox() {
                         
                         document.getElementById('title').textContent = thisWeekReport.title;
                         document.getElementById('intro').textContent = thisWeekReport.intro;
-                        document.getElementById('body').textContent = thisWeekReport.body;
+                        document.getElementById('reportbody').textContent = thisWeekReport.body;
                         document.getElementById('concl').textContent = thisWeekReport.conclunsion;
 
                         const youtubeCont = document.getElementById('youtube');
@@ -1066,7 +1083,7 @@ function chatbox() {
                         showMessage("Failed to make report. Please try again.",'error');
                     }
                     loadPieChart(WeekReport[2])
-                }else{
+                }else if (flag){
                    showMessage("We`ll give report after week. Please try again comming Friday - Sunday.",'error'); 
                 }
             }
@@ -1109,6 +1126,17 @@ function upDateProfile() {
     const linkLabel = document.createElement('p');
     linkLabel.textContent = `LinkedID: ${userDataInfo.linkID}`;
     container.appendChild(linkLabel);
+
+    const shareID = document.createElement('a')
+    shareID.href = '#userDetails'
+    shareID.innerText = `Share your LinkedID: ${userDataInfo.linkID} to friends to earn if they'll use it and pay.`
+    shareID.onclick = ()=>{
+        App_Locked = document.getElementById('App_Locked')
+        App_Locked.style.display = 'none'
+        switchTab('locker-interface')
+
+    }
+    container.appendChild(shareID)
 
     const netC = document.createElement('header');
     netC.textContent = `Your Linking Freinds`;
@@ -1224,7 +1252,7 @@ function upDateProfile() {
                         updateReview();
                     }
                     else if(tabName === 'report'){
-                        weekendAnalysis()
+                        weekendAnalysis(true)
                     }
                     else if(tabName == 'profile'){
 						upDateProfile();
@@ -1308,8 +1336,7 @@ function Timetable() {
 				  const val = (e.target.result === undefined) ? null : e.target.result;
 				  if (onloadFlag === 'onload') {
 					
-					userStudyData = val; 
-					
+					userStudyData = val;
 					try { updateDisplay();
 							switchTab('track') } catch (err) {}
 				  }
@@ -1669,13 +1696,11 @@ function keyTrust() {
              const filteredSubjects = userStudyData.subjects.filter(subject => subject.id !== 1);
             const total_Hourscompleted = filteredSubjects.reduce((sum, subject) => sum + subject.completedHours, 0);
             const totalPlanned = filteredSubjects.reduce((sum, subject) => sum + subject.plannedHours, 0);
-            const todayRate = hoursExpected > 0 ? (total_Hourscompleted/hoursExpected) * 100 : 0;
+           
             
-            if (todayRate.toFixed(1) > 80 || total_Hourscompleted === hoursExpected){
-                PaceRate.textContent = 'Completion Rate: Expected';
-            }else {
-                PaceRate.textContent = 'Completion Rate: Slow';
-            }
+            
+            PaceRate.textContent = `Completion Rate: ${hoursExpected < 10 ? 'Expected': 'Slow'}`;
+            
             const overallRate = totalPlanned > 0 ? (total_Hourscompleted / totalPlanned) * 100 : 0;
             document.getElementById('completionRate').textContent = overallRate.toFixed(1) + '%';
         }
@@ -1847,7 +1872,7 @@ function keyTrust() {
             i = 0
             recentSessionsSorted.forEach(session => {
                 const subject = userStudyData.subjects.find(s => s.id === session.subjectId);
-                const sessionDiv = document.createElement('div');
+                const sessionDiv = document.createElement('div');bool
                 sessionDiv.className = 'study-card';
                 
                 hour = ['Hours: ',session.hours]
@@ -1878,23 +1903,23 @@ function keyTrust() {
 
 
     function getlastEptcDte(){
-        let ExpectedHours;
-        let now = Date.now();
-        const day = 24*60*60*1000
-        i = 0
-        while (!ExpectedHours) {
-            ExpectedHours = userStudyData.userInfo[0].ExpectedHours[String(new Date(now)).slice(0,15)];
-            now -= day;
-            if(i === 800) break;
-            i ++;
-
+        let ExpectedHours = 0;
+        const Session_Hours = userStudyData.userInfo[0].hours_session
+        const Missed_Topics = Object.entries(userStudyData.missedsubjects)
+        if(Missed_Topics.length*Session_Hours >= 10){
+            ExpectedHours = 10;
+        }else{
+            for (i = 1;i <= Missed_Topics.length;i++){
+                ExpectedHours += Object.keys(userStudyData.missedsubjects[i]).length
+                if (ExpectedHours >= 10) break; 
+            }
         }
 
-        delete userStudyData.userInfo[0].ExpectedHours[String(new Date(now - (5*day))).slice(0,15)]
-        return parseFloat(ExpectedHours) || 0;
+        delete userStudyData.userInfo[0].ExpectedHours
+        return ExpectedHours
     }
 
-
+		
 
         window.addEventListener('load', async function () {
             try {
@@ -1904,6 +1929,7 @@ function keyTrust() {
 				
                 // Load User Data
                 await loadData('labstudyTrackerData', 'onload');
+                
 
                
                 // Load Saved URL
@@ -1929,20 +1955,27 @@ function keyTrust() {
                     now = Date.now();
                     const daysToGo = Math.abs(parseInt((new Date(today).getTime() - dateDate[2]) / day));
                     
+                    
                     if (!(dateDate[1] < now && dateDate[2] > now)) {
 						userStudyData = {};
 						await saveData('labstudyTrackerData', userStudyData)
                         showMessage('Account has been deactivated. Please renew subscription. Please start payment process. Pay using Airtel Money to +265980617390', 'error', 5);
                         const rem = createReminder('Account has been deactivated.','Please renew subscription or contact us. Please start payment process. Pay using Airtel Money to +265980617390',new Date(new Date().getTime() + (1000*60)).toISOString());
                         showLocalNotification(rem);
+                        this.localStorage.clear()
                     } else if (daysToGo <= 5) {
+                        if(daysToGo <= 1)updateLock()
                         showMessage(`Only ${daysToGo} days remaining.Please start payment process. Pay using Airtel Money to +265980617390. Get online to save data.`, 'error', 5);
-                        const remS = createReminder('Account deactivation is pedding.','Only ${daysToGo} days remaining. Get online to save your data else you will lose data or contact us. Please start payment process. Pay using Airtel Money to +265980617390',new Date(new Date().getTime() + (1000*60)).toISOString());
+                        const remS = createReminder('Account deactivation is pedding.',`Only ${daysToGo} days remaining. Get online to save your data else you will lose data or contact us. Please start payment process. Pay using Airtel Money to +265980617390`,new Date(new Date().getTime() + (1000*60)).toISOString());
                         showLocalNotification(remS);
-                    }
+                    }else if(daysToGo == 7){
+                        updateLock()
+                    }else localStorage.clear()
 					
                     dateDate[1] = now;
                     hoursExpected = getlastEptcDte();
+                    sessionSave();
+                    weekendAnalysis();
                     
                 }
 
@@ -2250,7 +2283,129 @@ document.getElementById('prompt-container-ai').addEventListener('click', functio
     }
     
     
+
+   
+    document.getElementsByName('share').forEach(elmnt =>{
+        elmnt.addEventListener("click",function() {
+            handleShare(elmnt.id)
+        })
+    })
+	document.getElementById('App_Locked').addEventListener('click',() =>{
+			lock.style.display = 'none'
+			switchTab('login')
+			})
     
+    
+   
+
+
+    function handleShare(platform) {
+        const now = Date.now();
+        const SHARE_MSG = `Achieve MSCE success with smart studying!
+
+        I've started using this app to prepare for MANEB exams. It makes studying easier, helps reduce exam stress, and guides you toward success. Let's study together!
+
+        Powerful Features:
+        - Study progress tracking
+        - Offline access
+        - Session logs & reminders
+        - Data sync across devices
+        - Built-in AI Assistant
+        - Dynamic Quizzes
+        - Discussion Rooms
+        - Study Timetable
+        - Topic Videos
+
+        How to get started:
+        1. Open this link in Chrome: ${PAGE_URL}
+        2. Create an account using my LinkedID: ${userStudyData.userInfo ? userStudyData.userInfo[0].linkID : linkedID}
+        3. Log in and start your journey!
+
+		Bonus: Once you create an account, you can earn MKW 500 for every new user who signs up using your LinkedID!`;
+        
+        
+        if (now - lastClickTime < 5000 && !App_Locked) {
+            lock.style.display = 'none'
+            showMessage("Please share it first.",'error')
+            setTimeout(()=>{
+                lock.style.display = "block";
+            },2500)
+            sharesCount = sharesCount - 3 > 0 ? sharesCount - 3: 0;
+            localStorage.setItem('myShareCount', sharesCount);
+            return;
+        }
+        if (now - lastClickTime > 1000*60*60){
+            localStorage.clear()
+            lastClickTime = now;
+            sharesCount = 0
+        }
+
+        // 2. OPEN THE APP
+        let url = "";
+        if (platform === 'whatsapp') {
+            url = `https://wa.me/?text=${encodeURIComponent(SHARE_MSG)}`;
+        } else if (platform === 'facebook') {
+            url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(PAGE_URL)}`;
+        } else if (platform === 'sms') {
+            // "sms:" protocol opens the default messages app
+            const ua = navigator.userAgent.toLowerCase(); 
+            const separator = (ua.indexOf("iphone") > -1 || ua.indexOf("ipad") > -1) ? "&" : "?";
+            url = `sms:${separator}body=${encodeURIComponent(SHARE_MSG)}`;
+        }
+        
+        // Open in new tab/window
+        window.open(url, '_blank');
+        if(App_Locked){
+            switchTab('profile')
+            App_Locked.style.display = 'block'
+            return
+        }
+        // We verify the share only after they return or after a delay
+        lastClickTime = now;
+        localStorage.setItem('lastClickTime',JSON.stringify(now))
+        
+        // Wait for the Minimum Time to pass (simulating them searching for a contact)
+        setTimeout(() => {
+            // We give them credit only if enough time passed
+            validateShare();
+        }, MIN_TIME_SECONDS * 1000); 
+    }
+
+    function validateShare() {
+        
+        // Randomly fail sometimes to simulate "Same Group" detection (Optional Evil Trick)
+        // 30% chance to say "You shared to the same group!"
+        const randomChance = Math.random();
+        
+        if (sharesCount > 0 && randomChance < 0.4) {
+            lock.style.display = 'none'
+            showMessage("❌ Don't share to the same group/person twice!",'error')
+            setTimeout(()=>{
+                lock.style.display = "block";
+            },2500)
+            sharesCount - 2;
+            localStorage.setItem('myShareCount', sharesCount);
+        } else {
+            // Success!
+            sharesCount += 4;
+            localStorage.setItem('myShareCount', sharesCount);
+            updateLock();
+        }
+    }
+
+    function updateLock() {
+        lock.style.display = 'block';
+        const remaining = TARGET_SHARES - sharesCount;
+        const progress = (sharesCount / TARGET_SHARES) * 100;
+
+        document.getElementById('shares-left').innerText = remaining > 0 ? remaining : 0;
+        document.getElementById('progress-bar').style.width = (progress > 100 ? 100 : progress) + "%";
+
+        if (sharesCount >= TARGET_SHARES) {
+            lock.style.display = 'none';
+        }
+    }
+
     
     
     
@@ -2591,3 +2746,49 @@ quotesAndSayings = [
         "Fall seven times and stand up eight."
     ]
 ];
+
+
+try{
+	
+  // Import the functions needed from the SDKs
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+  import { 
+    getDatabase, 
+    ref, 
+    push, 
+    onChildAdded, 
+    off 
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+  // web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyD1CmCEhsvyKoTrwnuMtJqu9JkiMvJterk",
+    authDomain: "msce-g-studies-tracker-baa6f.firebaseapp.com",
+    databaseURL: "https://msce-g-studies-tracker-baa6f-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "msce-g-studies-tracker-baa6f",
+    storageBucket: "msce-g-studies-tracker-baa6f.firebasestorage.app",
+    messagingSenderId: "1082032866052",
+    appId: "1:1082032866052:web:212d976ac9663306c70651",
+    measurementId: "G-0VTT4D856F"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  
+  // Initialize Realtime Database and expose functions to app.js
+  const database = getDatabase(app);
+
+  // attach these to the 'window' object so  existing app.js 
+  // functions can access them globally.
+  window.database = database;
+  window.ref = ref;
+  window.push = push;
+  window.onChildAdded = onChildAdded;
+  window.off = off;
+
+  console.log("Firebase initialized and ready!");
+}catch (e){
+	console.error("Firebase initialization error ",e)
+}
